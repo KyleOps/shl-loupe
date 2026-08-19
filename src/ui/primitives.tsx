@@ -12,6 +12,13 @@
  *    somebody else is driving the laptop.
  *  - Wide content scrolls inside its own container. The page never scrolls
  *    sideways, at any zoom level (WCAG 1.4.10).
+ *
+ * A note on the prop types: presentational optional props are declared
+ * `T | undefined` rather than `?: T`. Under `exactOptionalPropertyTypes` the
+ * short form refuses an explicitly-undefined value, so every caller ends up
+ * writing a conditional spread to pass a field that might be absent. For a prop
+ * where "absent" and "undefined" mean the same thing on screen, that is friction
+ * with no safety in return.
  */
 import {
   useCallback,
@@ -131,7 +138,7 @@ export function Chip({
 }: {
   tone?: Tone;
   children: ReactNode;
-  title?: string;
+  title?: string | undefined;
 }): ReactNode {
   return (
     <span className={`chip tone tone-${tone}`} {...(title === undefined ? {} : { title })}>
@@ -151,7 +158,7 @@ export function CopyButton({
 }: {
   value: string | (() => string);
   label?: string;
-  className?: string;
+  className?: string | undefined;
 }): ReactNode {
   const [copied, setCopied] = useState(false);
   const timer = useRef<number | undefined>(undefined);
@@ -210,8 +217,8 @@ export function Panel({
   title?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
-  className?: string;
-  bare?: boolean;
+  className?: string | undefined;
+  bare?: boolean | undefined;
 }): ReactNode {
   return (
     <section className={clsx('panel', bare && 'panel-bare', className)}>
@@ -242,8 +249,8 @@ export function Disclosure({
   summary: ReactNode;
   children: ReactNode;
   defaultOpen?: boolean;
-  open?: boolean;
-  onToggle?: (open: boolean) => void;
+  open?: boolean | undefined;
+  onToggle?: ((open: boolean) => void) | undefined;
   meta?: ReactNode;
 }): ReactNode {
   const [internal, setInternal] = useState(defaultOpen);
@@ -282,8 +289,8 @@ export function Disclosure({
 export interface FieldRow {
   key: string;
   value: ReactNode;
-  mono?: boolean;
-  tone?: Tone;
+  mono?: boolean | undefined;
+  tone?: Tone | undefined;
   note?: ReactNode;
 }
 
@@ -292,7 +299,13 @@ export interface FieldRow {
  * being crammed into the label, which is the one presentation lesson worth
  * taking from the FHIR IG publisher's element tables.
  */
-export function FieldTable({ rows, dense }: { rows: readonly FieldRow[]; dense?: boolean }): ReactNode {
+export function FieldTable({
+  rows,
+  dense,
+}: {
+  rows: readonly FieldRow[];
+  dense?: boolean | undefined;
+}): ReactNode {
   return (
     <div className="field-table scroll-x">
       <table className={clsx('fields', dense && 'is-dense')}>
@@ -330,7 +343,7 @@ export function Secret({
   onReveal,
 }: {
   value: string;
-  label?: string;
+  label?: string | undefined;
   revealed: boolean;
   onReveal: (revealed: boolean) => void;
 }): ReactNode {
@@ -361,9 +374,9 @@ export function CodeBlock({
   maxHeight = 280,
 }: {
   children: string;
-  language?: string;
-  copy?: boolean;
-  maxHeight?: number;
+  language?: string | undefined;
+  copy?: boolean | undefined;
+  maxHeight?: number | undefined;
 }): ReactNode {
   return (
     <div className="code-block">
@@ -411,7 +424,7 @@ export function Callout({
   title,
   children,
 }: {
-  tone?: Tone;
+  tone?: Tone | undefined;
   title?: ReactNode;
   children: ReactNode;
 }): ReactNode {
