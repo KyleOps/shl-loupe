@@ -41,7 +41,14 @@ describe('the motivating incident', () => {
     expect(loopback?.severity).toBe('fatal');
     expect(loopback?.audience).toBe('sender');
     expect(loopback?.title).toContain('nobody else can open it');
-    expect(loopback?.remedy).toContain('re-mint');
+    expect(loopback?.remedy).toContain('reachable from the internet');
+    // The tool stays useful even when it declares the link unopenable, which is
+    // what separates a diagnostic from an error page.
+    expect(loopback?.remedy).toContain('Offline mode');
+    // All three fatal mechanisms are named, not just the obvious one.
+    expect(loopback?.detail).toContain('Nothing is listening');
+    expect(loopback?.detail).toContain('Chrome 142');
+    expect(loopback?.detail).toContain('certificate cannot be trusted');
   });
 
   it('still decodes and reports the whole payload, rather than stopping at the failure', async () => {

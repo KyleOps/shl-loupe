@@ -44,6 +44,16 @@ import {
   toRequestRecord,
   toResponseRecord,
 } from './net/browser';
+import {
+  combineProbePair,
+  describeTimingBand,
+  detectLnaEnforcement,
+  isLnaGatedTarget,
+  onlineHint,
+  probeDns,
+  probeReachability,
+  timingBand,
+} from './net/probe';
 import { NetworkFailure, readableHeaderNote, type Transport } from './net/transport';
 import {
   decodeShlPayload,
@@ -491,7 +501,7 @@ async function fetchManifest(
       } catch (error) {
         if (error instanceof StepFailure) throw error;
         if (error instanceof NetworkFailure) {
-          recordNetworkFailure(step, error, link, url, options);
+          await recordNetworkFailure(recorder, transport, step, error, link, url, options);
           throw new StepFailure(error.message);
         }
         throw error;
@@ -599,16 +609,105 @@ function interpretManifestStatus(
   throw new StepFailure(`Unexpected status ${status}`);
 }
 
-function recordNetworkFailure(
+/**
+ * Turn an opaque failure into a ranked differential, running the opt-in probes
+ * first when they were asked for.
+ *
+ * The probes are the difference between reasoning about the URL and having
+ * evidence: a plain GET that succeeds where the real request failed is what
+ * makes "reachable, but not sending CORS headers" a conclusion rather than a
+ * guess. They are opt-in because one of them issues an extra request to somebody
+ * else's server and the other discloses the host name to a public resolver, and
+ * this tool does not make a request its user did not ask for.
+ */
+async function recordNetworkFailure(
+  recorder: Recorder,
+  transport: Transport,
   step: StepHandle,
   failure: NetworkFailure,
   link: ShlLink,
   url: URL,
   options: PipelineOptions,
-): void {
+): Promise<void> {
   step.response(failureToResponseRecord(failure));
   const engine = describeFetchEngine(failure.browserMessage ?? '');
   const probes: ProbeResults = { failureDurationMs: failure.durationMs };
+
+  const online = onlineHint();
+  probes.online = online.online;
+  if (!online.online) step.note(online.interpretation);
+
+  // Chromium refuses a public page's request to a loopback or private address
+  // outright, and delivers that refusal as a CORS policy error. Anyone reading
+  // the console for the word CORS then goes looking for a server header that
+  // cannot help, so this gets said explicitly before anything else.
+  if (isLnaGatedTarget(url.hostname) && detectLnaEnforcement() === 'enforced') {
+    step.find({
+      ruleId: 'NET-LOCAL-NETWORK-ACCESS',
+      severity: 'fatal',
+      audience: 'sender',
+      title: 'This browser blocked the request under its local network policy, before it left.',
+      detail:
+        'Since Chrome 142, a page served from a public site may not reach a loopback or private-network address without an explicit permission prompt. The refusal is reported as a CORS error, which is misleading: no header the server sends can lift it, and a no-cors probe does not bypass it either. A link whose delivery depends on a stranger granting a local-network permission is not a shareable link.',
+      remedy: 'The link has to be re-issued against a publicly reachable host.',
+    });
+  }
+
+  if (options.probes?.reachability === true) {
+    const reachability = await recorder.run(
+      {
+        kind: 'net.reachability',
+        title: 'Probe whether anything is answering',
+        summary: 'A plain GET, which needs no CORS, to tell a silent server from an unreachable one.',
+        parentId: step.id,
+      },
+      async (probeStep) => {
+        const result = await probeReachability(transport, link.url);
+        probeStep.kv([
+          { key: 'verdict', value: result.verdict },
+          { key: 'took', value: `${result.durationMs} ms (${result.band})` },
+        ]);
+        probeStep.note(result.interpretation);
+        const combined = combineProbePair(result.verdict, true);
+        probeStep.note(combined.conclusion);
+        if (result.verdict === 'nothing-answered') probeStep.end('warn');
+        return result;
+      },
+    );
+    probes.opaqueGetSucceeded = reachability.verdict === 'server-answered';
+  } else {
+    step.note(
+      `${describeTimingBand(timingBand(failure.durationMs))} Turning on the reachability probe in settings would settle this: a plain GET needs no CORS, so if it succeeds where this request failed, the server is up and simply not sending the headers a browser needs.`,
+    );
+  }
+
+  if (options.probes?.dns === true) {
+    const dns = await recorder.run(
+      {
+        kind: 'net.reachability',
+        title: 'Look the host name up',
+        summary: 'A DNS-over-HTTPS query, which discloses the host name to a public resolver.',
+        parentId: step.id,
+      },
+      async (probeStep) => {
+        const result = await probeDns(transport, url.hostname);
+        probeStep.kv([
+          { key: 'resolver', value: result.resolver },
+          { key: 'DNS status', value: result.status === undefined ? 'no answer' : String(result.status) },
+          { key: 'addresses', value: result.addresses?.join(', ') ?? 'none' },
+        ]);
+        probeStep.note(result.interpretation);
+        if (!result.resolved) probeStep.end('warn');
+        return result;
+      },
+    );
+    probes.dns = {
+      resolved: dns.resolved,
+      ...(dns.addresses === undefined ? {} : { addresses: dns.addresses }),
+      ...(dns.status === undefined ? {} : { status: dns.status }),
+    };
+  }
+
   const causes = differentialFor(
     { url, rawUrl: link.url, link, viewer: options.viewer, now: Date.now() },
     probes,
@@ -835,7 +934,7 @@ async function fetchDirectFile(
       } catch (error) {
         if (error instanceof StepFailure) throw error;
         if (error instanceof NetworkFailure) {
-          recordNetworkFailure(step, error, link, url, options);
+          await recordNetworkFailure(recorder, transport, step, error, link, url, options);
           throw new StepFailure(error.message);
         }
         throw error;

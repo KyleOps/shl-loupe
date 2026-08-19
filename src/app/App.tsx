@@ -65,7 +65,7 @@ export function App(): React.ReactNode {
     <div className="shell">
       <Header
         screen={route.screen}
-        onSubmitLink={(value) => {
+        onSubmitLink={(value: string) => {
           // The link lives in the fragment, never the query string: a fragment
           // is not sent to a server, and this payload carries a decryption key.
           navigate(hashForLink(value.trim()));

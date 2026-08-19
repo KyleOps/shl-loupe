@@ -96,13 +96,13 @@ export interface Session {
   status: SessionStatus;
   /** What the user typed, scanned or arrived with. */
   input: string;
-  run?: TraceRun;
-  result?: PipelineResult;
-  redactor?: Redactor;
+  run: TraceRun | undefined;
+  result: PipelineResult | undefined;
+  redactor: Redactor | undefined;
   /** The file the payload pane is showing. */
   selectedFile: number;
   /** The trace step expanded in the UI, if any. */
-  expandedStep?: string;
+  expandedStep: string | undefined;
   /**
    * Set once a passcode has been supplied for the current input. Guards against
    * a second submission of the same attempt, because every wrong passcode is
@@ -124,6 +124,10 @@ export interface Session {
 export const useSession = create<Session>()((set) => ({
   status: 'idle',
   input: '',
+  run: undefined,
+  result: undefined,
+  redactor: undefined,
+  expandedStep: undefined,
   selectedFile: 0,
   passcodeAttempts: 0,
   setInput: (input) => set({ input }),

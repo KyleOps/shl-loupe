@@ -72,9 +72,9 @@ export const STATIC_RULES: Rule[] = [
         severity: 'fatal',
         audience: 'sender',
         title: 'This link points at the sender’s own machine, so nobody else can open it.',
-        detail: `The manifest URL is ${url.origin}. ${host.because} "localhost" always means the computer running the browser, so this link resolves to ${viewerIsLocal ? 'this machine, which is not where the data is' : 'your machine, not the sender’s'}. It works perfectly for whoever created it and fails for every other person on earth, which is exactly why it gets sent in good faith.`,
+        detail: `The manifest URL is ${url.origin}. ${host.because} "localhost" always means the computer running the browser, so this link resolves to ${viewerIsLocal ? 'this machine, which is not where the data is' : 'your machine, not the sender’s'}. Three separate things then stop it, and any one of them is fatal on its own. Nothing is listening: on your machine that port is almost certainly closed, so the connection is refused before anything else is attempted. The browser blocks it anyway: since Chrome 142, a page on a public site may not reach a loopback or private-network address without an explicit permission prompt, and Chrome reports that refusal as a CORS error, which sends people looking for a missing server header that would not help. And the certificate cannot be trusted: a local development server presents a certificate signed by a root that exists only on the machine that made it, so even with a server listening and the permission granted the TLS handshake fails for everybody else. That is why it works for its author and for nobody else. It is not a viewer defect, and no viewer can work around it.`,
         remedy:
-          'The sender needs to re-mint the link against a host other people can reach: a deployed environment, or a tunnel such as ngrok or a Cloudflare quick tunnel pointed at their dev server.',
+          'The link has to be re-issued with a manifest URL that is reachable from the internet: a deployed relay, or a tunnel such as cloudflared or ngrok if it is only needed today, remembering that a tunnel URL dies with the tunnel. Meanwhile you can still see what is in this link: run the manifest request yourself with the command below and paste the result into Offline mode.',
         citation: CITATIONS.payloadUrl,
       };
     },
