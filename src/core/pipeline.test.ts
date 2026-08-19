@@ -292,6 +292,45 @@ describe('server behaviour', () => {
     expect(finding?.detail).toContain('405 usually means');
   });
 
+  it('faults a server that ignores embeddedLengthMax', async () => {
+    const keyB64 = key();
+    const big = await encryptDirA256Gcm(
+      utf8Encode(JSON.stringify({ resourceType: 'Bundle', note: 'x'.repeat(5000) })),
+      keyB64Bytes(keyB64),
+    );
+    const manifest = JSON.stringify({
+      files: [{ contentType: 'application/fhir+json', embedded: big }],
+    });
+    const result = await openShl({
+      ...base,
+      input: encodeShlink({ url: 'https://example.org/m', key: keyB64 }),
+      embeddedLengthMax: 1024,
+      transport: OfflineTransport.withBodies({ 'https://example.org/m': manifest }),
+    });
+    const finding = result.run.findings.find(
+      (f) => f.ruleId === 'SHL-EMBEDDED-LENGTH-MAX-IGNORED',
+    );
+    expect(finding?.detail).toContain('1.0 kB');
+    // It is a conformance note, not a failure: the file still opens.
+    expect(result.outcome).toBe('opened');
+  });
+
+  it('shows the manifest list extension point rather than ignoring it', async () => {
+    const keyB64 = key();
+    const jwe = await encryptDirA256Gcm(utf8Encode('{"resourceType":"Patient"}'), keyB64Bytes(keyB64));
+    const manifest = JSON.stringify({
+      list: { resourceType: 'List', extension: [{ url: 'https://example.org/x', valueString: 'y' }] },
+      files: [{ contentType: 'application/fhir+json', embedded: jwe }],
+    });
+    const result = await openShl({
+      ...base,
+      input: encodeShlink({ url: 'https://example.org/m', key: keyB64 }),
+      transport: OfflineTransport.withBodies({ 'https://example.org/m': manifest }),
+    });
+    const step = result.run.steps.find((s) => s.kind === 'manifest.validate');
+    expect(JSON.stringify(step?.evidence)).toContain('the manifest extension point');
+  });
+
   it('reports an empty manifest as legal and empty', async () => {
     const result = await withStatus(200, JSON.stringify({ files: [] }), {
       'content-type': 'application/json',

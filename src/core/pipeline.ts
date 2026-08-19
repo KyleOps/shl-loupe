@@ -345,7 +345,7 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
       files.push(await openFile(recorder, file, shl, 'direct', undefined, options));
     } else {
       const manifest = await fetchManifest(recorder, transport, shl, url, options);
-      const entries = await validateManifest(recorder, manifest, shl);
+      const entries = await validateManifest(recorder, manifest, shl, options.embeddedLengthMax);
       const manifestAt = now();
       for (const [index, entry] of entries.entries()) {
         files.push(
@@ -745,6 +745,7 @@ async function validateManifest(
   recorder: Recorder,
   manifest: unknown,
   link: ShlLink,
+  embeddedLengthMax: number | undefined,
 ): Promise<ManifestEntry[]> {
   return recorder.run(
     {
@@ -792,6 +793,13 @@ async function validateManifest(
             'status is "can-change", so the manifest content may differ on a later request. That is what the L flag anticipates.',
           );
         }
+      }
+
+      if (record.list !== undefined) {
+        step.json('list (the manifest extension point)', record.list, true);
+        step.note(
+          'The manifest carries a `list`, which is where the specification puts extensions relating to the manifest or to individual files, as a FHIR List with standard FHIR extensions. A client is required to ignore extensions it does not understand, so Loupe shows it and moves on rather than guessing at its meaning.',
+        );
       }
 
       const rawFiles = record.files;
@@ -865,6 +873,33 @@ async function validateManifest(
       }
       step.kv(rows);
       step.cite(CITATIONS.manifestFiles);
+
+      if (embeddedLengthMax !== undefined) {
+        const oversize = entries
+          .map((entry, index) => ({ index, length: entry.embedded?.length ?? 0 }))
+          .filter((entry) => entry.length > embeddedLengthMax);
+        if (oversize.length > 0) {
+          step.find({
+            ruleId: 'SHL-EMBEDDED-LENGTH-MAX-IGNORED',
+            severity: 'warning',
+            audience: 'server',
+            title: 'The server embedded a file larger than the maximum this client asked for.',
+            detail: `The request set embeddedLengthMax to ${formatBytes(embeddedLengthMax)}, and ${oversize
+              .map((entry) => `files[${entry.index}] is ${formatBytes(entry.length)}`)
+              .join(', ')}. The specification says a server shall not return an embedded payload longer than the client's stated maximum, and is expected to serve a location instead. Nothing breaks here, since Loupe reads it anyway, but a client that sized a buffer from that number would.`,
+            citation: CITATIONS.manifestRequest,
+          });
+          step.end('warn');
+        }
+        const locationsOnly = entries.filter(
+          (entry) => entry.embedded === undefined && entry.location !== undefined,
+        ).length;
+        if (locationsOnly > 0) {
+          step.note(
+            `${locationsOnly} of ${entries.length} file${entries.length === 1 ? '' : 's'} came as a location rather than embedded, despite this client offering to accept up to ${formatBytes(embeddedLengthMax)} inline. That is legal, and it costs a browser a second cross-origin hop whose CORS configuration, TLS chain and DNS all have to work as well, so it is the more fragile of the two shapes at an event.`,
+          );
+        }
+      }
 
       for (const [index, entry] of entries.entries()) {
         if (entry.contentType?.startsWith('application/fhir+json') === true) {
