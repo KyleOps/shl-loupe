@@ -12,7 +12,7 @@
 import { CITATIONS } from '../citations';
 import type { Finding } from '../trace';
 import type { DiagnosisContext } from './context';
-import { classifyHost, DEV_SERVER_PORTS } from './host';
+import { classifyHost, DEV_SERVER_PORTS, reachIsUnreachableByOthers } from './host';
 
 export type RuleOutput = Omit<Finding, 'id' | 'stepId'>;
 
@@ -363,6 +363,64 @@ export const STATIC_RULES: Rule[] = [
   },
 
   // -------------------------------------------------------------------------
+  // The two constraints on the URL itself that almost nobody implements.
+  // -------------------------------------------------------------------------
+  {
+    id: 'SHL-URL-TOO-LONG',
+    about: 'The manifest URL exceeds the 128-character cap.',
+    evaluate: ({ link }) => {
+      if (link === undefined || link.url.length <= 128) return undefined;
+      return {
+        ruleId: 'SHL-URL-TOO-LONG',
+        severity: 'warning',
+        audience: 'sender',
+        title: `The manifest URL is ${link.url.length} characters, and the cap is 128.`,
+        detail:
+          'The specification caps the url member (not the whole link) at 128 characters, so that a link stays inside a QR code that scans comfortably. Nothing will refuse this link over it, but it makes the QR denser than intended and the constraint exists for a reason.',
+        remedy: 'Shorten the manifest path, or put the identifier in the path rather than a long query.',
+        citation: CITATIONS.payloadUrl,
+      };
+    },
+  },
+  {
+    id: 'SHL-URL-LOW-ENTROPY',
+    about: 'The manifest URL looks guessable, where 256 bits of entropy are required.',
+    evaluate: ({ url, link }) => {
+      if (link === undefined) return undefined;
+      const secret = guessableSecretPart(url);
+      if (secret === undefined) return undefined;
+      return {
+        ruleId: 'SHL-URL-LOW-ENTROPY',
+        severity: 'error',
+        audience: 'sender',
+        title: 'The manifest URL is guessable, so other people’s links can be enumerated.',
+        detail: `The specification requires the url to carry at least 256 bits of entropy, because the URL is the only thing standing between a stranger and the manifest: there is no authentication in this protocol. Here the identifying part is ${secret.description}, which is ${secret.reason}. Anyone who has seen one link from this server can walk the range and pull the manifests for links that were never shared with them. This is a privacy defect rather than a connectivity one, so it will not stop the link working, and it matters more.`,
+        remedy:
+          'Mint the identifier from a cryptographically random 32-byte value, base64url encoded, rather than from a database key or a counter.',
+        citation: CITATIONS.payloadUrl,
+      };
+    },
+  },
+  {
+    id: 'SHL-VERSION-UNSUPPORTED',
+    about: 'The payload declares a protocol version this viewer does not implement.',
+    evaluate: ({ link }) => {
+      if (link?.version === undefined) return undefined;
+      const value = Number(link.version);
+      if (Number.isFinite(value) && value <= 1) return undefined;
+      return {
+        ruleId: 'SHL-VERSION-UNSUPPORTED',
+        severity: 'error',
+        audience: 'you',
+        title: `This link declares protocol version ${String(link.version)}, and Loupe implements version 1.`,
+        detail:
+          'The specification tells a receiver that meets a version it does not know to say so and to stop, rather than to make a manifest request and guess at the response. Loupe will show you everything it can read statically and will not proceed on assumptions.',
+        citation: CITATIONS.payloadV,
+      };
+    },
+  },
+
+  // -------------------------------------------------------------------------
   // Flags.
   // -------------------------------------------------------------------------
   {
@@ -376,7 +434,7 @@ export const STATIC_RULES: Rule[] = [
         audience: 'you',
         title: 'This link needs a passcode, sent separately by whoever shared it.',
         detail:
-          'The P flag means the sharing server refuses the manifest request until the right passcode accompanies it. The passcode is not in the link and cannot be derived from it. Servers usually allow only a few attempts before disabling the link for good, so guessing is a bad idea.',
+          'The P flag means the sharing server refuses the manifest request until the right passcode accompanies it. The passcode is not in the link and cannot be derived from it, and the specification requires the server to enforce a total lifetime count of wrong attempts and then disable the link permanently. So guessing does not cost you a retry, it costs the patient their link.',
         citation: CITATIONS.flagP,
       };
     },
@@ -423,6 +481,11 @@ export const STATIC_RULES: Rule[] = [
     about: 'A cross-origin manifest POST needs a CORS preflight.',
     evaluate: ({ url, viewer, link }) => {
       if (url.origin === viewer.origin) return undefined;
+      // No point explaining what the browser will ask of a server that will
+      // never be reached: a reachability rule has already said the request is
+      // not going to happen, and stacking a second explanation on top of it
+      // dilutes the one that matters.
+      if (reachIsUnreachableByOthers(classifyHost(url.hostname).reach)) return undefined;
       const direct = link?.flags.includes('U') === true;
       return {
         ruleId: 'SHL-CORS-PREFLIGHT-EXPECTED',
@@ -437,6 +500,71 @@ export const STATIC_RULES: Rule[] = [
     },
   },
 ];
+
+
+/**
+ * Decide whether anything in a manifest URL could plausibly carry 256 bits of
+ * entropy, and if not, name the part that is failing to.
+ *
+ * This matters more than it looks. A SMART Health Link manifest endpoint has no
+ * authentication of any kind: the unguessability of the URL IS the access
+ * control. A sequential database id in a query parameter therefore exposes every
+ * other link the same server has ever issued, and it is a very common shape
+ * because it is the natural thing to write.
+ *
+ * The question asked is "does ANY component look big enough", not "is the
+ * longest component big enough". Getting that backwards makes a structural path
+ * segment like "shl-manifest" outrank the actual identifier and hides the
+ * finding, which is exactly the bug the first version of this had. And when
+ * reporting, a decimal counter is called out ahead of a merely short token, even
+ * when the counter is the shorter of the two: "the neighbouring values are other
+ * people's links" is a sharper thing to be told.
+ *
+ * 256 bits needs about 43 base64url characters. The threshold here is
+ * deliberately lower (22 characters, about 128 bits) so that the rule fires only
+ * on URLs that are definitely guessable rather than on ones that merely fall
+ * short of the letter of the specification.
+ */
+const ENTROPY_FLOOR_CHARACTERS = 22;
+
+function guessableSecretPart(url: URL): { description: string; reason: string } | undefined {
+  const candidates: Array<{ where: string; value: string }> = [];
+  for (const [name, value] of url.searchParams) {
+    candidates.push({ where: `the "${name}" query parameter`, value });
+  }
+  for (const segment of url.pathname.split('/').filter(Boolean)) {
+    candidates.push({ where: `the path segment "${segment}"`, value: segment });
+  }
+
+  if (candidates.length === 0) {
+    return {
+      description: 'absent: the URL carries no identifier at all',
+      reason: 'a manifest URL with nothing unguessable in it is the same manifest for every reader',
+    };
+  }
+
+  // If anything in the URL is long enough to be a real random identifier, the
+  // link is fine, whatever else is alongside it.
+  if (candidates.some((candidate) => candidate.value.length >= ENTROPY_FLOOR_CHARACTERS)) {
+    return undefined;
+  }
+
+  const counter = candidates.find((candidate) => /^\d{1,12}$/.test(candidate.value));
+  if (counter !== undefined) {
+    return {
+      description: `${counter.where}, the decimal number ${counter.value}`,
+      reason:
+        'a decimal counter, so the neighbouring values are almost certainly other people\u2019s links',
+    };
+  }
+
+  const longest = [...candidates].sort((a, b) => b.value.length - a.value.length)[0];
+  if (longest === undefined) return undefined;
+  return {
+    description: `${longest.where}, ${longest.value.length} characters long`,
+    reason: `far short of the roughly 43 base64url characters that 256 bits of entropy needs`,
+  };
+}
 
 const SEVERITY_ORDER: Record<RuleOutput['severity'], number> = {
   fatal: 0,
