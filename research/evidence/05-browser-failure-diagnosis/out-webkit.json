@@ -1,0 +1,663 @@
+{
+ "webkit": {
+  "cors-blocked-get": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 104,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 200",
+    "pageerror: /example.com/ due to access control checks.",
+    "error: Failed to load resource: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 200"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {}
+  },
+  "cors-ok-get": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "statusText": "OK",
+   "ok": true,
+   "redirected": false,
+   "url": "https://cloudflare-dns.com/dns-query?name=example.com&type=A",
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "bodyLength": 250,
+   "ms": 61,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 254,
+     "duration": 57,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 311
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://cloudflare-dns.com/dns-query?name=example.com&type=A",
+   "requestInit": {
+    "headers": {
+     "accept": "application/dns-json"
+    }
+   }
+  },
+  "dns-nxdomain-invalid": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 6,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: A server with the specified hostname could not be found."
+   ],
+   "requestUrl": "https://no-such-host-9f3a2b71.invalid/x",
+   "requestInit": {}
+  },
+  "dns-nxdomain-real-tld": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 2,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: A server with the specified hostname could not be found."
+   ],
+   "requestUrl": "https://zz9f3a2b71-nope.example.org/x",
+   "requestInit": {}
+  },
+  "conn-refused-127": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 3,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: Could not connect to the server."
+   ],
+   "requestUrl": "https://127.0.0.1:5173/api/shl-manifest?bid=4836470",
+   "requestInit": {}
+  },
+  "conn-refused-localhost": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 3,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: Could not connect to the server."
+   ],
+   "requestUrl": "https://localhost:5173/api/shl-manifest?bid=4836470",
+   "requestInit": {}
+  },
+  "http-localhost-mixed": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 0,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "warning: [blocked] The page at https://viewer.example/index.html requested insecure content from http://localhost:5173/api/shl-manifest. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "pageerror: /localhost:5173/api/shl-manifest due to access control checks."
+   ],
+   "requestUrl": "http://localhost:5173/api/shl-manifest",
+   "requestInit": {}
+  },
+  "http-127-mixed": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 0,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "warning: [blocked] The page at https://viewer.example/index.html requested insecure content from http://127.0.0.1:5173/api/shl-manifest. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "pageerror: /127.0.0.1:5173/api/shl-manifest due to access control checks."
+   ],
+   "requestUrl": "http://127.0.0.1:5173/api/shl-manifest",
+   "requestInit": {}
+  },
+  "tls-expired": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 471,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: The certificate for this server is invalid."
+   ],
+   "requestUrl": "https://expired.badssl.com/",
+   "requestInit": {}
+  },
+  "tls-selfsigned": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 494,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: The certificate for this server is invalid."
+   ],
+   "requestUrl": "https://self-signed.badssl.com/",
+   "requestInit": {}
+  },
+  "tls-wronghost": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 710,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: The certificate for this server is invalid."
+   ],
+   "requestUrl": "https://wrong.host.badssl.com/",
+   "requestInit": {}
+  },
+  "mixed-content-http": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 0,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "warning: [blocked] The page at https://viewer.example/index.html requested insecure content from http://example.com/. This content was blocked and must be served over HTTPS.\n",
+    "error: Not allowed to request resource",
+    "pageerror: /example.com/ due to access control checks."
+   ],
+   "requestUrl": "http://example.com/",
+   "requestInit": {}
+  },
+  "nocors-blocked": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 23,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 2016,
+     "duration": 22,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2038
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-refused": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 3,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: Could not connect to the server."
+   ],
+   "requestUrl": "https://127.0.0.1:5173/",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-404": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 20,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 2044,
+     "duration": 18,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2062
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: the server responded with a status of 404 ()"
+   ],
+   "requestUrl": "https://example.com/definitely-not-here-404",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-500ish": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 946,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 2065,
+     "duration": 943,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3008
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: the server responded with a status of 500 ()"
+   ],
+   "requestUrl": "https://httpbin.org/status/500",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "post-json-preflight": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Load failed",
+   "ms": 19,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 2016,
+     "duration": 22,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2038
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Preflight response is not successful. Status code: 405",
+    "pageerror: /example.com/ due to access control checks.",
+    "error: Failed to load resource: Preflight response is not successful. Status code: 405"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{}"
+   }
+  },
+  "post-nocors-json-hdr": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 19,
+   "resourceTimingEntries": 2,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 2016,
+     "duration": 22,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2038
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 3033,
+     "duration": 18,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3051
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: the server responded with a status of 405 ()"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "POST",
+    "mode": "no-cors",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{}"
+   }
+  },
+  "head-nocors": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 20,
+   "resourceTimingEntries": 3,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 2016,
+     "duration": 22,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2038
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 3033,
+     "duration": 18,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3051
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "startTime": 3054,
+     "duration": 19,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3073
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "HEAD",
+    "mode": "no-cors"
+   }
+  },
+  "_env": {
+   "hasReportingObserver": true,
+   "hasNetworkInformation": false,
+   "isSecureContext": true,
+   "crossOriginIsolated": false,
+   "origin": "https://viewer.example",
+   "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+   "supportedEntryTypes": [
+    "event",
+    "first-input",
+    "largest-contentful-paint",
+    "mark",
+    "measure",
+    "navigation",
+    "paint",
+    "resource"
+   ]
+  }
+ }
+}

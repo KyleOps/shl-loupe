@@ -1,0 +1,1049 @@
+{
+ "firefox": {
+  "cors-blocked-get": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 87,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 128,
+     "duration": 79,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 207
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://example.com/",
+   "requestInit": {}
+  },
+  "cors-ok-get": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "statusText": "",
+   "ok": true,
+   "redirected": false,
+   "url": "https://cloudflare-dns.com/dns-query?name=example.com&type=A",
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "bodyLength": 250,
+   "ms": 78,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 250,
+     "decodedBodySize": 250,
+     "responseStatus": 200,
+     "contentType": "application/dns-json",
+     "startTime": 222,
+     "duration": 77,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 299
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://example.com/. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 200.\"]"
+   ],
+   "requestUrl": "https://cloudflare-dns.com/dns-query?name=example.com&type=A",
+   "requestInit": {
+    "headers": {
+     "accept": "application/dns-json"
+    }
+   }
+  },
+  "dns-nxdomain-invalid": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 3,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 302,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 302
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://no-such-host-9f3a2b71.invalid/x",
+   "requestInit": {}
+  },
+  "dns-nxdomain-real-tld": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 3,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 307,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 307
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://no-such-host-9f3a2b71.invalid/x. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "https://zz9f3a2b71-nope.example.org/x",
+   "requestInit": {}
+  },
+  "conn-refused-127": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 2,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 312,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 312
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://zz9f3a2b71-nope.example.org/x. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "https://127.0.0.1:5173/api/shl-manifest?bid=4836470",
+   "requestInit": {}
+  },
+  "conn-refused-localhost": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 2,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 316,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 316
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://127.0.0.1:5173/api/shl-manifest?bid=4836470. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "https://localhost:5173/api/shl-manifest?bid=4836470",
+   "requestInit": {}
+  },
+  "http-localhost-mixed": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 2,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 320,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 320
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://localhost:5173/api/shl-manifest?bid=4836470. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "http://localhost:5173/api/shl-manifest",
+   "requestInit": {}
+  },
+  "http-127-mixed": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 3,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 323,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 323
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:5173/api/shl-manifest. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "http://127.0.0.1:5173/api/shl-manifest",
+   "requestInit": {}
+  },
+  "tls-expired": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 440,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 326,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 326
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://127.0.0.1:5173/api/shl-manifest. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "https://expired.badssl.com/",
+   "requestInit": {}
+  },
+  "tls-selfsigned": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 448,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 770,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 770
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://expired.badssl.com/. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "https://self-signed.badssl.com/",
+   "requestInit": {}
+  },
+  "tls-wronghost": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 439,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1221,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1221
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://self-signed.badssl.com/. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "https://wrong.host.badssl.com/",
+   "requestInit": {}
+  },
+  "mixed-content-http": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 1,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://wrong.host.badssl.com/. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "http://example.com/",
+   "requestInit": {}
+  },
+  "nocors-blocked": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 28,
+   "resourceTimingEntries": 2,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 128,
+     "duration": 79,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 207
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1667,
+     "duration": 27,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1694
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Blocked loading mixed active content “http://example.com/”\" {file: \"https://viewer.example/index.html\" line: 0}]"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-refused": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 1,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1697,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1697
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://127.0.0.1:5173/",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-404": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 27,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1700,
+     "duration": 26,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1726
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://example.com/definitely-not-here-404",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-500ish": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 942,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1728,
+     "duration": 941,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2669
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://httpbin.org/status/500",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "post-json-preflight": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "errOwnProps": [
+    "fileName",
+    "lineNumber",
+    "columnNumber",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: NetworkError when attempting to fetch resource.",
+   "ms": 24,
+   "resourceTimingEntries": 3,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 128,
+     "duration": 79,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 207
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1667,
+     "duration": 27,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1694
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 2675,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2675
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://example.com/. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 405.\"]"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{}"
+   }
+  },
+  "post-nocors-json-hdr": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 27,
+   "resourceTimingEntries": 4,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 128,
+     "duration": 79,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 207
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1667,
+     "duration": 27,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1694
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 2675,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2675
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 2702,
+     "duration": 26,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2728
+    }
+   ],
+   "devtoolsConsole": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://example.com/. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "POST",
+    "mode": "no-cors",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{}"
+   }
+  },
+  "head-nocors": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 26,
+   "resourceTimingEntries": 5,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 128,
+     "duration": 79,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 207
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 1667,
+     "duration": 27,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1694
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 2675,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2675
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 2702,
+     "duration": 26,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2728
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "startTime": 2731,
+     "duration": 25,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2756
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "HEAD",
+    "mode": "no-cors"
+   }
+  },
+  "_env": {
+   "hasReportingObserver": true,
+   "hasNetworkInformation": false,
+   "isSecureContext": true,
+   "crossOriginIsolated": false,
+   "origin": "https://viewer.example",
+   "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:153.0) Gecko/20100101 Firefox/153.0",
+   "supportedEntryTypes": [
+    "event",
+    "first-input",
+    "largest-contentful-paint",
+    "mark",
+    "measure",
+    "navigation",
+    "paint",
+    "resource"
+   ]
+  }
+ }
+}

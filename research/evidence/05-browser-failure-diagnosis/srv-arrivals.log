@@ -1,0 +1,10 @@
+2026-08-19T23:17:54.668Z GET /api/shl-manifest?bid=1 origin=- ct=- acrm=- acrh=-
+2026-08-19T23:17:54.695Z GET /api/shl-manifest?bid=2 origin=- ct=- acrm=- acrh=-
+2026-08-19T23:18:58.750Z OPTIONS /api/shl-manifest?bid=1787181533176A origin=https://viewer.example ct=- acrm=POST acrh=content-type
+2026-08-19T23:18:59.012Z GET /g?bid=1787181533176B origin=https://viewer.example ct=- acrm=- acrh=-
+2026-08-19T23:18:59.268Z GET /n?bid=1787181533176C origin=- ct=- acrm=- acrh=-
+2026-08-19T23:19:03.844Z OPTIONS /api/shl-manifest?bid=1787181533176A origin=https://viewer.example ct=- acrm=POST acrh=content-type
+2026-08-19T23:19:04.156Z GET /g?bid=1787181533176B origin=https://viewer.example ct=- acrm=- acrh=-
+2026-08-19T23:19:04.414Z GET /n?bid=1787181533176C origin=- ct=- acrm=- acrh=-
+2026-08-19T23:19:04.675Z GET /h?bid=1787181533176D origin=https://viewer.example ct=- acrm=- acrh=-
+2026-08-19T23:23:09.779Z POST /api/shl-manifest?bid=4836470 origin=- ct=application/json acrm=- acrh=-

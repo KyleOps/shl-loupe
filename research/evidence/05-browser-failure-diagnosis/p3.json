@@ -1,0 +1,292 @@
+{
+ "chromium_ignoreCertErrors": {
+  "_features": {
+   "targetAddressSpaceOnRequest": true,
+   "hasReportingObserver": true,
+   "permissionsQueryLNA": "prompt",
+   "isSecureContext": true,
+   "origin": "https://viewer.example"
+  },
+  "https-localhost-5173-POST-certOK": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "ms": 28,
+   "console": [
+    "error: Access to fetch at 'https://localhost:5173/api/shl-manifest?bid=1787181533176A' from origin 'https://viewer.example' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ]
+  },
+  "https-127-5173-GET-certOK": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "ms": 7,
+   "console": [
+    "error: Access to fetch at 'https://127.0.0.1:5173/g?bid=1787181533176B' from origin 'https://viewer.example' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ]
+  },
+  "https-127-5173-nocors-certOK": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "ms": 1,
+   "console": [
+    "error: Access to fetch at 'https://127.0.0.1:5173/n?bid=1787181533176C' from origin 'https://viewer.example' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ]
+  },
+  "http-localhost-5174-GET": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "ms": 2,
+   "console": [
+    "error: Access to fetch at 'http://localhost:5174/h?bid=1787181533176D' from origin 'https://viewer.example' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ]
+  },
+  "doh-cloudflare-in-browser": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"viewer.tcpdev.org\",\"type\":1}],\"Answer\":[{\"name\":\"viewer.tcpdev.org\",\"type\":1,\"TTL\":60,\"data\":\"65.9.142.20\"},{\"name",
+   "ms": 110,
+   "console": []
+  },
+  "doh-cloudflare-localhost": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "body": "{\"Status\":3,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":true,\"CD\":false,\"Question\":[{\"name\":\"localhost\",\"type\":1}],\"Authority\":[{\"name\":\"\",\"type\":6,\"TTL\":86095,\"data\":\"a.root-servers.net. nstld.verisign-grs.c",
+   "ms": 23,
+   "console": []
+  },
+  "doh-google-in-browser": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "cache-control",
+    "content-length",
+    "content-type",
+    "expires"
+   ],
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"viewer.tcpdev.org.\",\"type\":1}],\"Answer\":[{\"name\":\"viewer.tcpdev.org.\",\"type\":1,\"TTL\":60,\"data\":\"65.9.142.41\"},{\"na",
+   "ms": 209,
+   "console": []
+  },
+  "crtsh-cors": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "ms": 968,
+   "console": [
+    "error: Access to fetch at 'https://crt.sh/json?q=viewer.tcpdev.org' from origin 'https://viewer.example' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ]
+  }
+ },
+ "webkit_ignoreCertErrors": {
+  "_features": {
+   "targetAddressSpaceOnRequest": false,
+   "hasReportingObserver": true,
+   "permissionsQueryLNA": "query-threw: TypeError: Type error",
+   "isSecureContext": true,
+   "origin": "https://viewer.example"
+  },
+  "https-localhost-5173-POST-certOK": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "ms": 18,
+   "console": [
+    "error: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 200",
+    "pageerror: /localhost:5173/api/shl-manifest?bid=1787181533176A due to access control checks.",
+    "error: Failed to load resource: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 200"
+   ]
+  },
+  "https-127-5173-GET-certOK": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "ms": 10,
+   "console": [
+    "error: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 200",
+    "pageerror: /127.0.0.1:5173/g?bid=1787181533176B due to access control checks.",
+    "error: Failed to load resource: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 200"
+   ]
+  },
+  "https-127-5173-nocors-certOK": {
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "headerNames": [],
+   "body": "",
+   "ms": 7,
+   "console": []
+  },
+  "http-localhost-5174-GET": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "ms": 0,
+   "console": [
+    "warning: [blocked] The page at https://viewer.example/index.html requested insecure content from http://localhost:5174/h?bid=1787181533176D. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "pageerror: /localhost:5174/h?bid=1787181533176D due to access control checks."
+   ]
+  },
+  "doh-cloudflare-in-browser": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"viewer.tcpdev.org\",\"type\":1}],\"Answer\":[{\"name\":\"viewer.tcpdev.org\",\"type\":1,\"TTL\":56,\"data\":\"65.9.142.71\"},{\"name",
+   "ms": 66,
+   "console": []
+  },
+  "doh-cloudflare-localhost": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "body": "{\"Status\":3,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"localhost\",\"type\":1}],\"Authority\":[{\"name\":\"\",\"type\":6,\"TTL\":84821,\"data\":\"a.root-servers.net. nstld.verisign-grs.",
+   "ms": 22,
+   "console": []
+  },
+  "doh-google-in-browser": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "cache-control",
+    "content-length",
+    "content-type",
+    "expires"
+   ],
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"viewer.tcpdev.org.\",\"type\":1}],\"Answer\":[{\"name\":\"viewer.tcpdev.org.\",\"type\":1,\"TTL\":60,\"data\":\"65.9.142.20\"},{\"na",
+   "ms": 225,
+   "console": []
+  },
+  "crtsh-cors": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "ms": 1261,
+   "console": [
+    "error: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 502",
+    "pageerror: /crt.sh/json?q=viewer.tcpdev.org due to access control checks.",
+    "error: Failed to load resource: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 502"
+   ]
+  }
+ },
+ "firefox_ignoreCertErrors": {
+  "_features": {
+   "targetAddressSpaceOnRequest": false,
+   "hasReportingObserver": true,
+   "permissionsQueryLNA": "query-threw: TypeError: 'local-network-access' (value of 'name' member of PermissionDescriptor) is not a valid value for enumeration PermissionName.",
+   "isSecureContext": true,
+   "origin": "https://viewer.example"
+  },
+  "https-localhost-5173-POST-certOK": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "ms": 48,
+   "console": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://localhost:5173/api/shl-manifest?bid=1787181533176A. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 200.\"]",
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://localhost:5173/api/shl-manifest?bid=1787181533176A. (Reason: CORS request did not succeed). Status code: (null).\"]"
+   ]
+  },
+  "https-127-5173-GET-certOK": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "ms": 7,
+   "console": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://127.0.0.1:5173/g?bid=1787181533176B. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 200.\"]"
+   ]
+  },
+  "https-127-5173-nocors-certOK": {
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "headerNames": [],
+   "body": "",
+   "ms": 7,
+   "console": []
+  },
+  "http-localhost-5174-GET": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "ms": 5,
+   "console": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://localhost:5174/h?bid=1787181533176D. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 200.\"]"
+   ]
+  },
+  "doh-cloudflare-in-browser": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"viewer.tcpdev.org\",\"type\":1}],\"Answer\":[{\"name\":\"viewer.tcpdev.org\",\"type\":1,\"TTL\":51,\"data\":\"65.9.142.59\"},{\"name",
+   "ms": 52,
+   "console": []
+  },
+  "doh-cloudflare-localhost": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "body": "{\"Status\":3,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"localhost\",\"type\":1}],\"Authority\":[{\"name\":\"\",\"type\":6,\"TTL\":85717,\"data\":\"a.root-servers.net. nstld.verisign-grs.",
+   "ms": 24,
+   "console": []
+  },
+  "doh-google-in-browser": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "headerNames": [
+    "cache-control",
+    "content-length",
+    "content-type",
+    "expires"
+   ],
+   "body": "{\"Status\":0,\"TC\":false,\"RD\":true,\"RA\":true,\"AD\":false,\"CD\":false,\"Question\":[{\"name\":\"viewer.tcpdev.org.\",\"type\":1}],\"Answer\":[{\"name\":\"viewer.tcpdev.org.\",\"type\":1,\"TTL\":60,\"data\":\"65.9.142.41\"},{\"na",
+   "ms": 225,
+   "console": []
+  },
+  "crtsh-cors": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "NetworkError when attempting to fetch resource.",
+   "ms": 1235,
+   "console": [
+    "error: [JavaScript Error: \"Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://crt.sh/json?q=viewer.tcpdev.org. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 502.\"]"
+   ]
+  }
+ }
+}

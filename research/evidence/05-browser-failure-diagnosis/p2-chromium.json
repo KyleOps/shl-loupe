@@ -1,0 +1,513 @@
+{
+ "chromium": {
+  "LIVE-https-localhost-selfsigned": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 30,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 28,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID"
+   ],
+   "url": "https://localhost:5173/api/shl-manifest?bid=1787181422166a",
+   "init": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{\"recipient\":\"probe\"}"
+   }
+  },
+  "LIVE-https-127-selfsigned": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 4,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 4,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID"
+   ],
+   "url": "https://127.0.0.1:5173/api/shl-manifest?bid=1787181422166b",
+   "init": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{\"recipient\":\"probe\"}"
+   }
+  },
+  "LIVE-https-localhost-GET-nocors": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 3,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 3,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID"
+   ],
+   "url": "https://localhost:5173/api/shl-manifest?bid=1787181422166c",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "LIVE-http-localhost-5174-POST": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 2,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 2,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Access to fetch at 'http://localhost:5174/api/shl-manifest?bid=1787181422166d' from origin 'https://viewer.example' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ],
+   "url": "http://localhost:5174/api/shl-manifest?bid=1787181422166d",
+   "init": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{\"recipient\":\"probe\"}"
+   }
+  },
+  "LIVE-http-127-5174-GET-nocors": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 2,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 1,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Access to fetch at 'http://127.0.0.1:5174/x?bid=1787181422166e' from origin 'https://viewer.example' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ],
+   "url": "http://127.0.0.1:5174/x?bid=1787181422166e",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "LIVE-http-localhost-5174-GET": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 1,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 1,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Access to fetch at 'http://localhost:5174/y?bid=1787181422166f' from origin 'https://viewer.example' has been blocked by CORS policy: Permission was denied for this request to access the `loopback` address space.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ],
+   "url": "http://localhost:5174/y?bid=1787181422166f",
+   "init": {}
+  },
+  "opaque-unique-url": {
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "ok": false,
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 74,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 74,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Failed to load resource: the server responded with a status of 404 ()"
+   ],
+   "url": "https://example.com/opaque-1787181422166",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "cors-fail-unique-url": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 929,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 929,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Access to fetch at 'https://example.com/corsfail-1787181422166' from origin 'https://viewer.example' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ],
+   "url": "https://example.com/corsfail-1787181422166",
+   "init": {}
+  },
+  "tao-on-jsdelivr": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "ok": true,
+   "headerNames": [
+    "accept-ranges",
+    "access-control-allow-origin",
+    "access-control-expose-headers",
+    "alt-svc",
+    "cache-control",
+    "cf-cache-status",
+    "cf-ray",
+    "content-encoding",
+    "content-length",
+    "content-type",
+    "cross-origin-resource-policy",
+    "date",
+    "etag",
+    "nel",
+    "report-to",
+    "server",
+    "strict-transport-security",
+    "timing-allow-origin",
+    "vary",
+    "x-cache",
+    "x-content-type-options",
+    "x-jsd-version",
+    "x-jsd-version-type",
+    "x-served-by"
+   ],
+   "bodyLength": 578,
+   "ms": 462,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "h2",
+     "transferSize": 596,
+     "encodedBodySize": 296,
+     "decodedBodySize": 578,
+     "responseStatus": 200,
+     "contentType": "application/json",
+     "deliveryType": "",
+     "duration": 461,
+     "domainLookupStart": 4296,
+     "domainLookupEnd": 4299,
+     "connectStart": 4299,
+     "connectEnd": 4719,
+     "secureConnectionStart": 4520,
+     "requestStart": 4719,
+     "responseStart": 4756
+    }
+   ],
+   "console": [],
+   "url": "https://cdn.jsdelivr.net/npm/lodash@4.17.21/package.json?x=1787181422166",
+   "init": {}
+  },
+  "tao-off-unpkg": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "ok": true,
+   "headerNames": [
+    "access-control-allow-headers",
+    "access-control-allow-methods",
+    "access-control-allow-origin",
+    "access-control-expose-headers",
+    "age",
+    "alt-svc",
+    "cache-control",
+    "cf-cache-status",
+    "cf-ray",
+    "content-digest",
+    "content-encoding",
+    "content-type",
+    "cross-origin-resource-policy",
+    "date",
+    "expires",
+    "fly-request-id",
+    "last-modified",
+    "server",
+    "strict-transport-security",
+    "vary",
+    "via",
+    "x-content-type-options"
+   ],
+   "bodyLength": 578,
+   "ms": 134,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 200,
+     "contentType": "application/json",
+     "deliveryType": "",
+     "duration": 133,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [],
+   "url": "https://unpkg.com/lodash@4.17.21/package.json?x=1787181422166",
+   "init": {}
+  },
+  "tao-on-nocors": {
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "ok": false,
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 546,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "contentType": "",
+     "deliveryType": "",
+     "duration": 546,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [],
+   "url": "https://cdn.jsdelivr.net/npm/lodash@4.17.20/package.json?x=1787181422166",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "_elementProbes": {
+   "img_reachable_but_not_image": {
+    "url": "https://example.com/nope-1787181429854",
+    "how": "error",
+    "ms": 70
+   },
+   "img_dns_fail": {
+    "url": "https://no-such-1787181429854.invalid/a.png",
+    "how": "error",
+    "ms": 40
+   },
+   "img_conn_refused": {
+    "url": "https://127.0.0.1:5199/a.png",
+    "how": "error",
+    "ms": 1
+   },
+   "img_selfsigned_live": {
+    "url": "https://localhost:5173/a.png?1787181429854",
+    "how": "error",
+    "ms": 3
+   },
+   "img_real_image": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@11/icons/github.svg?1787181429854",
+    "how": "load",
+    "ms": 32
+   },
+   "script_cors_blocked_ok": {
+    "url": "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js?1787181429854",
+    "how": "load",
+    "ms": 37
+   },
+   "script_selfsigned_live": {
+    "url": "https://localhost:5173/x.js?1787181429854",
+    "how": "error",
+    "ms": 3
+   },
+   "link_selfsigned_live": {
+    "url": "https://localhost:5173/x.css?1787181429854",
+    "how": "error",
+    "ms": 3
+   }
+  },
+  "_elementProbesConsole": [
+   "error: Failed to load resource: net::ERR_NAME_NOT_RESOLVED",
+   "error: Failed to load resource: net::ERR_CONNECTION_REFUSED",
+   "error: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID",
+   "error: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID",
+   "error: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID"
+  ]
+ }
+}

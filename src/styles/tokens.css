@@ -1,0 +1,240 @@
+/*
+ * Design tokens.
+ *
+ * Dark first, with a light counterpart, and a third mode that is the point of
+ * the whole exercise: Projector. Conference projectors crush blacks, wash
+ * mid-greys and lose one-pixel lines, so the tool this is built for needs a
+ * token override set rather than a bigger font size.
+ *
+ * Base hues come from GitHub Primer's dark and light scales, which are already
+ * tuned for code UI in both modes. Every contrast ratio in the comments is
+ * computed from the WCAG relative-luminance formula, not estimated.
+ *
+ * One rule this file exists to enforce: a hairline is decorative. #30363D on
+ * #0D1117 is 1.55:1, so no border may be the sole carrier of a status or of a
+ * boundary the user has to perceive. Informational borders use
+ * --border-meaningful or a full-strength status colour.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg-canvas: #0d1117;
+  --bg-surface: #161b22;
+  --bg-raised: #1c2128;
+  --bg-inset: #010409;
+  --bg-hover: #1f242c;
+
+  /* Borders */
+  --border-hairline: #30363d;
+  --border-meaningful: #656d76;
+  --hairline-width: 1px;
+
+  /* Text. fg-subtle is 3.52:1 on --bg-raised, so it is banned there: inside an
+     expanded step body metadata steps up to fg-muted. */
+  --fg-default: #e6edf3;
+  --fg-muted: #9198a1;
+  --fg-subtle: #6e7681;
+  --fg-on-accent: #ffffff;
+
+  /* Accent and status */
+  --accent: #58a6ff;
+  --accent-bg: #0b2a4a;
+  --status-pass: #3fb950;
+  --status-pass-bg: #0d2a14;
+  --status-warn: #d29922;
+  --status-warn-bg: #2e2205;
+  --status-fail: #f85149;
+  --status-fail-bg: #2e1113;
+  --status-info: #79c0ff;
+  --status-info-bg: #0b2a4a;
+  --status-exception: #d2a8ff;
+  --status-exception-bg: #231442;
+  --status-skip: #8b949e;
+  --status-skip-bg: #1c2128;
+
+  /* Type */
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+  --font-size-base: 15px;
+
+  /* Space, on a 4px grid. An off-scale value is the visual signature of a tool
+     nobody cared about. */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 12px;
+  --space-6: 16px;
+  --space-7: 20px;
+  --space-8: 24px;
+  --space-9: 32px;
+  --space-10: 40px;
+  --space-11: 56px;
+  --space-12: 72px;
+
+  /* Radius */
+  --radius-chip: 2px;
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --radius-pane: 14px;
+  --radius-pill: 999px;
+
+  /* Motion. One property so a new component inherits reduced motion rather
+     than having to remember it. */
+  --motion-state: 120ms;
+  --motion-disclosure: 180ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  --rail-width: 3px;
+  --content-max: none;
+  --micro-tracking: 0.06em;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-canvas: #ffffff;
+  --bg-surface: #f6f8fa;
+  --bg-raised: #eef1f4;
+  --bg-inset: #f6f8fa;
+  --bg-hover: #eaeef2;
+  --border-hairline: #d1d9e0;
+  --border-meaningful: #818b98;
+  --fg-default: #1f2328;
+  --fg-muted: #59636e;
+  --fg-subtle: #6e7781;
+  --accent: #0969da;
+  --accent-bg: #ddf4ff;
+  --status-pass: #1a7f37;
+  --status-pass-bg: #dafbe1;
+  --status-warn: #9a6700;
+  --status-warn-bg: #fff8c5;
+  --status-fail: #cf222e;
+  --status-fail-bg: #ffebe9;
+  --status-info: #0969da;
+  --status-info-bg: #ddf4ff;
+  --status-exception: #8250df;
+  --status-exception-bg: #fbefff;
+  --status-skip: #6e7781;
+  --status-skip-bg: #eef1f4;
+}
+
+/*
+ * Projector mode. Composes with either theme: it only overrides the tokens a
+ * projector destroys, so the light and dark identities survive underneath.
+ */
+:root[data-projector='on'] {
+  --font-size-base: 17px;
+  --bg-canvas: #161b22;
+  --fg-muted: #c9d1d9;
+  --fg-subtle: #c9d1d9; /* the tier is retired rather than dimmed */
+  --border-hairline: #484f58;
+  --hairline-width: 2px;
+  --rail-width: 5px;
+  --micro-tracking: 0.08em;
+  --content-max: 1600px;
+}
+
+:root[data-theme='light'][data-projector='on'] {
+  --bg-canvas: #ffffff;
+  --fg-muted: #424a53;
+  --fg-subtle: #424a53;
+  --border-hairline: #afb8c1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-state: 0ms;
+    --motion-disclosure: 0ms;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reset and base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--fg-default);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Every number that can change between renders is tabular, so a re-render does
+   not reflow the column it sits in. */
+code,
+kbd,
+pre,
+samp,
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-chip);
+}
+
+/* Opaque values (base64url, JWE parts, urn:uuid) wrap rather than ellipsing. A
+   truncated key that looks complete is worse than one that obviously is not. */
+.opaque-value {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--fg-on-accent);
+}
+
+/* Wide content scrolls inside its own container. The page never scrolls
+   sideways, at any zoom level. */
+.scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

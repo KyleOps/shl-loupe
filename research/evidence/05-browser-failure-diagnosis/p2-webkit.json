@@ -1,0 +1,382 @@
+{
+ "webkit": {
+  "LIVE-https-localhost-selfsigned": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 20,
+   "rtCount": 0,
+   "rt": [],
+   "console": [
+    "error: The certificate for this server is invalid.",
+    "pageerror: /localhost:5173/api/shl-manifest?bid=1787181422170a due to access control checks.",
+    "error: Failed to load resource: The certificate for this server is invalid."
+   ],
+   "url": "https://localhost:5173/api/shl-manifest?bid=1787181422170a",
+   "init": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{\"recipient\":\"probe\"}"
+   }
+  },
+  "LIVE-https-127-selfsigned": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 5,
+   "rtCount": 0,
+   "rt": [],
+   "console": [
+    "error: The certificate for this server is invalid.",
+    "pageerror: /127.0.0.1:5173/api/shl-manifest?bid=1787181422170b due to access control checks.",
+    "error: Failed to load resource: The certificate for this server is invalid."
+   ],
+   "url": "https://127.0.0.1:5173/api/shl-manifest?bid=1787181422170b",
+   "init": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{\"recipient\":\"probe\"}"
+   }
+  },
+  "LIVE-https-localhost-GET-nocors": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 6,
+   "rtCount": 0,
+   "rt": [],
+   "console": [
+    "error: Failed to load resource: The certificate for this server is invalid."
+   ],
+   "url": "https://localhost:5173/api/shl-manifest?bid=1787181422170c",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "LIVE-http-localhost-5174-POST": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 1,
+   "rtCount": 0,
+   "rt": [],
+   "console": [
+    "warning: [blocked] The page at https://viewer.example/index.html requested insecure content from http://localhost:5174/api/shl-manifest?bid=1787181422170d. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "pageerror: /localhost:5174/api/shl-manifest?bid=1787181422170d due to access control checks."
+   ],
+   "url": "http://localhost:5174/api/shl-manifest?bid=1787181422170d",
+   "init": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{\"recipient\":\"probe\"}"
+   }
+  },
+  "LIVE-http-127-5174-GET-nocors": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 0,
+   "rtCount": 0,
+   "rt": [],
+   "console": [
+    "warning: [blocked] The page at https://viewer.example/index.html requested insecure content from http://127.0.0.1:5174/x?bid=1787181422170e. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "pageerror: /127.0.0.1:5174/x?bid=1787181422170e due to access control checks."
+   ],
+   "url": "http://127.0.0.1:5174/x?bid=1787181422170e",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "LIVE-http-localhost-5174-GET": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 0,
+   "rtCount": 0,
+   "rt": [],
+   "console": [
+    "warning: [blocked] The page at https://viewer.example/index.html requested insecure content from http://localhost:5174/y?bid=1787181422170f. This content was blocked and must\n",
+    "error: Not allowed to request resource",
+    "pageerror: /localhost:5174/y?bid=1787181422170f due to access control checks."
+   ],
+   "url": "http://localhost:5174/y?bid=1787181422170f",
+   "init": {}
+  },
+  "opaque-unique-url": {
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "ok": false,
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 80,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "duration": 72,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [
+    "error: Failed to load resource: the server responded with a status of 404 ()"
+   ],
+   "url": "https://example.com/opaque-1787181422170",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "cors-fail-unique-url": {
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Load failed",
+   "errOwnProps": [
+    "message"
+   ],
+   "cause": "<undefined>",
+   "ms": 857,
+   "rtCount": 0,
+   "rt": [],
+   "console": [
+    "error: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 404",
+    "pageerror: /example.com/corsfail-1787181422170 due to access control checks.",
+    "error: Failed to load resource: Origin https://viewer.example is not allowed by Access-Control-Allow-Origin. Status code: 404"
+   ],
+   "url": "https://example.com/corsfail-1787181422170",
+   "init": {}
+  },
+  "tao-on-jsdelivr": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "ok": true,
+   "headerNames": [
+    "accept-ranges",
+    "access-control-allow-origin",
+    "access-control-expose-headers",
+    "age",
+    "alt-svc",
+    "cache-control",
+    "cf-cache-status",
+    "cf-ray",
+    "content-encoding",
+    "content-length",
+    "content-type",
+    "cross-origin-resource-policy",
+    "date",
+    "etag",
+    "nel",
+    "report-to",
+    "server",
+    "strict-transport-security",
+    "timing-allow-origin",
+    "vary",
+    "x-cache",
+    "x-content-type-options",
+    "x-jsd-version",
+    "x-jsd-version-type",
+    "x-served-by"
+   ],
+   "bodyLength": 578,
+   "ms": 464,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "h2",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "duration": 462,
+     "domainLookupStart": 4226,
+     "domainLookupEnd": 4226,
+     "connectStart": 4227,
+     "connectEnd": 4658,
+     "secureConnectionStart": 4447,
+     "requestStart": 4658,
+     "responseStart": 4684
+    }
+   ],
+   "console": [],
+   "url": "https://cdn.jsdelivr.net/npm/lodash@4.17.21/package.json?x=1787181422170",
+   "init": {}
+  },
+  "tao-off-unpkg": {
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "ok": true,
+   "headerNames": [
+    "access-control-allow-headers",
+    "access-control-allow-methods",
+    "access-control-allow-origin",
+    "access-control-expose-headers",
+    "age",
+    "alt-svc",
+    "cache-control",
+    "cf-cache-status",
+    "cf-ray",
+    "content-digest",
+    "content-encoding",
+    "content-type",
+    "cross-origin-resource-policy",
+    "date",
+    "expires",
+    "fly-request-id",
+    "last-modified",
+    "server",
+    "strict-transport-security",
+    "vary",
+    "via",
+    "x-content-type-options"
+   ],
+   "bodyLength": 578,
+   "ms": 134,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "duration": 133,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0
+    }
+   ],
+   "console": [],
+   "url": "https://unpkg.com/lodash@4.17.21/package.json?x=1787181422170",
+   "init": {}
+  },
+  "tao-on-nocors": {
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "ok": false,
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 544,
+   "rtCount": 1,
+   "rt": [
+    {
+     "nextHopProtocol": "h2",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "deliveryType": "",
+     "duration": 542,
+     "domainLookupStart": 5629,
+     "domainLookupEnd": 5629,
+     "connectStart": 5629,
+     "connectEnd": 5629,
+     "secureConnectionStart": 5629,
+     "requestStart": 5630,
+     "responseStart": 6170
+    }
+   ],
+   "console": [],
+   "url": "https://cdn.jsdelivr.net/npm/lodash@4.17.20/package.json?x=1787181422170",
+   "init": {
+    "mode": "no-cors"
+   }
+  },
+  "_elementProbes": {
+   "img_reachable_but_not_image": {
+    "url": "https://example.com/nope-1787181429855",
+    "how": "error",
+    "ms": 38
+   },
+   "img_dns_fail": {
+    "url": "https://no-such-1787181429855.invalid/a.png",
+    "how": "error",
+    "ms": 46
+   },
+   "img_conn_refused": {
+    "url": "https://127.0.0.1:5199/a.png",
+    "how": "error",
+    "ms": 3
+   },
+   "img_selfsigned_live": {
+    "url": "https://localhost:5173/a.png?1787181429855",
+    "how": "error",
+    "ms": 5
+   },
+   "img_real_image": {
+    "url": "https://cdn.jsdelivr.net/npm/simple-icons@11/icons/github.svg?1787181429855",
+    "how": "load",
+    "ms": 59
+   },
+   "script_cors_blocked_ok": {
+    "url": "https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js?1787181429855",
+    "how": "load",
+    "ms": 57
+   },
+   "script_selfsigned_live": {
+    "url": "https://localhost:5173/x.js?1787181429855",
+    "how": "error",
+    "ms": 5
+   },
+   "link_selfsigned_live": {
+    "url": "https://localhost:5173/x.css?1787181429855",
+    "how": "error",
+    "ms": 4
+   }
+  },
+  "_elementProbesConsole": [
+   "error: Failed to load resource: the server responded with a status of 404 ()",
+   "error: Failed to load resource: A server with the specified hostname could not be found.",
+   "error: Failed to load resource: Could not connect to the server.",
+   "error: Failed to load resource: The certificate for this server is invalid.",
+   "error: Failed to load resource: The certificate for this server is invalid.",
+   "error: Failed to load resource: The certificate for this server is invalid."
+  ]
+ }
+}

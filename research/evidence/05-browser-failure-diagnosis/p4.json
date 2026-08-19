@@ -1,0 +1,245 @@
+{
+ "chromium": {
+  "blackhole-10.255.255.1": {
+   "ok": false,
+   "name": "TypeError",
+   "message": "Failed to fetch",
+   "isTypeError": true,
+   "isDOMException": false,
+   "ms": 26
+  },
+  "blackhole-203.0.113.1": {
+   "ok": false,
+   "name": "TimeoutError",
+   "message": "signal timed out",
+   "isTypeError": false,
+   "isDOMException": true,
+   "ms": 2502
+  },
+  "manual-abort": {
+   "ok": true,
+   "v": 200,
+   "ms": 187
+  },
+  "abort-with-reason": {
+   "ok": true,
+   "v": 200,
+   "ms": 40
+  },
+  "_samplesMs": {
+   "corsFailWarm": [
+    111,
+    25,
+    22,
+    26,
+    24
+   ],
+   "dnsFail": [
+    44,
+    42,
+    39,
+    76,
+    41
+   ],
+   "connRefused": [
+    2,
+    1,
+    1,
+    1,
+    1
+   ],
+   "mixedBlocked": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "certInvalid": [
+    525,
+    436,
+    437,
+    446,
+    431
+   ]
+  },
+  "certspotter-real-host": {
+   "ok": true,
+   "v": {
+    "status": 200,
+    "len": 4
+   },
+   "ms": 1002
+  },
+  "certspotter-dev-host": {
+   "ok": true,
+   "v": {
+    "status": 200,
+    "body": "[\n]\n"
+   },
+   "ms": 243
+  }
+ },
+ "firefox": {
+  "blackhole-10.255.255.1": {
+   "ok": false,
+   "name": "TypeError",
+   "message": "NetworkError when attempting to fetch resource.",
+   "isTypeError": true,
+   "isDOMException": false,
+   "ms": 70
+  },
+  "blackhole-203.0.113.1": {
+   "ok": false,
+   "name": "TimeoutError",
+   "message": "The operation timed out.",
+   "isTypeError": false,
+   "isDOMException": true,
+   "ms": 2502
+  },
+  "manual-abort": {
+   "ok": true,
+   "v": 200,
+   "ms": 140
+  },
+  "abort-with-reason": {
+   "ok": true,
+   "v": 200,
+   "ms": 53
+  },
+  "_samplesMs": {
+   "corsFailWarm": [
+    119,
+    27,
+    26,
+    35,
+    32
+   ],
+   "dnsFail": [
+    66,
+    40,
+    41,
+    56,
+    46
+   ],
+   "connRefused": [
+    2,
+    3,
+    2,
+    2,
+    2
+   ],
+   "mixedBlocked": [
+    0,
+    0,
+    0,
+    1,
+    0
+   ],
+   "certInvalid": [
+    439,
+    442,
+    432,
+    492,
+    588
+   ]
+  },
+  "certspotter-real-host": {
+   "ok": true,
+   "v": {
+    "status": 200,
+    "len": 4
+   },
+   "ms": 1482
+  },
+  "certspotter-dev-host": {
+   "ok": true,
+   "v": {
+    "status": 200,
+    "body": "[\n]\n"
+   },
+   "ms": 241
+  }
+ },
+ "webkit": {
+  "blackhole-10.255.255.1": {
+   "ok": false,
+   "name": "TypeError",
+   "message": "Load failed",
+   "isTypeError": true,
+   "isDOMException": false,
+   "ms": 31
+  },
+  "blackhole-203.0.113.1": {
+   "ok": false,
+   "name": "AbortError",
+   "message": "Fetch is aborted",
+   "isTypeError": false,
+   "isDOMException": true,
+   "ms": 2501
+  },
+  "manual-abort": {
+   "ok": true,
+   "v": 200,
+   "ms": 183
+  },
+  "abort-with-reason": {
+   "ok": true,
+   "v": 200,
+   "ms": 37
+  },
+  "_samplesMs": {
+   "corsFailWarm": [
+    74,
+    35,
+    26,
+    24,
+    32
+   ],
+   "dnsFail": [
+    52,
+    45,
+    42,
+    44,
+    49
+   ],
+   "connRefused": [
+    3,
+    3,
+    3,
+    3,
+    4
+   ],
+   "mixedBlocked": [
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "certInvalid": [
+    443,
+    442,
+    442,
+    439,
+    438
+   ]
+  },
+  "certspotter-real-host": {
+   "ok": true,
+   "v": {
+    "status": 200,
+    "len": 4
+   },
+   "ms": 1014
+  },
+  "certspotter-dev-host": {
+   "ok": true,
+   "v": {
+    "status": 200,
+    "body": "[\n]\n"
+   },
+   "ms": 256
+  }
+ }
+}

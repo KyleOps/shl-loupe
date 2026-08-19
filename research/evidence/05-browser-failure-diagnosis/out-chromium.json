@@ -1,0 +1,985 @@
+{
+ "chromium": {
+  "cors-blocked-get": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 1043,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 35,
+     "duration": 1041,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1076
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Access to fetch at 'https://example.com/' from origin 'https://viewer.example' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {}
+  },
+  "cors-ok-get": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "cors",
+   "status": 200,
+   "statusText": "",
+   "ok": true,
+   "redirected": false,
+   "url": "https://cloudflare-dns.com/dns-query?name=example.com&type=A",
+   "headerNames": [
+    "content-length",
+    "content-type"
+   ],
+   "bodyLength": 252,
+   "ms": 134,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 200,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1080,
+     "duration": 133,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1213
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://cloudflare-dns.com/dns-query?name=example.com&type=A",
+   "requestInit": {
+    "headers": {
+     "accept": "application/dns-json"
+    }
+   }
+  },
+  "dns-nxdomain-invalid": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 42,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1215,
+     "duration": 41,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1257
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+   ],
+   "requestUrl": "https://no-such-host-9f3a2b71.invalid/x",
+   "requestInit": {}
+  },
+  "dns-nxdomain-real-tld": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 56,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1258,
+     "duration": 56,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1314
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_NAME_NOT_RESOLVED"
+   ],
+   "requestUrl": "https://zz9f3a2b71-nope.example.org/x",
+   "requestInit": {}
+  },
+  "conn-refused-127": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 1,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1316,
+     "duration": 1,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1317
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CONNECTION_REFUSED"
+   ],
+   "requestUrl": "https://127.0.0.1:5173/api/shl-manifest?bid=4836470",
+   "requestInit": {}
+  },
+  "conn-refused-localhost": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 1,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1318,
+     "duration": 1,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1319
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CONNECTION_REFUSED"
+   ],
+   "requestUrl": "https://localhost:5173/api/shl-manifest?bid=4836470",
+   "requestInit": {}
+  },
+  "http-localhost-mixed": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 1,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1320,
+     "duration": 1,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1321
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CONNECTION_REFUSED"
+   ],
+   "requestUrl": "http://localhost:5173/api/shl-manifest",
+   "requestInit": {}
+  },
+  "http-127-mixed": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 1,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1322,
+     "duration": 1,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1323
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CONNECTION_REFUSED"
+   ],
+   "requestUrl": "http://127.0.0.1:5173/api/shl-manifest",
+   "requestInit": {}
+  },
+  "tls-expired": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 595,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1324,
+     "duration": 595,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1918
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CERT_DATE_INVALID"
+   ],
+   "requestUrl": "https://expired.badssl.com/",
+   "requestInit": {}
+  },
+  "tls-selfsigned": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 476,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 1920,
+     "duration": 475,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 2395
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID"
+   ],
+   "requestUrl": "https://self-signed.badssl.com/",
+   "requestInit": {}
+  },
+  "tls-wronghost": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 649,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 2397,
+     "duration": 649,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3046
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CERT_COMMON_NAME_INVALID"
+   ],
+   "requestUrl": "https://wrong.host.badssl.com/",
+   "requestInit": {}
+  },
+  "mixed-content-http": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 0,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3048,
+     "duration": 0,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3048
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Mixed Content: The page at 'https://viewer.example/index.html' was loaded over HTTPS, but requested an insecure resource 'http://example.com/'. This request has been blocked; the content must be served over HTTPS."
+   ],
+   "requestUrl": "http://example.com/",
+   "requestInit": {}
+  },
+  "nocors-blocked": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 28,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 35,
+     "duration": 1041,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1076
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-refused": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 1,
+   "resourceTimingEntries": 1,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3079,
+     "duration": 1,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3080
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: net::ERR_CONNECTION_REFUSED"
+   ],
+   "requestUrl": "https://127.0.0.1:5173/",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-404": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 40,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: the server responded with a status of 404 ()"
+   ],
+   "requestUrl": "https://example.com/definitely-not-here-404",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "nocors-500ish": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 761,
+   "resourceTimingEntries": 0,
+   "resourceTiming": [],
+   "devtoolsConsole": [
+    "error: Failed to load resource: the server responded with a status of 500 ()"
+   ],
+   "requestUrl": "https://httpbin.org/status/500",
+   "requestInit": {
+    "mode": "no-cors"
+   }
+  },
+  "post-json-preflight": {
+   "threwSynchronously": false,
+   "outcome": "rejected",
+   "errName": "TypeError",
+   "errMessage": "Failed to fetch",
+   "errOwnProps": [
+    "stack",
+    "message"
+   ],
+   "errKeys": [],
+   "hasCauseProp": false,
+   "cause": "<undefined>",
+   "isTypeError": true,
+   "isDOMException": false,
+   "toStringVal": "TypeError: Failed to fetch",
+   "ms": 18,
+   "resourceTimingEntries": 3,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 35,
+     "duration": 1041,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1076
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3050,
+     "duration": 27,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3077
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3885,
+     "duration": 18,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3903
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Access to fetch at 'https://example.com/' from origin 'https://viewer.example' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+    "error: Failed to load resource: net::ERR_FAILED"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "POST",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{}"
+   }
+  },
+  "post-nocors-json-hdr": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 28,
+   "resourceTimingEntries": 3,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 35,
+     "duration": 1041,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1076
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3050,
+     "duration": 27,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3077
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3885,
+     "duration": 18,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3903
+    }
+   ],
+   "devtoolsConsole": [
+    "error: Failed to load resource: the server responded with a status of 405 ()"
+   ],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "POST",
+    "mode": "no-cors",
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{}"
+   }
+  },
+  "head-nocors": {
+   "threwSynchronously": false,
+   "outcome": "resolved",
+   "responseType": "opaque",
+   "status": 0,
+   "statusText": "",
+   "ok": false,
+   "redirected": false,
+   "url": "",
+   "headerNames": [],
+   "bodyLength": 0,
+   "ms": 28,
+   "resourceTimingEntries": 4,
+   "resourceTiming": [
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 35,
+     "duration": 1041,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 1076
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3050,
+     "duration": 27,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3077
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3885,
+     "duration": 18,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3903
+    },
+    {
+     "initiatorType": "fetch",
+     "nextHopProtocol": "",
+     "transferSize": 0,
+     "encodedBodySize": 0,
+     "decodedBodySize": 0,
+     "responseStatus": 0,
+     "deliveryType": "",
+     "contentType": "",
+     "startTime": 3904,
+     "duration": 28,
+     "domainLookupStart": 0,
+     "domainLookupEnd": 0,
+     "connectStart": 0,
+     "connectEnd": 0,
+     "secureConnectionStart": 0,
+     "requestStart": 0,
+     "responseStart": 0,
+     "responseEnd": 3932
+    }
+   ],
+   "devtoolsConsole": [],
+   "requestUrl": "https://example.com/",
+   "requestInit": {
+    "method": "HEAD",
+    "mode": "no-cors"
+   }
+  },
+  "_env": {
+   "hasReportingObserver": true,
+   "hasNetworkInformation": true,
+   "isSecureContext": true,
+   "crossOriginIsolated": false,
+   "origin": "https://viewer.example",
+   "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+   "supportedEntryTypes": [
+    "element",
+    "event",
+    "first-input",
+    "interaction-contentful-paint",
+    "largest-contentful-paint",
+    "layout-shift",
+    "long-animation-frame",
+    "longtask",
+    "mark",
+    "measure",
+    "navigation",
+    "paint",
+    "resource",
+    "soft-navigation",
+    "visibility-state"
+   ]
+  }
+ }
+}

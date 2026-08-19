@@ -1,0 +1,449 @@
+/*
+ * Layout, and the styles for the shared primitives.
+ *
+ * Per-area styles live in their own files and are imported here, so several
+ * people (or agents) can work on different areas without meeting in one
+ * stylesheet. Each imported file styles only its own area's classes.
+ */
+@import './trace.css';
+@import './payload.css';
+@import './screens.css';
+
+/* --------------------------------------------------------------------------
+   Tone: one place where a status colour and its tinted surface travel together.
+   Callers set a tone class and read var(--tone-fg) / var(--tone-bg), which is
+   what stops a mode-flipping text colour being paired with a fixed pale tint.
+   -------------------------------------------------------------------------- */
+
+.tone-pass {
+  --tone-fg: var(--status-pass);
+  --tone-bg: var(--status-pass-bg);
+}
+.tone-warn {
+  --tone-fg: var(--status-warn);
+  --tone-bg: var(--status-warn-bg);
+}
+.tone-fail {
+  --tone-fg: var(--status-fail);
+  --tone-bg: var(--status-fail-bg);
+}
+.tone-info {
+  --tone-fg: var(--status-info);
+  --tone-bg: var(--status-info-bg);
+}
+.tone-exception {
+  --tone-fg: var(--status-exception);
+  --tone-bg: var(--status-exception-bg);
+}
+.tone-skip {
+  --tone-fg: var(--status-skip);
+  --tone-bg: var(--status-skip-bg);
+}
+.tone-running {
+  --tone-fg: var(--accent);
+  --tone-bg: var(--accent-bg);
+}
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--tone-fg);
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Shell
+   -------------------------------------------------------------------------- */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.main {
+  flex: 1;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.footer nav {
+  display: flex;
+  gap: var(--space-5);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-control);
+  background: var(--bg-surface);
+  color: var(--fg-default);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--motion-state) var(--motion-ease);
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--bg-hover);
+}
+
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: 12px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--fg-on-accent);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+  background: var(--accent);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--fg-muted);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--fg-default);
+}
+
+.btn-danger {
+  border-color: var(--status-fail);
+  color: var(--status-fail);
+  background: transparent;
+}
+
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Panels
+   -------------------------------------------------------------------------- */
+
+.panel {
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-pane);
+  min-width: 0;
+}
+
+.panel-bare {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+.panel-bare > .panel-head {
+  border-bottom: 0;
+  padding-inline: 0;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.panel-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.panel-body {
+  padding: var(--space-6);
+  min-width: 0;
+}
+
+.panel-bare > .panel-body {
+  padding-inline: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Chips, callouts, empty states
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--tone-bg);
+  color: var(--tone-fg);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.callout {
+  display: flex;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--tone-bg);
+  border: var(--hairline-width) solid var(--tone-fg);
+  color: var(--fg-default);
+  font-size: 14px;
+}
+
+.callout strong {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-11) var(--space-6);
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+.empty-state h3 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--fg-default);
+}
+
+.empty-state p {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Disclosure
+   -------------------------------------------------------------------------- */
+
+.disclosure {
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.disclosure-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  justify-content: space-between;
+}
+
+.disclosure-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4) 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.disclosure-chevron {
+  flex: none;
+  color: var(--fg-muted);
+  transition: transform var(--motion-disclosure) var(--motion-ease);
+}
+
+.disclosure.is-open .disclosure-chevron {
+  transform: rotate(90deg);
+}
+
+.disclosure-summary {
+  min-width: 0;
+}
+
+.disclosure-meta {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex: none;
+}
+
+.disclosure-body {
+  padding: 0 0 var(--space-5) var(--space-7);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Field tables
+   -------------------------------------------------------------------------- */
+
+.field-table {
+  min-width: 0;
+}
+
+table.fields {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.fields th,
+table.fields td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--space-4) var(--space-5) var(--space-4) 0;
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+table.fields tr:last-child th,
+table.fields tr:last-child td {
+  border-bottom: 0;
+}
+
+table.fields th {
+  width: 1%;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+}
+
+table.fields.is-dense th,
+table.fields.is-dense td {
+  padding-block: var(--space-2);
+}
+
+.field-value {
+  min-width: 0;
+  color: var(--fg-default);
+}
+
+.field-note {
+  margin: var(--space-3) 0 0;
+  font-size: 12.5px;
+  line-height: 19px;
+  /* fg-subtle is 3.52:1 on bg-raised, so metadata inside an expanded body steps
+     up to fg-muted. See the ratio table in tokens.css. */
+  color: var(--fg-muted);
+  font-family: var(--font-sans);
+  max-width: 78ch;
+}
+
+.field-status {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Code, secrets, durations
+   -------------------------------------------------------------------------- */
+
+.code-block {
+  position: relative;
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.code-actions {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 1;
+}
+
+.code-block pre {
+  margin: 0;
+  padding: var(--space-5);
+  overflow: auto;
+}
+
+.code-block code {
+  white-space: pre;
+}
+
+.secret {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.duration {
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .main {
+    padding: var(--space-5);
+  }
+}
