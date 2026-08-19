@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:live": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

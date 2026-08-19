@@ -1,0 +1,67 @@
+# ArgoCD Application for Loupe. Commit this into aehrc/sparked-argo as
+# apps/shl-loupe.yaml (deploy/README.md has the exact copy commands); it lives
+# here so the deployment shape is reviewable in the repo that produces the image.
+#
+# Pattern 1 of the two sparked-argo patterns: the shared charts/sparked-app chart
+# driven by one values file, rather than hand-written manifests. Checked against
+# apps/clinic-demo.yaml, which is this file modulo names, and against
+# charts/sparked-app/templates/deployment.yaml, which supports every key the
+# values file sets. apps/platypus-site/ is the older hand-written shape and its
+# Application is commented out entirely; do not copy it.
+#
+# Multi-source is required by that pattern: source 1 is the values repo carrying
+# `ref: values`, source 2 is the chart path, and the values file is addressed
+# through `$values/`.
+#
+# There is deliberately NO HTTPRoute and no hostname. Loupe is reached with
+#   kubectl --context sparkey -n shl-loupe port-forward svc/shl-loupe 8080:80
+# so nothing is added to apps/common/networking/gateway-infra.yaml. To give it a
+# public name later: add a listener plus a Certificate there, and flip
+# httpRoute.enabled in the values file, in the same change.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: shl-loupe
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sparked
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: shl-loupe
+  sources:
+    - repoURL: https://github.com/aehrc/sparked-argo
+      targetRevision: HEAD
+      ref: values
+    - repoURL: https://github.com/aehrc/sparked-argo
+      targetRevision: HEAD
+      path: charts/sparked-app
+      helm:
+        releaseName: shl-loupe
+        valueFiles:
+          - '$values/apps/shl-loupe/values.yaml'
+  syncPolicy:
+    # The pod satisfies every `restricted` Pod Security control already
+    # (runAsNonRoot with a numeric uid, seccompProfile RuntimeDefault, all
+    # capabilities dropped, no privilege escalation, emptyDir volumes only), so
+    # this namespace can carry warn and audit from its first sync instead of
+    # inheriting the deferred position other namespaces are in. The same block
+    # appears on apps/inferno-dev.yaml and apps/ontoserver.yaml.
+    managedNamespaceMetadata:
+      labels:
+        pod-security.kubernetes.io/warn: restricted
+        pod-security.kubernetes.io/audit: restricted
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        maxDuration: 2m
+        factor: 2

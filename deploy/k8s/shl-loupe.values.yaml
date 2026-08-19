@@ -1,0 +1,133 @@
+# Values for the shared sparked-app chart (aehrc/sparked-argo,
+# charts/sparked-app). Commit this into that repo as apps/shl-loupe/values.yaml;
+# deploy/README.md has the exact copy commands.
+#
+# It has to sit in a SUBDIRECTORY, not directly in apps/. The
+# `sparked-project-apps` ApplicationSet syncs `path: apps/` with
+# `directory.include: '*'` and no recursion, so a values.yaml sitting beside the
+# Application files would be handed to ArgoCD as a manifest and fail. Inside
+# apps/shl-loupe/ it is invisible to that Application and reached only through
+# the `$values` ref.
+#
+# Loupe is entirely client-side: the BROWSER performs every SMART Health Link
+# manifest POST and every files[].location GET. This pod serves a static bundle
+# baked into its own image layers and nothing else.
+deployment:
+  enabled: true
+  # One replica. There is no session state to spread and no load to speak of:
+  # the whole point of the app is that it does its work in the viewer's tab.
+  replicas: 1
+  image:
+    # Registry, region and naming convention read out of the live account rather
+    # than assumed: `aws sts get-caller-identity` gives 471112546300,
+    # apps/clinic-demo/values.yaml pins
+    # 471112546300.dkr.ecr.ap-southeast-2.amazonaws.com/sparked/checkin-verifier,
+    # and `aws ecr describe-repositories` shows every workload repo named
+    # sparked/<app>. Built and pushed by hand (see deploy/README.md); there is no
+    # image-build CI in this repo.
+    #
+    # Bump this tag per release. Renovate does NOT track it: its argocd manager
+    # follows `targetRevision` only, never an image tag inside a values file.
+    repository: 471112546300.dkr.ecr.ap-southeast-2.amazonaws.com/sparked/shl-loupe
+    tag: 'v0.1.0'
+    pullPolicy: IfNotPresent
+  ports:
+    - name: http
+      containerPort: 8080
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 8080
+    initialDelaySeconds: 2
+    periodSeconds: 10
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 30
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    # Memory limit only, deliberately. A CPU limit on an nginx handing over a few
+    # hundred kilobytes of static files buys nothing and adds CFS throttling to
+    # the one burst that matters, the first page load.
+    limits:
+      memory: 64Mi
+  podSecurityContext:
+    # nginxinc/nginx-unprivileged runs as uid and gid 101 (ARG UID=101 / GID=101
+    # then `USER $UID` in stable/alpine-slim/Dockerfile). State it numerically:
+    # the kubelet cannot verify runAsNonRoot against a non-numeric image USER and
+    # fails the pod at admission instead. Same note as apps/clinic-demo.
+    runAsNonRoot: true
+    runAsUser: 101
+    runAsGroup: 101
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      # No NET_BIND_SERVICE is added back, and that is the reason for using the
+      # unprivileged image: 8080 needs no capability to bind.
+      drop: ['ALL']
+  volumeMounts:
+    # Required by readOnlyRootFilesystem. The unprivileged image already moved
+    # the pid file and every *_temp_path under /tmp, so /tmp is the only
+    # genuinely needed writable path; /var/cache/nginx is belt and braces for a
+    # future config that turns a cache on.
+    - name: tmp
+      mountPath: /tmp
+    - name: nginx-cache
+      mountPath: /var/cache/nginx
+  volumes:
+    - name: tmp
+      emptyDir:
+        sizeLimit: 16Mi
+    - name: nginx-cache
+      emptyDir:
+        sizeLimit: 16Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+
+# No public name, no gateway listener, no certificate: port-forward only. If this
+# ever needs a hostname, flip enabled, add hostnames and rules (see
+# charts/sparked-app/README.md), and add the listener plus Certificate to
+# apps/common/networking/gateway-infra.yaml in the same change.
+httpRoute:
+  enabled: false
+
+# ---------------------------------------------------------------------------
+# On egress, because a reader will assume the opposite.
+#
+# This pod needs NO egress at all, and no NetworkPolicy file should be added for
+# the shl-loupe namespace in either network-policies/phase1-ingress/ or
+# phase2-egress-active/.
+#
+#  - The browser makes every outbound SMART Health Link request: the manifest
+#    POST, each files[].location GET, any terminology lookup. They originate on
+#    the viewer's machine, not here.
+#  - This nginx has no proxy_pass, no upstream, no resolver, no auth_request and
+#    no sub_filter. There is no upstream to name.
+#  - It needs no cluster DNS either, which is unusual enough to be worth saying:
+#    the baseline egress policies in phase2-egress-active/ all open port 53 to
+#    kube-dns because "every pod needs cluster DNS". This one resolves nothing.
+#  - The QR decoder's WASM binary is self-hosted from this image, so there is no
+#    build-time CDN dependency left to argue about either.
+#
+# Policy enforcement is on at the CNI but opt-in per namespace by file presence,
+# so with no file the namespace is default-allow, and port-forward would keep
+# working regardless: containerd enters the pod's network namespace and connects
+# over loopback, which a CNI policy at the veth boundary never sees. What a
+# phase-1 ingress file WOULD break is the kubelet probe above, which arrives from
+# the node IP; such a file must carry the node-CIDR allow that
+# network-policies/phase1-ingress/distil.yaml uses.
+# ---------------------------------------------------------------------------
