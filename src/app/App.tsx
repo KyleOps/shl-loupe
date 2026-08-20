@@ -20,12 +20,16 @@ import { LearnScreen } from './screens/LearnScreen';
 import { RulesScreen } from './screens/RulesScreen';
 import { AboutScreen } from './screens/AboutScreen';
 import { CommandPalette } from './CommandPalette';
+import { InsecureContextNotice, readSecureContext } from './InsecureContextNotice';
 
 export function App(): React.ReactNode {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
   const theme = useSettings((s) => s.theme);
   const projector = useSettings((s) => s.projector);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // Read once: an origin does not change without a navigation, and a navigation
+  // remounts the app.
+  const [secureContext] = useState(readSecureContext);
 
   useEffect(() => {
     const onHashChange = (): void => setRoute(parseHash(window.location.hash));
@@ -75,6 +79,7 @@ export function App(): React.ReactNode {
         onOpenPalette={() => setPaletteOpen(true)}
       />
       <main id="main" className="main">
+        <InsecureContextNotice state={secureContext} />
         {route.screen === 'open' && <OpenScreen onRun={run} />}
         {route.screen === 'offline' && <OfflineScreen />}
         {route.screen === 'sandbox' && <SandboxScreen />}

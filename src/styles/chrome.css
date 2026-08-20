@@ -307,3 +307,52 @@
     display: none;
   }
 }
+
+/* --------------------------------------------------------------------------
+   The insecure-context notice
+   -------------------------------------------------------------------------- */
+
+.insecure-notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-7) var(--space-8);
+  background: var(--tone-bg);
+  border: var(--hairline-width) solid var(--tone-fg);
+  border-left-width: var(--rail-width);
+  border-radius: var(--radius-pane);
+}
+
+.insecure-notice-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  color: var(--tone-fg);
+}
+
+.insecure-notice-head h2 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg-default);
+}
+
+.insecure-notice p {
+  margin: 0;
+  max-width: 92ch;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.insecure-notice code {
+  padding: 0 var(--space-2);
+  background: var(--bg-inset);
+  border-radius: var(--radius-chip);
+  font-size: 12.5px;
+}
+
+.insecure-notice-tail {
+  color: var(--fg-muted);
+}

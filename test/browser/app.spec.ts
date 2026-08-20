@@ -165,7 +165,10 @@ test.describe('modes', () => {
   test('the light theme paints an explicit background', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() =>
-      localStorage.setItem('loupe.settings', JSON.stringify({ state: { theme: 'light' }, version: 0 })),
+      localStorage.setItem(
+        'loupe.settings',
+        JSON.stringify({ state: { theme: 'light' }, version: 0 }),
+      ),
     );
     await page.reload();
     await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
@@ -220,5 +223,40 @@ test.describe('the privacy promise', () => {
     expect(stored).not.toContain('shlink');
     expect(stored).not.toContain('IGXdCGucFRBw');
     expect(stored).not.toContain('localhost:5173');
+  });
+});
+
+test.describe('the deployment failure most likely to happen at an event', () => {
+  test('says so when served from somewhere it cannot decrypt', async ({ page }) => {
+    /*
+     * Loupe is reached by `kubectl port-forward`, which is http://localhost and
+     * fine. Then somebody at the same table wants a look, the forward is rebound
+     * to 0.0.0.0, the LAN address is read out, and on that laptop `crypto.subtle`
+     * is undefined, so every file fails at the last step for a reason that has
+     * nothing to do with the link. Measured in this browser:
+     *
+     *   http://localhost:4173      secureContext=true   crypto.subtle=true
+     *   http://127.0.0.1:4173      secureContext=true   crypto.subtle=true
+     *   http://192.168.x.x:4173    secureContext=false  crypto.subtle=false
+     *
+     * The notice is simulated by removing crypto.subtle before the app boots,
+     * because a test cannot make a browser distrust its own loopback origin.
+     */
+    await page.addInitScript(() => {
+      Object.defineProperty(globalThis, 'isSecureContext', { value: false, configurable: true });
+      Object.defineProperty(globalThis.crypto, 'subtle', { value: undefined, configurable: true });
+    });
+    await page.goto('/');
+    const notice = page.locator('.insecure-notice');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('cannot decrypt anything');
+    await expect(notice).toContainText('port-forward');
+    // It has to say what still works, or it reads as "the tool is broken".
+    await expect(notice).toContainText('still works');
+  });
+
+  test('says nothing at all when served from localhost', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.insecure-notice')).toHaveCount(0);
   });
 });
