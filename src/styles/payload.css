@@ -30,18 +30,19 @@
   min-width: 0;
 }
 
+/*
+ * No cap: the payload pane has the row to itself, and the header's own contents
+ * are already bounded where it matters. Its prose blocks take the measure and its
+ * fact rows are a table, which is data and belongs at the pane's width.
+ *
+ * It used to cap at --figure-max, which stopped the header at 808px of a 1434px
+ * pane and left 600px of the most-looked-at surface in the app empty. The
+ * paragraphs did not get longer for removing it; only the table did.
+ */
 .payload-head {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  /*
-   * The pane this sits in is as wide as the three-pane layout gives it, which on
-   * a large display is most of the screen. The document's own prose is still
-   * prose, so the header takes a reading container and its notes fill that
-   * instead of each one stopping at its own measure with a thousand pixels of
-   * empty pane beside it.
-   */
-  max-width: var(--figure-max);
   min-width: 0;
 }
 
