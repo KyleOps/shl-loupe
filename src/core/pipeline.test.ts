@@ -121,7 +121,10 @@ describe('payload conformance', () => {
   });
 
   it('treats a payload carried in a query string as a key disclosure', async () => {
-    const inner = encodeShlink({ url: 'https://example.org/m', key: key() }).replace('shlink:/', '');
+    const inner = encodeShlink({ url: 'https://example.org/m', key: key() }).replace(
+      'shlink:/',
+      '',
+    );
     const result = await openShl({
       ...base,
       input: `https://viewer.example.org?shlink=${inner}`,
@@ -286,9 +289,7 @@ describe('server behaviour', () => {
 
   it('names an undefined status as the server’s own choice', async () => {
     const result = await withStatus(405);
-    const finding = result.run.findings.find(
-      (f) => f.ruleId === 'SHL-MANIFEST-UNEXPECTED-STATUS',
-    );
+    const finding = result.run.findings.find((f) => f.ruleId === 'SHL-MANIFEST-UNEXPECTED-STATUS');
     expect(finding?.detail).toContain('405 usually means');
   });
 
@@ -307,9 +308,7 @@ describe('server behaviour', () => {
       embeddedLengthMax: 1024,
       transport: OfflineTransport.withBodies({ 'https://example.org/m': manifest }),
     });
-    const finding = result.run.findings.find(
-      (f) => f.ruleId === 'SHL-EMBEDDED-LENGTH-MAX-IGNORED',
-    );
+    const finding = result.run.findings.find((f) => f.ruleId === 'SHL-EMBEDDED-LENGTH-MAX-IGNORED');
     expect(finding?.detail).toContain('1.0 kB');
     // It is a conformance note, not a failure: the file still opens.
     expect(result.outcome).toBe('opened');
@@ -317,9 +316,15 @@ describe('server behaviour', () => {
 
   it('shows the manifest list extension point rather than ignoring it', async () => {
     const keyB64 = key();
-    const jwe = await encryptDirA256Gcm(utf8Encode('{"resourceType":"Patient"}'), keyB64Bytes(keyB64));
+    const jwe = await encryptDirA256Gcm(
+      utf8Encode('{"resourceType":"Patient"}'),
+      keyB64Bytes(keyB64),
+    );
     const manifest = JSON.stringify({
-      list: { resourceType: 'List', extension: [{ url: 'https://example.org/x', valueString: 'y' }] },
+      list: {
+        resourceType: 'List',
+        extension: [{ url: 'https://example.org/x', valueString: 'y' }],
+      },
       files: [{ contentType: 'application/fhir+json', embedded: jwe }],
     });
     const result = await openShl({

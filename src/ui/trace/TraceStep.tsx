@@ -26,7 +26,7 @@ export interface TraceStepProps {
   run: TraceRun;
   /** "5", or "5.2" for a nested step. Supplied by the list. */
   number?: string;
-  bar?: DurationBar;
+  bar?: DurationBar | undefined;
   expanded?: boolean;
   /** True when this row holds the list's single tab stop. */
   active?: boolean;

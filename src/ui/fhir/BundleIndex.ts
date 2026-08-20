@@ -55,10 +55,7 @@ export interface IndexedEntry {
 export type ResolutionVia = 'fullUrl' | 'type-id' | 'relative-base';
 
 export type UnresolvedReason =
-  | 'no-reference'
-  | 'relative-against-urn-uuid'
-  | 'no-match'
-  | 'ambiguous';
+  'no-reference' | 'relative-against-urn-uuid' | 'no-match' | 'ambiguous';
 
 export type Resolution =
   | { kind: 'resolved'; entry: IndexedEntry; via: ResolutionVia; note?: string }

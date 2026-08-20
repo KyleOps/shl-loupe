@@ -1,1 +1,1270 @@
 /* screens area styles. */
+
+/*
+ * The teaching screens: Learn, Checks, About, and the interactive link anatomy
+ * they share.
+ *
+ * Three rules run through the whole file.
+ *
+ *  - Colour comes from tokens, and a status colour never appears except through
+ *    a `tone-*` class, so a tinted surface and its foreground cannot drift apart
+ *    between light, dark and projector.
+ *  - Prose is capped at about 78 characters. A guide that runs the full width of
+ *    a 27-inch monitor is a guide nobody reads a second paragraph of.
+ *  - Anything that can outgrow its column scrolls inside its own container. The
+ *    page never scrolls sideways, at any zoom (WCAG 1.4.10), which for this file
+ *    means every table and every mono strip.
+ *
+ * Class prefixes keep the areas apart: `learn-`, `rules-`, `about-`, `segmap-`
+ * and `anatomy-`. Nothing here styles a shared primitive; those live in app.css.
+ */
+
+/* ==========================================================================
+   Shared shape for a teaching screen
+   ========================================================================== */
+
+.learn,
+.rules,
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.learn-head h1,
+.rules-head h1,
+.about-head h1 {
+  margin: 0 0 var(--space-4);
+  font-size: 26px;
+  line-height: 32px;
+  letter-spacing: -0.01em;
+}
+
+.learn-lede,
+.rules-lede,
+.about-lede {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-muted);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+/* ==========================================================================
+   Learn: table of contents and section flow
+   ========================================================================== */
+
+.learn-body {
+  display: grid;
+  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  gap: var(--space-9);
+  align-items: start;
+  min-width: 0;
+}
+
+.learn-toc {
+  position: sticky;
+  top: var(--space-6);
+  min-width: 0;
+}
+
+.learn-toc-title {
+  margin: 0 0 var(--space-4);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.learn-toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  border-left: var(--hairline-width) solid var(--border-hairline);
+}
+
+.learn-toc-link {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-5);
+  margin-left: calc(-1 * var(--rail-width));
+  border: 0;
+  border-left: var(--rail-width) solid transparent;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.learn-toc-link:hover {
+  color: var(--fg-default);
+  background: var(--bg-hover);
+}
+
+/* The active entry is marked by the rail, the weight and the colour together:
+   a rail alone is a hairline, and tokens.css forbids a hairline carrying
+   meaning on its own. `aria-current` carries it for a screen reader. */
+.learn-toc-link.is-active {
+  border-left-color: var(--accent);
+  color: var(--fg-default);
+  font-weight: 600;
+}
+
+.learn-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-11);
+  min-width: 0;
+}
+
+.learn-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+  scroll-margin-top: var(--space-9);
+}
+
+/* These carry tabIndex={-1} so in-page navigation can focus where it scrolled,
+   which is what keeps a keyboard user reading and tabbing from the same place.
+   They are scroll targets rather than controls, and a ring drawn around a whole
+   section reads as an error state, so the programmatic focus is not outlined.
+   Nothing is lost: :focus-visible, which the shared rule uses, does not fire for
+   a programmatic focus in the first place. */
+.learn-section:focus {
+  outline: none;
+}
+
+.learn-section > h2 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 28px;
+  padding-bottom: var(--space-4);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+.learn-section-lede {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+.learn-prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.learn-prose p,
+.learn-section > p,
+.about-section > p {
+  margin: 0;
+  max-width: 78ch;
+  line-height: 25px;
+}
+
+.learn-caption {
+  margin: 0 0 var(--space-4);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.learn-note {
+  margin: var(--space-4) 0 0;
+  max-width: 78ch;
+  font-size: 13px;
+  line-height: 21px;
+  color: var(--fg-muted);
+}
+
+/* ==========================================================================
+   Learn: quotes and references
+   ========================================================================== */
+
+/*
+ * A quote and a bare reference look different on purpose. The guide carries
+ * citations with no quote where only the section is known, and rendering those
+ * in quotation marks would be quoting nothing.
+ */
+.learn-quote {
+  margin: 0;
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-surface);
+  border-left: var(--rail-width) solid var(--accent);
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  min-width: 0;
+}
+
+.learn-quote blockquote {
+  margin: 0 0 var(--space-4);
+  max-width: 74ch;
+  font-size: 14.5px;
+  line-height: 24px;
+}
+
+.learn-quote-mark {
+  color: var(--fg-subtle);
+  margin-right: var(--space-3);
+  vertical-align: 2px;
+}
+
+.learn-quote.is-compact {
+  padding: var(--space-4) var(--space-5);
+  background: transparent;
+}
+
+.learn-quote.is-compact blockquote {
+  font-size: 13.5px;
+  line-height: 22px;
+}
+
+.learn-quote figcaption,
+.learn-reference {
+  margin: 0;
+  min-width: 0;
+}
+
+.learn-cite-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-5);
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+.learn-cite-spec {
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.learn-cite-section {
+  font-style: italic;
+}
+
+.learn-cite-source a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.learn-reference {
+  padding-left: var(--space-5);
+  border-left: var(--rail-width) solid var(--border-meaningful);
+}
+
+.learn-reference.is-compact {
+  border-left-width: var(--hairline-width);
+}
+
+/* ==========================================================================
+   Learn: payload members, wire members, flags, checklists
+   ========================================================================== */
+
+.learn-members,
+.learn-wire,
+.learn-flags,
+.learn-glossary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.learn-member,
+.learn-wire-member,
+.learn-flag,
+.learn-term {
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+  scroll-margin-top: var(--space-9);
+}
+
+.learn-member:focus,
+.learn-term:focus,
+.learn-anatomy:focus {
+  outline: none;
+}
+
+.learn-member h3,
+.learn-wire-member h4,
+.learn-flag h4,
+.learn-term h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-4);
+  font-size: 16px;
+}
+
+.learn-member h3 .mono,
+.learn-wire-member h4 .mono {
+  font-size: 15px;
+  color: var(--accent);
+}
+
+.learn-member-type,
+.learn-wire-type {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.learn-member p,
+.learn-wire-member p,
+.learn-term p {
+  margin: 0;
+  max-width: 78ch;
+  line-height: 23px;
+}
+
+.learn-member-facts,
+.learn-flag-facts,
+.segmap-detail-facts,
+.rules-facts {
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) minmax(0, 1fr);
+  gap: var(--space-3) var(--space-6);
+  margin: var(--space-5) 0 0;
+  font-size: 13px;
+}
+
+.learn-member-facts dt,
+.learn-flag-facts dt,
+.segmap-detail-facts dt,
+.rules-facts dt {
+  color: var(--fg-muted);
+}
+
+.learn-member-facts dd,
+.learn-flag-facts dd,
+.segmap-detail-facts dd,
+.rules-facts dd {
+  margin: 0;
+  min-width: 0;
+  line-height: 21px;
+}
+
+.learn-flag-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-control);
+  background: var(--accent-bg);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.learn-checklist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.learn-checklist li {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.learn-checklist li > svg {
+  color: var(--status-pass);
+  margin-top: var(--space-2);
+}
+
+.learn-checklist strong {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.learn-checklist p {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--fg-muted);
+}
+
+/* ==========================================================================
+   Learn: tables and code
+   ========================================================================== */
+
+.learn-table,
+.learn-code,
+.learn-generated {
+  margin: 0;
+  min-width: 0;
+}
+
+.learn-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.learn-table th,
+.learn-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: var(--space-4) var(--space-6) var(--space-4) 0;
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+  line-height: 21px;
+}
+
+.learn-table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.learn-table td:first-child {
+  font-weight: 500;
+  min-width: 14ch;
+}
+
+/* A row verdict is an icon whose silhouette differs plus the word, never the
+   tint on its own: this cell is the one place a guide table carries a status. */
+.learn-table-verdict .tone,
+.rules-severity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--tone-fg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.learn-table-verdict {
+  text-align: right;
+}
+
+/* ==========================================================================
+   The anatomy strip: the non-interactive anatomies (JWE, JWS, payload)
+   ========================================================================== */
+
+.learn-anatomy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+  scroll-margin-top: var(--space-9);
+}
+
+.learn-anatomy > h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.anatomy-parts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  counter-reset: anatomy;
+}
+
+.anatomy-part {
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+/* An elided part is set apart by its inset ground and its chip, not by colour:
+   "Not shown in full" is the load-bearing signal, and it is a word. */
+.anatomy-part.is-elided {
+  background: var(--bg-inset);
+}
+
+.anatomy-part-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.anatomy-part-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.anatomy-part-text,
+.anatomy-part-decodes {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-inset);
+  border-radius: var(--radius-control);
+  font-size: 12.5px;
+  line-height: 20px;
+  color: var(--fg-default);
+}
+
+.anatomy-part-decodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: baseline;
+  background: transparent;
+  border: var(--hairline-width) dashed var(--border-hairline);
+}
+
+.anatomy-part-decodes-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.anatomy-part p {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--fg-muted);
+}
+
+/* ==========================================================================
+   SegmentMap: the interactive link anatomy
+   ========================================================================== */
+
+/*
+ * The four tints are identity, not status.
+ *
+ * They are mixed from the accent, exception and warn hues rather than taken
+ * from them at full strength, and they are never the only carrier of the
+ * mapping: every segment also has a marker (a number in the link, a letter in
+ * the payload) and a word. Nothing tinted here carries an icon-and-word verdict,
+ * which is what keeps a tint from being read as a pass or a failure.
+ */
+.segmap {
+  --seg-1-bg: color-mix(in oklab, var(--accent) 16%, var(--bg-surface));
+  --seg-1-fg: var(--accent);
+  --seg-2-bg: color-mix(in oklab, var(--status-exception) 16%, var(--bg-surface));
+  --seg-2-fg: var(--status-exception);
+  --seg-3-bg: color-mix(in oklab, var(--status-warn) 14%, var(--bg-surface));
+  --seg-3-fg: var(--status-warn);
+  --seg-4-bg: var(--bg-raised);
+  --seg-4-fg: var(--fg-muted);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+.segmap-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+  min-width: 0;
+}
+
+.segmap-strips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.segmap-tier {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.segmap-tier-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.segmap-strip,
+.segmap-json {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.segmap-json {
+  align-items: center;
+  row-gap: var(--space-3);
+}
+
+/* The dashed edge says "the selection lives in here". It is never the only
+   statement of that: the pane beside it says so in words. */
+.segmap-json.is-related,
+.segmap-seg.is-related {
+  outline: var(--hairline-width) dashed var(--border-meaningful);
+  outline-offset: 2px;
+}
+
+.segmap-seg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  max-width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: var(--hairline-width) solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--seg-4-bg);
+  color: var(--fg-default);
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.segmap-member {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: var(--hairline-width) solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--seg-4-bg);
+  color: var(--fg-default);
+  cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/*
+ * The two tiers are tinted in different KINDS, not just different hues.
+ *
+ * A link part is a filled tint; a payload member is an underline on the inset
+ * ground. Both cycle the same four hues, and if they were the same treatment a
+ * reader would fairly conclude that link part 2 and member b are the same thing.
+ * They are not: the whole payload part decodes to every member at once, which is
+ * what the dashed relation and the pane's own sentence say. So the tiers are made
+ * to look like two scales rather than one.
+ */
+.segmap-seg[data-tint='1'] {
+  background: var(--seg-1-bg);
+  border-color: var(--seg-1-fg);
+}
+.segmap-seg[data-tint='2'] {
+  background: var(--seg-2-bg);
+  border-color: var(--seg-2-fg);
+}
+.segmap-seg[data-tint='3'] {
+  background: var(--seg-3-bg);
+  border-color: var(--seg-3-fg);
+}
+.segmap-seg[data-tint='4'] {
+  background: var(--seg-4-bg);
+  border-color: var(--border-meaningful);
+}
+
+.segmap-member[data-tint] {
+  background: var(--bg-surface);
+  border-bottom-width: 2px;
+}
+.segmap-member[data-tint='1'] {
+  border-bottom-color: var(--seg-1-fg);
+}
+.segmap-member[data-tint='2'] {
+  border-bottom-color: var(--seg-2-fg);
+}
+.segmap-member[data-tint='3'] {
+  border-bottom-color: var(--seg-3-fg);
+}
+.segmap-member[data-tint='4'] {
+  border-bottom-color: var(--border-meaningful);
+}
+
+.segmap-seg:hover,
+.segmap-member:hover {
+  filter: brightness(1.12);
+}
+
+/* Selection is stated three ways: aria-pressed for a screen reader, a heavier
+   edge, and a rule inside that edge. None of them is a change of hue, so the
+   tint keeps meaning identity and nothing else. The member ring is drawn inset
+   rather than on the border, so the tint underline below it survives. */
+.segmap-seg.is-selected {
+  border-width: 2px;
+  box-shadow: inset 0 -3px 0 currentColor;
+}
+
+.segmap-member.is-selected {
+  background: var(--bg-hover);
+  box-shadow: inset 0 0 0 2px var(--border-meaningful);
+}
+
+.segmap-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-chip);
+  background: var(--bg-canvas);
+  color: var(--fg-default);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.segmap-seg-text {
+  font-size: 12.5px;
+  line-height: 19px;
+  max-width: 100%;
+}
+
+.segmap-seg-label {
+  font-size: 11px;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.segmap-punct {
+  color: var(--fg-muted);
+  font-size: 12.5px;
+}
+
+.segmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  margin: 0;
+  font-size: 12px;
+}
+
+.segmap-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--fg-muted);
+}
+
+.segmap-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+.segmap-arrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding-left: var(--space-4);
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+/* The pane beside the strips. Sticky, so a long payload does not scroll its own
+   explanation off the top of the screen. */
+.segmap-pane {
+  position: sticky;
+  top: var(--space-6);
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.segmap-pane-empty {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.segmap-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.segmap-detail h4 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 15px;
+}
+
+.segmap-detail h4 .mono {
+  color: var(--accent);
+}
+
+.segmap-detail-tag {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.segmap-detail-chars {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-inset);
+  border-radius: var(--radius-control);
+  font-size: 12px;
+  line-height: 19px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.segmap-detail p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+.segmap-detail-hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--fg-muted);
+}
+
+.segmap-detail .btn {
+  align-self: flex-start;
+}
+
+/* Tier three: what the two required members are used for. */
+.segmap-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.segmap-use {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.segmap-use h5 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: 14px;
+}
+
+.segmap-use h5 .mono {
+  color: var(--accent);
+}
+
+.segmap-use p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+.segmap-use-note {
+  color: var(--fg-muted);
+}
+
+.segmap-secret-row {
+  padding: var(--space-4);
+  background: var(--bg-inset);
+  border-radius: var(--radius-control);
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.segmap-use .btn {
+  align-self: flex-start;
+}
+
+/* ==========================================================================
+   Learn: vocabulary
+   ========================================================================== */
+
+.learn-term-short {
+  font-weight: 500;
+}
+
+.learn-term p + p {
+  margin-top: var(--space-4);
+}
+
+.learn-term-confused {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+/* ==========================================================================
+   Checks
+   ========================================================================== */
+
+.rules-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+.rules-section > h2,
+.about-section > h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding-bottom: var(--space-4);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+  font-size: 19px;
+}
+
+.rules-section > h2 > svg,
+.about-section > h2 > svg {
+  color: var(--fg-muted);
+  flex: none;
+}
+
+.rules-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rules-group > h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.rules-group-blurb {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--fg-muted);
+}
+
+.rules-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.rules-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rules-rule,
+.rules-cause {
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.rules-rule-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* The id is the quotable part, so it is set as the primary object on the row
+   rather than as metadata beside the sentence. */
+.rules-id {
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg-inset);
+  border-radius: var(--radius-chip);
+  color: var(--fg-default);
+  font-size: 12.5px;
+}
+
+.rules-about,
+.rules-cause p {
+  margin: 0;
+  max-width: 78ch;
+  line-height: 23px;
+  font-size: 14px;
+}
+
+.rules-cause h3 {
+  margin: var(--space-4) 0 var(--space-3);
+  font-size: 15px;
+}
+
+.rules-varies {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  max-width: 78ch;
+  font-size: 13px;
+  line-height: 21px;
+  color: var(--fg-muted);
+}
+
+.rules-preset {
+  margin: var(--space-5) 0 0;
+}
+
+.rules-preset .btn {
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   About
+   ========================================================================== */
+
+.about-version {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-6) 0 0;
+}
+
+.about-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.about-list,
+.about-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.about-list li {
+  max-width: 78ch;
+  padding-left: var(--space-6);
+  border-left: var(--rail-width) solid var(--border-hairline);
+  line-height: 23px;
+  font-size: 14px;
+}
+
+.about-links li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 14px;
+}
+
+.about-links a,
+.about-section a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.about-claims {
+  list-style: none;
+  counter-reset: claim;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.about-claims li {
+  counter-increment: claim;
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.about-claims h3 {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-4);
+  font-size: 15px;
+}
+
+.about-claims h3::before {
+  content: counter(claim);
+  flex: none;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.about-claims p {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 14px;
+  line-height: 23px;
+}
+
+/* The check is the part somebody acts on, so it is set apart with its own
+   ground and a label rather than trailing the paragraph as a sentence. */
+.about-claims .about-check {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-inset);
+  border-radius: var(--radius-control);
+  font-size: 13.5px;
+}
+
+.about-check-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+.about-limits {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin: 0;
+}
+
+.about-limits dt {
+  margin-bottom: var(--space-3);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.about-limits dd {
+  margin: 0;
+  max-width: 78ch;
+  font-size: 14px;
+  line-height: 23px;
+  color: var(--fg-muted);
+}
+
+.about-disclaimer {
+  max-width: 78ch;
+  font-size: 13px;
+  line-height: 21px;
+  color: var(--fg-muted);
+}
+
+/* ==========================================================================
+   Narrow layouts
+   ========================================================================== */
+
+/* The two-column reading layouts collapse before the panes get too narrow to
+   read: a 260px explanation beside a mono strip is worse than one below it. */
+@media (max-width: 1080px) {
+  .segmap-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .segmap-pane {
+    position: static;
+  }
+}
+
+@media (max-width: 900px) {
+  .learn-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+
+  /* The contents becomes a scrolling strip across the top. It keeps its rail
+     as a bottom edge, so the active entry is still marked by more than colour. */
+  .learn-toc {
+    position: static;
+    padding-bottom: var(--space-4);
+    border-bottom: var(--hairline-width) solid var(--border-hairline);
+  }
+
+  .learn-toc ol {
+    flex-direction: row;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    border-left: 0;
+  }
+
+  .learn-toc-link {
+    width: auto;
+    margin-left: 0;
+    border-left: 0;
+    border-bottom: var(--rail-width) solid transparent;
+    white-space: nowrap;
+  }
+
+  .learn-toc-link.is-active {
+    border-bottom-color: var(--accent);
+  }
+
+  .learn-sections {
+    gap: var(--space-9);
+  }
+}

@@ -86,11 +86,16 @@ export function classifyHost(hostname: string): HostClassification {
     const base = { isIpLiteral: true, family: 'ipv4' as const };
     if (a === 127) return { ...base, reach: 'loopback', because: '127.0.0.0/8 is loopback.' };
     if (a === 0) return { ...base, reach: 'special-use', because: '0.0.0.0/8 is "this network".' };
-    if (a === 10) return { ...base, reach: 'private-network', because: '10.0.0.0/8 is private (RFC 1918).' };
+    if (a === 10)
+      return { ...base, reach: 'private-network', because: '10.0.0.0/8 is private (RFC 1918).' };
     if (a === 172 && b >= 16 && b <= 31)
       return { ...base, reach: 'private-network', because: '172.16.0.0/12 is private (RFC 1918).' };
     if (a === 192 && b === 168)
-      return { ...base, reach: 'private-network', because: '192.168.0.0/16 is private (RFC 1918).' };
+      return {
+        ...base,
+        reach: 'private-network',
+        because: '192.168.0.0/16 is private (RFC 1918).',
+      };
     if (a === 169 && b === 254)
       return { ...base, reach: 'link-local', because: '169.254.0.0/16 is link-local (RFC 3927).' };
     if (a === 100 && b >= 64 && b <= 127)
@@ -100,23 +105,49 @@ export function classifyHost(hostname: string): HostClassification {
         because: '100.64.0.0/10 is shared address space for carrier NAT (RFC 6598).',
       };
     if (a === 192 && b === 0 && octets[2] === 2)
-      return { ...base, reach: 'special-use', because: '192.0.2.0/24 is reserved for documentation.' };
+      return {
+        ...base,
+        reach: 'special-use',
+        because: '192.0.2.0/24 is reserved for documentation.',
+      };
     if (a === 198 && (b === 18 || b === 19))
-      return { ...base, reach: 'special-use', because: '198.18.0.0/15 is reserved for benchmarking.' };
+      return {
+        ...base,
+        reach: 'special-use',
+        because: '198.18.0.0/15 is reserved for benchmarking.',
+      };
     if (a === 203 && b === 0 && octets[2] === 113)
-      return { ...base, reach: 'special-use', because: '203.0.113.0/24 is reserved for documentation.' };
+      return {
+        ...base,
+        reach: 'special-use',
+        because: '203.0.113.0/24 is reserved for documentation.',
+      };
     if (a >= 224)
-      return { ...base, reach: 'special-use', because: `${a}.0.0.0/4 and above are multicast or reserved.` };
+      return {
+        ...base,
+        reach: 'special-use',
+        because: `${a}.0.0.0/4 and above are multicast or reserved.`,
+      };
     return { ...base, reach: 'public', because: 'A public IPv4 literal.' };
   }
 
   if (host.includes(':')) {
     const base = { isIpLiteral: true, family: 'ipv6' as const };
-    if (host.startsWith('fe8') || host.startsWith('fe9') || host.startsWith('fea') || host.startsWith('feb'))
+    if (
+      host.startsWith('fe8') ||
+      host.startsWith('fe9') ||
+      host.startsWith('fea') ||
+      host.startsWith('feb')
+    )
       return { ...base, reach: 'link-local', because: 'fe80::/10 is IPv6 link-local.' };
     if (/^f[cd]/.test(host))
-      return { ...base, reach: 'private-network', because: 'fc00::/7 is an IPv6 unique local address.' };
-    if (host === '::') return { ...base, reach: 'special-use', because: ':: is the unspecified address.' };
+      return {
+        ...base,
+        reach: 'private-network',
+        because: 'fc00::/7 is an IPv6 unique local address.',
+      };
+    if (host === '::')
+      return { ...base, reach: 'special-use', because: ':: is the unspecified address.' };
     return { ...base, reach: 'public', because: 'A public IPv6 literal.' };
   }
 
@@ -133,7 +164,12 @@ export function classifyHost(hostname: string): HostClassification {
 
   for (const { suffix, provider } of EPHEMERAL_SUFFIXES) {
     if (host.endsWith(suffix)) {
-      return { reach: 'ephemeral-tunnel', isIpLiteral: false, because: `${suffix} names a temporary tunnel.`, provider };
+      return {
+        reach: 'ephemeral-tunnel',
+        isIpLiteral: false,
+        because: `${suffix} names a temporary tunnel.`,
+        provider,
+      };
     }
   }
 
@@ -186,7 +222,8 @@ function classifyPreviewDeployment(host: string): HostClassification | undefined
       return {
         reach: 'preview-deployment',
         isIpLiteral: false,
-        because: 'The subdomain carries a git ref or deployment hash, which is a per-deploy preview URL.',
+        because:
+          'The subdomain carries a git ref or deployment hash, which is a per-deploy preview URL.',
         provider: 'Vercel',
       };
     }

@@ -1,1 +1,780 @@
-/* trace area styles. */
+/*
+ * The trace area: the verdict banner, the step list, evidence, findings.
+ *
+ * Four rules here are load bearing, and each one is a defect that reached a
+ * screen before it was written down.
+ *
+ * A STATUS COLOUR ARRIVES AT FULL STRENGTH, AS A RAIL. A hairline is 1.55:1 on
+ * the canvas (see tokens.css), so a bordered row cannot be the thing that tells
+ * a reader a step failed. Every status-bearing row instead carries a
+ * var(--rail-width) bar in var(--tone-fg), which survives a projector, and the
+ * icon and the word beside it carry the same fact for anyone who cannot see the
+ * colour at all.
+ *
+ * THE EXPANDED BODY SITS ON --bg-raised, WHERE --fg-subtle IS BANNED. It is
+ * 3.52:1 there, so metadata inside an expanded step steps up to --fg-muted.
+ * Nothing in this file may set --fg-subtle inside .step-body.
+ *
+ * ONE BAR, TWO NUMBERS, NO LEGEND. A step's bar is as wide as its share of the
+ * longest step, and the portion spent waiting on the network is washed back
+ * toward the track. Solid is Loupe's own work, washed is waiting. It is
+ * aria-hidden because the millisecond count sits beside it.
+ *
+ * MOTION COMES FROM THE --motion-* CUSTOM PROPERTIES, never from a
+ * prefers-reduced-motion block in here. tokens.css already zeroes those
+ * durations under the media query, so a transition written against them
+ * inherits the preference instead of having to remember it.
+ */
+
+/* --------------------------------------------------------------------------
+   The verdict banner
+   -------------------------------------------------------------------------- */
+
+/* Surface rather than the tint: the chips below carry tinted backgrounds of
+   their own, and a tinted chip on its own tint disappears. The status colour
+   arrives as the rail and the 30px icon instead. */
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-7) var(--space-8);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-left: var(--rail-width) solid var(--tone-fg);
+  border-radius: var(--radius-pane);
+  min-width: 0;
+}
+
+.verdict-lead {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.verdict-icon {
+  flex: none;
+  /* Optical alignment with the cap height of a display-size line. */
+  margin-top: var(--space-2);
+}
+
+.verdict-lead-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The one display-size line on the screen. Its own scale rather than a
+   multiple of --font-size-base, so Projector Mode can lift it further without
+   dragging every label up with it. */
+.verdict-headline {
+  margin: 0;
+  font-size: clamp(22px, 2.6vw, 34px);
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--fg-default);
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+:root[data-projector='on'] .verdict-headline {
+  font-size: clamp(28px, 3.4vw, 44px);
+}
+
+.verdict-subline {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+.verdict-url {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-inset);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.verdict-url-label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Names the marked part in words. The underline below shows where it is; this
+   line is what a screen reader and a colour-blind reader get instead. */
+.verdict-url-part {
+  color: var(--tone-fg);
+}
+
+.verdict-url-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  min-width: 0;
+}
+
+.verdict-url-value > .opaque-value {
+  flex: 1 1 24ch;
+  min-width: 0;
+  font-size: 14px;
+  color: var(--fg-default);
+}
+
+/* Wavy underline as well as colour: a mark that reads only as a tint is a
+   status carried by colour alone, and a projector may not show the tint. */
+.verdict-url-mark {
+  background: var(--tone-bg);
+  color: var(--tone-fg);
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-chip);
+  text-decoration: underline wavy var(--tone-fg);
+  text-underline-offset: 3px;
+}
+
+.verdict-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.verdict-facts li {
+  display: flex;
+  min-width: 0;
+}
+
+/* The one fact that is not a chip. Muted, and sized with the chips beside it so
+   the row still reads as one line of facts. */
+.verdict-fact-plain {
+  align-items: center;
+  color: var(--fg-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.verdict-facts .duration {
+  color: inherit;
+  font-size: inherit;
+}
+
+.verdict-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+/* The copy affordance is the shared CopyButton, which is ghost-sized by
+   default. In the hero it has to look like the button it is, so the sizing and
+   the surface are restored here rather than by adding a variant nobody else
+   would use. */
+.verdict-actions .btn {
+  padding: var(--space-4) var(--space-6);
+  font-size: 13px;
+  background: var(--bg-surface);
+  border-color: var(--border-hairline);
+  color: var(--fg-default);
+}
+
+.verdict-actions .btn:hover {
+  background: var(--bg-hover);
+}
+
+.verdict-actions .btn.verdict-action-key {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--fg-on-accent);
+}
+
+.verdict-actions .btn.verdict-action-key:hover {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+
+/* --------------------------------------------------------------------------
+   The step list
+   -------------------------------------------------------------------------- */
+
+.trace-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.trace-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.trace-hint {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+}
+
+.trace-hint kbd {
+  padding: 0 var(--space-3);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-chip);
+  background: var(--bg-raised);
+  color: var(--fg-default);
+  font-size: 12px;
+}
+
+.trace-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+ol.trace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+/* Children indent under their parent, and the connector is decoration: the
+   indent is what carries the nesting, so the hairline may be invisible on a bad
+   projector without anything being lost. */
+ol.trace-children {
+  margin: var(--space-2) 0 var(--space-3) var(--space-7);
+  padding-left: var(--space-5);
+  border-left: var(--hairline-width) solid var(--border-hairline);
+}
+
+.trace-item {
+  min-width: 0;
+}
+
+/* Transparent, not a surface of its own: the list sits inside a panel that is
+   already --bg-surface, so a row painted the same colour would read as one
+   undivided block. The rail, the gap and the hover carry the row instead. */
+.step {
+  position: relative;
+  padding-left: var(--space-5);
+  border-radius: var(--radius-card);
+  background: transparent;
+  min-width: 0;
+  transition: background var(--motion-state) var(--motion-ease);
+}
+
+.step:hover {
+  background: var(--bg-hover);
+}
+
+/* The rail is the status. Full strength, full height, no reliance on a
+   hairline or on the row's background tint. */
+.step-rail {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: var(--rail-width);
+  border-radius: var(--radius-pill);
+  background: var(--tone-fg);
+}
+
+/* The roving tab stop. A quiet surface change, not a focus ring: the ring is
+   :focus-visible's job, and drawing one here would put two on the row. */
+.step.is-active {
+  background: var(--bg-hover);
+}
+
+.step-head-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.step-head {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+  padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.step-number {
+  flex: none;
+  min-width: 3ch;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+}
+
+.step-title {
+  flex: 1 1 14ch;
+  min-width: 0;
+  font-weight: 500;
+  color: var(--fg-default);
+  overflow-wrap: break-word;
+}
+
+.step-metrics {
+  display: flex;
+  flex: none;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.step-metrics .metric {
+  min-width: 5ch;
+  text-align: right;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+.step-bar {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 84px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+
+.step-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--tone-fg);
+}
+
+/* Waiting on the network, washed back toward the track. Painting the track
+   colour over the solid fill lightens it in the light theme and dims it in the
+   dark one, which is the same message in both and needs no second token. */
+.step-bar-wait {
+  display: block;
+  height: 100%;
+  background: var(--bg-raised);
+  opacity: 0.55;
+}
+
+:root[data-projector='on'] .step-bar {
+  height: 8px;
+}
+
+:root[data-projector='on'] .step-bar-wait {
+  opacity: 0.72;
+}
+
+.step-chevron {
+  flex: none;
+  color: var(--fg-muted);
+  transition: transform var(--motion-disclosure) var(--motion-ease);
+}
+
+.step-chevron.is-open {
+  transform: rotate(90deg);
+}
+
+/* In the DOM and focusable at all times. Hover reveal is unusable on touch, to
+   a screen reader, and to anybody watching somebody else drive. */
+.step-copy {
+  flex: none;
+}
+
+/* Everything in here is on --bg-raised, where --fg-subtle is 3.52:1 and
+   therefore banned: metadata inside an expanded step holds at --fg-muted, which
+   is what the shared rules below already use. Do not reach for the subtle tier
+   in this subtree. */
+.step-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0 var(--space-3) var(--space-3) var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-raised);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.step-summary {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-default);
+  font-size: 14px;
+}
+
+.trace-orphans {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+}
+
+.trace-orphans h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-muted);
+}
+
+/* Reserves its line so a copy confirmation does not shove the list upward
+   under the reader's pointer. */
+.trace-notice {
+  margin: 0;
+  min-height: 19px;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+}
+
+/* --------------------------------------------------------------------------
+   Evidence
+   -------------------------------------------------------------------------- */
+
+.evidence {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.evidence + .evidence {
+  padding-top: var(--space-5);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+}
+
+.evidence-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.evidence-meta {
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--fg-muted);
+}
+
+.evidence-note p {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-default);
+  font-size: 14px;
+}
+
+.evidence-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wire {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.wire-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  min-width: 0;
+}
+
+.wire-line > .opaque-value {
+  flex: 1 1 24ch;
+  min-width: 0;
+}
+
+.wire-note {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+  line-height: 19px;
+}
+
+/* The browser's message, quoted rather than paraphrased, so a participant can
+   search for the exact string they are seeing. */
+.verbatim {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-mono);
+  color: var(--fg-default);
+  overflow-wrap: anywhere;
+}
+
+.mask-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 12.5px;
+}
+
+.long-string {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   JSON tree
+   -------------------------------------------------------------------------- */
+
+.json-tree {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  min-width: 0;
+}
+
+.json-branch {
+  min-width: 0;
+}
+
+.json-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.json-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-1) 0;
+  background: none;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.json-chevron {
+  flex: none;
+  color: var(--fg-muted);
+  transition: transform var(--motion-disclosure) var(--motion-ease);
+}
+
+.json-chevron.is-open {
+  transform: rotate(90deg);
+}
+
+.json-children {
+  margin: 0 0 0 var(--space-5);
+  padding-left: var(--space-5);
+  border-left: var(--hairline-width) solid var(--border-hairline);
+  list-style: none;
+}
+
+.json-key {
+  flex: none;
+  color: var(--fg-muted);
+}
+
+.json-key::after {
+  content: ':';
+  color: var(--fg-muted);
+}
+
+.json-summary {
+  color: var(--fg-muted);
+}
+
+.json-leaf {
+  padding: var(--space-1) 0;
+}
+
+.json-value {
+  min-width: 0;
+  color: var(--fg-default);
+  overflow-wrap: anywhere;
+}
+
+/* Type is signalled with the accent (an identity colour), never with a status
+   colour: green on a number inside a payload would read as a verdict on it. */
+.json-number,
+.json-boolean {
+  color: var(--accent);
+}
+
+.json-null,
+.json-undefined {
+  color: var(--fg-muted);
+}
+
+.json-copy {
+  flex: none;
+}
+
+/* --------------------------------------------------------------------------
+   Citations
+   -------------------------------------------------------------------------- */
+
+.citation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-surface);
+  border-left: var(--rail-width) solid var(--border-meaningful);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.citation-where {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+}
+
+.citation-spec {
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.citation-section {
+  color: var(--fg-muted);
+}
+
+.citation blockquote {
+  margin: 0;
+  color: var(--fg-default);
+  font-size: 14px;
+  line-height: 22px;
+  max-width: 78ch;
+}
+
+.citation a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 13px;
+}
+
+/* --------------------------------------------------------------------------
+   Findings
+   -------------------------------------------------------------------------- */
+
+.finding {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  background: var(--tone-bg);
+  border-left: var(--rail-width) solid var(--tone-fg);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.finding-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.finding-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-default);
+  overflow-wrap: break-word;
+}
+
+.finding-detail,
+.finding-remedy,
+.finding-audience {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-default);
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+/* Who has to act, never dropped for space: it is the line that ends the "it
+   works for me" argument at a table. */
+.finding-audience {
+  padding-top: var(--space-3);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+}
+
+.finding-rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   Narrow screens
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .verdict {
+    padding: var(--space-6);
+  }
+
+  /* The bar is aria-hidden decoration and the millisecond count beside it
+     carries the same number, so it is the first thing to go when the row is
+     tight. Nothing is lost. */
+  .step-bar {
+    display: none;
+  }
+
+  .step-metrics {
+    gap: var(--space-3);
+  }
+}

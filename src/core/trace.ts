@@ -346,7 +346,11 @@ export class Recorder {
   snapshot(): TraceRun {
     // A shallow clone per level is enough: steps and findings are only ever
     // appended to or status-flipped, and the UI treats them as immutable rows.
-    return { ...this.current, steps: [...this.current.steps], findings: [...this.current.findings] };
+    return {
+      ...this.current,
+      steps: [...this.current.steps],
+      findings: [...this.current.findings],
+    };
   }
 
   private emit(): void {

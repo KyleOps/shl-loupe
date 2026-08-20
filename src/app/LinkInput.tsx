@@ -9,7 +9,14 @@
  * least able to do it. So there is one field, it accepts all of them, and it
  * says out loud what it thinks it is looking at before anything is submitted.
  */
-import { useMemo, useRef, useState, type DragEvent, type FormEvent, type ReactNode } from 'react';
+import {
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+  type SyntheticEvent,
+  type ReactNode,
+} from 'react';
 import { clsx } from 'clsx';
 import { ArrowRight, QrCode, X } from 'lucide-react';
 import { detectInput, type DetectedInput, type DetectedVariant } from '../core/detect';
@@ -74,7 +81,7 @@ export function LinkInput({ onSubmit }: { onSubmit: (value: string) => void }): 
     return trimmed.length === 0 ? undefined : detectInput(trimmed);
   }, [value]);
 
-  const submit = (event: FormEvent): void => {
+  const submit = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const trimmed = value.trim();
     if (trimmed.length > 0) onSubmit(trimmed);

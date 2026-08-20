@@ -250,18 +250,13 @@ class Ladder {
  * that payload never gets said: nothing in it is cryptographically verified.
  */
 export type VerificationPosture =
-  | 'verified'
-  | 'verified-with-warnings'
-  | 'invalid'
-  | 'unverifiable'
-  | 'not-checked'
-  | 'not-signed';
+  'verified' | 'verified-with-warnings' | 'invalid' | 'unverifiable' | 'not-checked' | 'not-signed';
 
 export const POSTURE: Record<VerificationPosture, { word: string; meaning: string }> = {
   verified: {
     word: 'Signature verified',
     meaning:
-      "The signature verifies against a key the issuer publishes at its own domain, so the contents are exactly what that issuer signed. Whether you trust the issuer is a separate question this tool cannot answer for you.",
+      'The signature verifies against a key the issuer publishes at its own domain, so the contents are exactly what that issuer signed. Whether you trust the issuer is a separate question this tool cannot answer for you.',
   },
   'verified-with-warnings': {
     word: 'Verified, with defects',
@@ -740,7 +735,10 @@ export function assembleShcQrChunks(scans: readonly string[]): ShcQrAssembly {
         'you',
         `${missing.length} of ${total} chunks ${missing.length === 1 ? 'is' : 'are'} still missing (${missing.join(', ')}).`,
         'A chunked card cannot be verified until the whole set is in hand, because the signature covers the reassembled card. Nothing partial is checkable.',
-        { remedy: `Scan the QR code${missing.length === 1 ? '' : 's'} numbered ${missing.join(', ')}.`, citation: SHC_CITATIONS.chunking },
+        {
+          remedy: `Scan the QR code${missing.length === 1 ? '' : 's'} numbered ${missing.join(', ')}.`,
+          citation: SHC_CITATIONS.chunking,
+        },
       ),
     );
     return { total, present, missing, findings };
@@ -971,7 +969,7 @@ export function inspectJws(compact: string): JwsInspection {
         'error',
         'sender',
         'The header carries no kid, so there is no way to say which key signed this.',
-        "An issuer publishes a set of keys and rotates them at least annually, so the kid is what picks one out. Without it a verifier has to try every key in the set, and cannot report a rotated-out key as anything other than a bad signature.",
+        'An issuer publishes a set of keys and rotates them at least annually, so the kid is what picks one out. Without it a verifier has to try every key in the set, and cannot report a rotated-out key as anything other than a bad signature.',
         {
           remedy: 'Add kid as the base64url SHA-256 RFC 7638 thumbprint of the signing key.',
           citation: CITATIONS.shcKid,
@@ -1208,11 +1206,7 @@ function readClaims(
     );
   }
 
-  if (
-    card.nbf !== undefined &&
-    card.exp !== undefined &&
-    card.exp.epochMs <= card.nbf.epochMs
-  ) {
+  if (card.nbf !== undefined && card.exp !== undefined && card.exp.epochMs <= card.nbf.epochMs) {
     findings.push(
       finding(
         'SHC-CLAIM-EXP-BEFORE-NBF',
@@ -1633,9 +1627,7 @@ export async function verifyHealthCard(
       'No trust directory was consulted. A directory lookup is a request to a third party, so Loupe only makes it when you choose a directory.',
   };
 
-  const settle = (
-    extra: Partial<HealthCardVerification> = {},
-  ): HealthCardVerification => {
+  const settle = (extra: Partial<HealthCardVerification> = {}): HealthCardVerification => {
     if (permissive) {
       for (const check of ladder.list()) {
         if (check.state === 'fail' && !DECIDES_VALIDITY.has(check.id)) {
@@ -1843,8 +1835,7 @@ export async function verifyHealthCard(
   } else {
     ladder.set('key-thumbprint', 'fail', `The key's own thumbprint is ${thumbprint}.`);
     findings.push(
-      finding
-        (
+      finding(
         'SHC-KEY-KID-NOT-ITS-THUMBPRINT',
         'error',
         'sender',
@@ -1872,7 +1863,8 @@ export async function verifyHealthCard(
             'The signature was computed over a hash of the signing input, hashed again.',
             'The signature does not verify over the header and payload as JOSE defines it, and it does verify over the SHA-256 of those bytes. So the producer hashed the input itself and then handed the digest to a signer that hashes what it is given. This defect is byte-stable, which is why it reproduces its own test vectors forever while failing every independent verifier.',
             {
-              remedy: 'Pass the raw ASCII of header.payload to the signer and let it do the hashing.',
+              remedy:
+                'Pass the raw ASCII of header.payload to the signer and let it do the hashing.',
               citation: CITATIONS.shcJws,
             },
           )
@@ -1950,7 +1942,14 @@ export async function verifyHealthCard(
   // ---- trust --------------------------------------------------------------
   const directories = options.trustedDirectories ?? [];
   if (directories.length > 0) {
-    trust = await checkTrustDirectories(options.transport, iss, directories, exchanges, findings, ladder);
+    trust = await checkTrustDirectories(
+      options.transport,
+      iss,
+      directories,
+      exchanges,
+      findings,
+      ladder,
+    );
   } else {
     ladder.set(
       'trust-directory',
@@ -2020,7 +2019,7 @@ function checkKeyShape(
         'sender',
         key.d === undefined
           ? 'The key this card names cannot be used for an ES256 signature.'
-          : "The issuer has published its PRIVATE key.",
+          : 'The issuer has published its PRIVATE key.',
         key.d === undefined
           ? `Health cards are signed with a P-256 EC key and nothing else, but ${listOut(problems)}. There is no key here to verify against.`
           : `The published key set contains d, the private key parameter, so anyone who fetched that URL can sign cards as this issuer. Every card this key ever signed should be treated as unverified until the key is replaced and the old one removed from the set.`,
@@ -2229,7 +2228,9 @@ async function checkRevocation(input: RevocationInput): Promise<RevocationState>
   // The spec's own snippet shows ctr in string position and the live example
   // serves it as a number, so both are accepted rather than one being right.
   const ctr = typeof list.ctr === 'number' ? list.ctr : Number(list.ctr);
-  const rids = Array.isArray(list.rids) ? list.rids.filter((r): r is string => typeof r === 'string') : [];
+  const rids = Array.isArray(list.rids)
+    ? list.rids.filter((r): r is string => typeof r === 'string')
+    : [];
 
   if (Number.isFinite(ctr) && typeof crlVersion === 'number' && ctr < crlVersion) {
     findings.push(
@@ -2268,10 +2269,13 @@ async function checkRevocation(input: RevocationInput): Promise<RevocationState>
     if (!Number.isFinite(from)) continue;
     const issuedAtSeconds = input.nbf === undefined ? undefined : input.nbf.epochMs / 1000;
     if (issuedAtSeconds === undefined) {
-      ladder.set('revocation', 'fail', 'A timestamped revocation matches, and the card has no nbf.');
+      ladder.set(
+        'revocation',
+        'fail',
+        'A timestamped revocation matches, and the card has no nbf.',
+      );
       findings.push(
-        finding
-          (
+        finding(
           'SHC-REVOCATION-NEEDS-NBF',
           'error',
           'sender',
@@ -2280,7 +2284,10 @@ async function checkRevocation(input: RevocationInput): Promise<RevocationState>
           { citation: SHC_CITATIONS.revocation },
         ),
       );
-      return { state: 'unavailable', reason: 'A timestamped revocation matches and the card has no nbf.' };
+      return {
+        state: 'unavailable',
+        reason: 'A timestamped revocation matches and the card has no nbf.',
+      };
     }
     if (issuedAtSeconds < from) {
       ladder.set('revocation', 'fail', 'This card was issued before its revocation timestamp.');
@@ -2462,7 +2469,12 @@ export function minificationFindings(
     }
   }
 
-  const rules: Array<{ key: string; ruleId: string; title: (n: number) => string; detail: string }> = [
+  const rules: Array<{
+    key: string;
+    ruleId: string;
+    title: (n: number) => string;
+    detail: string;
+  }> = [
     {
       key: 'resource-id',
       ruleId: 'SHC-MIN-RESOURCE-ID',
@@ -2473,7 +2485,8 @@ export function minificationFindings(
     {
       key: 'meta',
       ruleId: 'SHC-MIN-META',
-      title: (n) => `${n} ${n === 1 ? 'resource carries' : 'resources carry'} meta beyond security labels.`,
+      title: (n) =>
+        `${n} ${n === 1 ? 'resource carries' : 'resources carry'} meta beyond security labels.`,
       detail:
         'Resource.meta is allowed in exactly one case: to carry meta.security and nothing else. A meta with profile, lastUpdated or versionId is a minimisation violation, and lastUpdated in particular leaks when the issuing system last touched the record.',
     },
@@ -2487,7 +2500,8 @@ export function minificationFindings(
     {
       key: 'codeable-text',
       ruleId: 'SHC-MIN-CODEABLE-TEXT',
-      title: (n) => `${n} CodeableConcept${n === 1 ? '' : 's'} ${n === 1 ? 'carries' : 'carry'} text.`,
+      title: (n) =>
+        `${n} CodeableConcept${n === 1 ? '' : 's'} ${n === 1 ? 'carries' : 'carry'} text.`,
       detail:
         'CodeableConcept.text is stripped from a minimised bundle. It is the most useful thing to a human reader, which is exactly why a viewer needs its own display table for the codes health cards use.',
     },
@@ -2501,7 +2515,8 @@ export function minificationFindings(
     {
       key: 'fullUrl',
       ruleId: 'SHC-MIN-FULLURL-NOT-SHORT',
-      title: (n) => `${n} entry ${n === 1 ? 'fullUrl is' : 'fullUrls are'} not a short resource: URI.`,
+      title: (n) =>
+        `${n} entry ${n === 1 ? 'fullUrl is' : 'fullUrls are'} not a short resource: URI.`,
       detail:
         'Entry fullUrls are short resource-scheme URIs, resource:0, resource:1 and so on, and references point at those. A full server URL here is both larger and a leak of where the record came from.',
     },
@@ -2515,14 +2530,16 @@ export function minificationFindings(
     {
       key: 'reference',
       ruleId: 'SHC-MIN-REFERENCE-NOT-SHORT',
-      title: (n) => `${n} ${n === 1 ? 'reference is' : 'references are'} not a short resource: URI.`,
+      title: (n) =>
+        `${n} ${n === 1 ? 'reference is' : 'references are'} not a short resource: URI.`,
       detail:
         'References inside a minimised bundle use the resource: scheme so they resolve against the entry list rather than against a server. An absolute or relative FHIR reference here resolves to nothing inside the card.',
     },
     {
       key: 'dangling-reference',
       ruleId: 'SHC-REFERENCE-DANGLING',
-      title: (n) => `${n} ${n === 1 ? 'reference points' : 'references point'} at an entry that is not in the bundle.`,
+      title: (n) =>
+        `${n} ${n === 1 ? 'reference points' : 'references point'} at an entry that is not in the bundle.`,
       detail:
         'A resource: reference resolves against the bundle’s own fullUrls and nothing else, so a reference to an entry that was not included cannot be followed by any receiver. Usually the referenced resource was dropped when the bundle was trimmed.',
     },

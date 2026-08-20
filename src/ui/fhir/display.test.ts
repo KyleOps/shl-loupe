@@ -89,9 +89,10 @@ describe('renderableDate', () => {
   });
 
   it('handles a Timing that only carries a repeat schedule', () => {
-    expect(
-      renderableDate({ repeat: { frequency: 2, period: 1, periodUnit: 'd' } }),
-    ).toMatchObject({ text: 'twice a day', shape: 'timing' });
+    expect(renderableDate({ repeat: { frequency: 2, period: 1, periodUnit: 'd' } })).toMatchObject({
+      text: 'twice a day',
+      shape: 'timing',
+    });
   });
 
   it('handles the Age form used by onsetAge', () => {
@@ -155,7 +156,9 @@ describe('codeableConcept', () => {
 
   it('falls back to a coding display', () => {
     expect(
-      codeableConcept({ coding: [{ system: 'http://loinc.org', code: '8716-3', display: 'Vitals' }] }),
+      codeableConcept({
+        coding: [{ system: 'http://loinc.org', code: '8716-3', display: 'Vitals' }],
+      }),
     ).toMatchObject({ text: 'Vitals', from: 'display' });
   });
 
@@ -236,9 +239,9 @@ describe('quantities', () => {
   });
 
   it('renders ranges with "to", never a dash', () => {
-    expect(rangeText({ low: { value: 3.5, unit: 'mmol/L' }, high: { value: 6, unit: 'mmol/L' } })).toBe(
-      '3.5 mmol/L to 6 mmol/L',
-    );
+    expect(
+      rangeText({ low: { value: 3.5, unit: 'mmol/L' }, high: { value: 6, unit: 'mmol/L' } }),
+    ).toBe('3.5 mmol/L to 6 mmol/L');
     expect(rangeText({ high: { value: 6, unit: 'mmol/L' } })).toBe('up to 6 mmol/L');
     expect(rangeText({})).toBeUndefined();
   });
@@ -273,7 +276,9 @@ describe('dosageText', () => {
   it('names what an as-needed dose is for', () => {
     expect(
       dosageText({
-        doseAndRate: [{ doseRange: { low: { value: 1, unit: 'tablet' }, high: { value: 2, unit: 'tablet' } } }],
+        doseAndRate: [
+          { doseRange: { low: { value: 1, unit: 'tablet' }, high: { value: 2, unit: 'tablet' } } },
+        ],
         asNeededCodeableConcept: { text: 'pain' },
       }),
     ).toBe('1 tablet to 2 tablet, as needed for pain');
@@ -290,7 +295,9 @@ describe('names and addresses', () => {
   });
 
   it('composes prefix, given and family in order', () => {
-    expect(humanName({ prefix: ['Dr'], given: ['Ada', 'L'], family: 'Chen' })).toBe('Dr Ada L Chen');
+    expect(humanName({ prefix: ['Dr'], given: ['Ada', 'L'], family: 'Chen' })).toBe(
+      'Dr Ada L Chen',
+    );
   });
 
   it('prefers an official name over an old one', () => {
@@ -410,9 +417,9 @@ describe('absence', () => {
 
 describe('sections', () => {
   it('identifies a section by its LOINC code, never by a display', () => {
-    expect(sectionLoinc({ code: { coding: [{ system: 'http://loinc.org', code: '10160-0' }] } })).toBe(
-      '10160-0',
-    );
+    expect(
+      sectionLoinc({ code: { coding: [{ system: 'http://loinc.org', code: '10160-0' }] } }),
+    ).toBe('10160-0');
   });
 
   it('orders sections by the profile, not by the document', () => {
@@ -533,9 +540,9 @@ describe('sanitiseNarrativeHtml', () => {
   });
 
   it('refuses a data: href, which can carry a whole document', () => {
-    expect(
-      sanitiseNarrativeHtml('<a href="data:text/html;base64,PHNjcmlwdD4=">click</a>'),
-    ).toBe('<a>click</a>');
+    expect(sanitiseNarrativeHtml('<a href="data:text/html;base64,PHNjcmlwdD4=">click</a>')).toBe(
+      '<a>click</a>',
+    );
   });
 
   it('keeps an ordinary link', () => {
@@ -561,9 +568,9 @@ describe('sanitiseNarrativeHtml', () => {
   });
 
   it('drops a comment, including a conditional one', () => {
-    expect(sanitiseNarrativeHtml('<p>a</p><!--[if IE]><script>x</script><![endif]--><p>b</p>')).toBe(
-      '<p>a</p><p>b</p>',
-    );
+    expect(
+      sanitiseNarrativeHtml('<p>a</p><!--[if IE]><script>x</script><![endif]--><p>b</p>'),
+    ).toBe('<p>a</p><p>b</p>');
   });
 
   it('drops an svg subtree, which can carry script of its own', () => {
@@ -585,7 +592,9 @@ describe('sanitiseNarrativeHtml', () => {
   });
 
   it('rejects a non-numeric colspan', () => {
-    expect(sanitiseNarrativeHtml('<td colspan="x&quot; onclick=&quot;y">a</td>')).toBe('<td>a</td>');
+    expect(sanitiseNarrativeHtml('<td colspan="x&quot; onclick=&quot;y">a</td>')).toBe(
+      '<td>a</td>',
+    );
   });
 
   it('emits void elements as self-closing', () => {

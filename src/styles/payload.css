@@ -1,1 +1,913 @@
-/* payload area styles. */
+/*
+ * The payload area: bundles, documents, resource cards, attachments, narrative.
+ *
+ * Every colour is a token. Nothing here carries a status by colour alone: a tone
+ * class always travels with an icon or a word from the primitives, and the
+ * classes below only borrow --tone-fg / --tone-bg from whatever set it.
+ *
+ * The recurring layout problem in this area is width. A field table, a narrative
+ * table, a hex dump and a base64 blob are all wider than the pane, and the pane
+ * is one of three. So the rule is applied per container rather than per case:
+ * anything that can outgrow its column scrolls inside itself, and the page never
+ * scrolls sideways.
+ */
+
+/* --------------------------------------------------------------------------
+   Payload shell
+   -------------------------------------------------------------------------- */
+
+.payload {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+.payload-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.payload-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.payload-heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--fg-default);
+}
+
+.payload-note,
+.payload-caveat,
+.payload-hint,
+.payload-reconciliation {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fg-muted);
+  max-width: 84ch;
+}
+
+.payload-reconciliation {
+  padding: var(--space-4) var(--space-5);
+  border-left: var(--rail-width) solid var(--border-meaningful);
+  background: var(--bg-surface);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  color: var(--fg-default);
+}
+
+.payload-caveat {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  font-style: normal;
+}
+
+.payload-failure,
+.payload-api,
+.payload-unknown,
+.payload-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.payload-rest,
+.payload-unhandled {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-6);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  min-width: 0;
+}
+
+.payload-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.payload-group-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.census {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Document and sections
+   -------------------------------------------------------------------------- */
+
+.composition {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+.composition-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.composition-title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 28px;
+  letter-spacing: -0.01em;
+}
+
+.composition-chips,
+.doc-section-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.section-order {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.section-list,
+.section-entries,
+.nested-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.doc-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-pane);
+  min-width: 0;
+}
+
+.doc-section-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* The author's own title, which is what a human reads. The LOINC code sits in
+   the meta row below it and never in place of it. */
+.doc-section-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.doc-section-tabs,
+.resource-views {
+  display: inline-flex;
+  align-self: flex-start;
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
+
+.view-tab {
+  padding: var(--space-2) var(--space-5);
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--motion-state) var(--motion-ease);
+}
+
+.view-tab + .view-tab {
+  border-left: var(--hairline-width) solid var(--border-hairline);
+}
+
+.view-tab:hover {
+  background: var(--bg-hover);
+  color: var(--fg-default);
+}
+
+.view-tab.is-current {
+  background: var(--bg-raised);
+  color: var(--fg-default);
+}
+
+.section-entry-missing {
+  padding: var(--space-4) var(--space-5);
+  border: var(--hairline-width) dashed var(--border-meaningful);
+  border-radius: var(--radius-card);
+}
+
+.nested-sections {
+  padding-left: var(--space-6);
+  border-left: var(--rail-width) solid var(--border-hairline);
+}
+
+/* --------------------------------------------------------------------------
+   Resource cards
+   -------------------------------------------------------------------------- */
+
+.resource-card {
+  background: var(--bg-raised);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+/* A toned card carries its status colour as a rail, so the tint is never the
+   only signal and the card body keeps its normal contrast. */
+.resource-card.tone {
+  border-left: var(--rail-width) solid var(--tone-fg);
+}
+
+.resource-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+.resource-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.resource-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+}
+
+.resource-type {
+  color: var(--fg-muted);
+  font-size: 12px;
+}
+
+.resource-key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--fg-muted);
+  font-size: 12px;
+  min-width: 0;
+}
+
+.resource-subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fg-muted);
+  max-width: 80ch;
+}
+
+.resource-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.resource-chips:empty {
+  display: none;
+}
+
+.resource-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  min-width: 0;
+}
+
+.resource-card.is-dense .resource-head,
+.resource-card.is-dense .resource-body {
+  padding: var(--space-4) var(--space-5);
+}
+
+.resource-body h4 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.resource-tree,
+.element-tree {
+  min-width: 0;
+}
+
+.element-tree {
+  padding-left: var(--space-4);
+  border-left: var(--hairline-width) solid var(--border-hairline);
+}
+
+.leaf-list {
+  margin: 0;
+  padding-left: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.extension-value {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Values
+   -------------------------------------------------------------------------- */
+
+.value-note {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--fg-muted);
+  max-width: 78ch;
+  overflow-wrap: anywhere;
+}
+
+.absent-value {
+  color: var(--fg-muted);
+  font-style: italic;
+}
+
+.concept,
+.date-value,
+.quantity-value,
+.choice-value,
+.code-value,
+.identifier-value,
+.reference,
+.attachment-summary,
+.hash-check,
+.stated-absence,
+.opaque-pair {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.concept-list,
+.reference-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.concept-text {
+  color: var(--fg-default);
+}
+
+/* A concept with no human label anywhere: shown as the code, and marked so the
+   reader knows the payload never named it. */
+.concept-text.is-code-only {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.concept-note {
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--fg-muted);
+}
+
+.code-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.code-chip {
+  padding: 0 var(--space-3);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-chip);
+  background: var(--bg-inset);
+  color: var(--fg-muted);
+  font-size: 11.5px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.identifier-label {
+  font-weight: 500;
+}
+
+.annotation {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-inset);
+  border-left: var(--rail-width) solid var(--border-meaningful);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+}
+
+.annotation blockquote {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+.annotation figcaption {
+  margin-top: var(--space-3);
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.note-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* --------------------------------------------------------------------------
+   References
+   -------------------------------------------------------------------------- */
+
+.ref-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  color: var(--fg-default);
+  font-size: 12.5px;
+  cursor: default;
+  text-align: left;
+}
+
+button.ref-chip {
+  cursor: pointer;
+  transition: background var(--motion-state) var(--motion-ease);
+}
+
+button.ref-chip:hover {
+  background: var(--bg-hover);
+}
+
+/* Resolved, external and unresolved differ by outline and by the icon inside
+   them, not by colour: the glyphs are a chain, an outbound arrow and a broken
+   chain, which read on a washed-out projector. */
+.ref-chip.is-resolved {
+  border-color: var(--border-meaningful);
+}
+
+.ref-chip.is-external {
+  border-style: dashed;
+  border-color: var(--border-meaningful);
+}
+
+.ref-chip.is-unresolved {
+  border-style: dotted;
+  color: var(--fg-muted);
+}
+
+.ref-type {
+  color: var(--fg-muted);
+  font-size: 11px;
+}
+
+.ref-how {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+
+.ref-peek {
+  display: block;
+  flex-basis: 100%;
+  margin-top: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Absence
+   -------------------------------------------------------------------------- */
+
+.absence-row {
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-meaningful);
+  border-radius: var(--radius-card);
+}
+
+.absence-headline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.absence-explainer {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  max-width: 80ch;
+}
+
+.stated-absence {
+  align-items: flex-start;
+}
+
+/* --------------------------------------------------------------------------
+   Observation, allergy, plan sub-lists
+   -------------------------------------------------------------------------- */
+
+.reaction-list,
+.component-list,
+.nested-results,
+.presented-forms,
+.careplan-activities,
+.provenance-agents,
+.questionnaire-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.nested-result {
+  min-width: 0;
+}
+
+.nested-result.is-unresolved {
+  padding: var(--space-4) var(--space-5);
+  border: var(--hairline-width) dashed var(--border-meaningful);
+  border-radius: var(--radius-card);
+}
+
+.provenance-agent {
+  padding-left: var(--space-5);
+  border-left: var(--rail-width) solid var(--border-hairline);
+}
+
+.provenance-target {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* A name the payload merely asserts. Shown verbatim, quotation marks and all,
+   because the wording states the basis of the claim. */
+.stated-agent {
+  font-style: normal;
+  overflow-wrap: anywhere;
+}
+
+.qr-items {
+  margin: 0;
+  padding-left: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-size: 13.5px;
+}
+
+.qr-question {
+  display: block;
+  font-weight: 500;
+}
+
+.qr-answer {
+  display: block;
+  margin-top: var(--space-2);
+  padding-left: var(--space-4);
+  border-left: var(--hairline-width) solid var(--border-hairline);
+}
+
+/* --------------------------------------------------------------------------
+   Attachments
+   -------------------------------------------------------------------------- */
+
+.document-reference,
+.binary-view,
+.attachment,
+.attachment-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.doc-formats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.doc-formats .value-note {
+  flex-basis: 100%;
+}
+
+.attachment-frame {
+  width: 100%;
+  height: min(70vh, 620px);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--bg-inset);
+}
+
+.attachment-image {
+  max-width: 100%;
+  height: auto;
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--bg-inset);
+}
+
+.attachment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.attachment-download {
+  text-decoration: none;
+}
+
+.attachment-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.binary-security,
+.attachment-provenance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Narrative
+   -------------------------------------------------------------------------- */
+
+.narrative-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.narrative-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.narrative-count {
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.narrative-status-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--fg-muted);
+  max-width: 84ch;
+}
+
+.narrative-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--fg-muted);
+  max-width: 84ch;
+}
+
+/*
+ * The sanitised narrative. Its own style scope: the payload wrote this markup,
+ * so it gets a fixed, modest treatment rather than inheriting anything that
+ * could be made to imitate the tool's own interface.
+ */
+.fhir-narrative {
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--fg-default);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.fhir-narrative > :first-child {
+  margin-top: 0;
+}
+
+.fhir-narrative > :last-child {
+  margin-bottom: 0;
+}
+
+.fhir-narrative p,
+.fhir-narrative ul,
+.fhir-narrative ol,
+.fhir-narrative table {
+  margin: 0 0 var(--space-5);
+}
+
+.fhir-narrative h1,
+.fhir-narrative h2,
+.fhir-narrative h3,
+.fhir-narrative h4,
+.fhir-narrative h5,
+.fhir-narrative h6 {
+  margin: var(--space-5) 0 var(--space-3);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fhir-narrative table {
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.fhir-narrative th,
+.fhir-narrative td {
+  padding: var(--space-3) var(--space-5) var(--space-3) 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+.fhir-narrative th {
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+.fhir-narrative ul,
+.fhir-narrative ol {
+  padding-left: var(--space-7);
+}
+
+.fhir-narrative li + li {
+  margin-top: var(--space-2);
+}
+
+.fhir-narrative hr {
+  border: 0;
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  margin: var(--space-5) 0;
+}
+
+.fhir-narrative pre {
+  overflow-x: auto;
+  padding: var(--space-4);
+  background: var(--bg-surface);
+  border-radius: var(--radius-control);
+}
+
+.fhir-narrative a {
+  color: var(--accent);
+}
+
+/* A table caption cannot survive insertion as itself, so the sanitiser renames
+   it to a div carrying this class. See Narrative.tsx. */
+.narrative-caption {
+  margin-bottom: var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Unhandled types, and render failures
+   -------------------------------------------------------------------------- */
+
+.unknown-resource {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.unhandled-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.unhandled-list > * + * {
+  border-top: var(--hairline-width) solid var(--border-hairline);
+}
+
+.unhandled-summary {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.unhandled-type {
+  color: var(--fg-default);
+  font-size: 12.5px;
+}
+
+.render-failure {
+  min-width: 0;
+}
+
+.render-failure-text {
+  margin: 0 0 var(--space-4);
+  font-size: 13px;
+  line-height: 20px;
+  max-width: 84ch;
+}
+
+/* --------------------------------------------------------------------------
+   Narrow columns
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .doc-section,
+  .resource-head,
+  .resource-body {
+    padding: var(--space-5);
+  }
+
+  .attachment-frame {
+    height: min(60vh, 460px);
+  }
+
+  .nested-sections {
+    padding-left: var(--space-5);
+  }
+}

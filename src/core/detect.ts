@@ -176,11 +176,12 @@ function detectHttpResponse(text: string): DetectedInput {
       kind: 'unknown',
       variant: 'unrecognised',
       confidence: 'certain',
-      sentence: `This is an HTTP response with no body, so Loupe can report the status and the headers a browser hid from it, and nothing more. ${
-        cors === undefined
-          ? 'There is no access-control-allow-origin header here, which is the header a browser needs before it will hand this response to a page.'
-          : ''
-      }`.trim(),
+      sentence:
+        `This is an HTTP response with no body, so Loupe can report the status and the headers a browser hid from it, and nothing more. ${
+          cors === undefined
+            ? 'There is no access-control-allow-origin header here, which is the header a browser needs before it will hand this response to a page.'
+            : ''
+        }`.trim(),
       details,
       needsKey: false,
       content: '',

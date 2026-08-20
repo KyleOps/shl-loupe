@@ -148,10 +148,7 @@ function partBounds(url: string, part: UrlPart): [number, number] | undefined {
   if (parsed.port === '') return undefined;
   const colon = hostPortion.lastIndexOf(':');
   if (colon === -1) return undefined;
-  return [
-    authorityStart + hostStart + colon + 1,
-    authorityStart + hostStart + hostPortion.length,
-  ];
+  return [authorityStart + hostStart + colon + 1, authorityStart + hostStart + hostPortion.length];
 }
 
 function hostText(hostPortion: string): string {
@@ -518,7 +515,9 @@ export function stepToText(
       case 'response': {
         const response = evidence.response;
         const timing = response.durationMs === undefined ? '' : ` in ${response.durationMs} ms`;
-        lines.push(`response: ${statusLabel(response.status)} ${response.statusText ?? ''}${timing}`.trimEnd());
+        lines.push(
+          `response: ${statusLabel(response.status)} ${response.statusText ?? ''}${timing}`.trimEnd(),
+        );
         for (const [name, value] of Object.entries(response.headers)) {
           lines.push(`  ${name}: ${mask(value)}`);
         }
@@ -619,8 +618,6 @@ export function leadingFinding(findings: readonly Finding[]): Finding | undefine
 export function failingStepId(run: TraceRun): string | undefined {
   const leading = leadingFinding(run.findings);
   if (leading?.stepId !== undefined) return leading.stepId;
-  const stopped = run.steps.find(
-    (step) => step.status === 'fail' || step.status === 'blocked',
-  );
+  const stopped = run.steps.find((step) => step.status === 'fail' || step.status === 'blocked');
   return stopped?.id ?? run.steps.find((step) => step.status === 'warn')?.id;
 }

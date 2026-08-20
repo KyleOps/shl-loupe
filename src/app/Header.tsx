@@ -48,20 +48,8 @@ export function Header({
 
       <a className="wordmark" href="#" aria-label="Loupe, home">
         <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden focusable="false">
-          <circle
-            cx="13"
-            cy="13"
-            r="8.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          />
-          <path
-            d="M19.5 19.5 L27 27"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
+          <circle cx="13" cy="13" r="8.5" fill="none" stroke="currentColor" strokeWidth="2.5" />
+          <path d="M19.5 19.5 L27 27" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
         </svg>
         <span className="wordmark-text">loupe</span>
       </a>

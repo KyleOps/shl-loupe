@@ -170,14 +170,7 @@ const CHOICE_SUFFIXES = new Set([
 
 export type DatePrecision = 'none' | 'year' | 'month' | 'day' | 'time';
 
-export type DateShape =
-  | 'dateTime'
-  | 'period'
-  | 'timing'
-  | 'age'
-  | 'range'
-  | 'string'
-  | 'unparsed';
+export type DateShape = 'dateTime' | 'period' | 'timing' | 'age' | 'range' | 'string' | 'unparsed';
 
 export interface RenderableDate {
   /** Human form, never more precise than the source was. */
@@ -190,20 +183,7 @@ export interface RenderableDate {
   note?: string;
 }
 
-const MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const FHIR_DATE_TIME =
   /^(\d{4})(?:-(\d{2})(?:-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(Z|[+-]\d{2}:\d{2})?)?)?)?$/;
@@ -598,9 +578,7 @@ export function dosageText(value: unknown): string | undefined {
     .map((entry) => {
       const chosen = pickChoice(entry, 'dose');
       if (chosen === undefined) return undefined;
-      return chosen.suffix === 'Range'
-        ? rangeText(chosen.value)
-        : quantityText(chosen.value);
+      return chosen.suffix === 'Range' ? rangeText(chosen.value) : quantityText(chosen.value);
     })
     .find((entry): entry is string => entry !== undefined);
   if (dose !== undefined) parts.push(dose);
@@ -824,8 +802,7 @@ export function annotationText(value: unknown): { text: string; caption?: string
 // Absence: an empty element and a stated absence are different facts
 // ---------------------------------------------------------------------------
 
-export const DATA_ABSENT_REASON_URL =
-  'http://hl7.org/fhir/StructureDefinition/data-absent-reason';
+export const DATA_ABSENT_REASON_URL = 'http://hl7.org/fhir/StructureDefinition/data-absent-reason';
 
 /**
  * Read a primitive extension's `data-absent-reason`.
@@ -1015,7 +992,12 @@ export function absenceAssertion(resource: unknown): AbsenceStatement | undefine
     if (known === undefined) continue;
     // Every SNOMED code in that table is a positive "none" assertion; the
     // "no information" sense has no SNOMED equivalent in use here.
-    return { text: code.display ?? known, basis: 'code', code: code.code, meaning: 'asserted-none' };
+    return {
+      text: code.display ?? known,
+      basis: 'code',
+      code: code.code,
+      meaning: 'asserted-none',
+    };
   }
   const pattern = ABSENCE_TEXT[type];
   if (parsed !== undefined && pattern !== undefined && pattern.test(parsed.text)) {
@@ -1056,13 +1038,21 @@ export const IPS_SECTIONS: readonly SectionSlice[] = [
     loinc: '10160-0',
     verifiedDisplay: 'History of Medication use Narrative',
   },
-  { slice: 'sectionImmunizations', loinc: '11369-6', verifiedDisplay: 'History of Immunization note' },
+  {
+    slice: 'sectionImmunizations',
+    loinc: '11369-6',
+    verifiedDisplay: 'History of Immunization note',
+  },
   {
     slice: 'sectionResults',
     loinc: '30954-2',
     verifiedDisplay: 'Relevant diagnostic tests/laboratory data note',
   },
-  { slice: 'sectionProceduresHx', loinc: '47519-4', verifiedDisplay: 'History of Procedures Document' },
+  {
+    slice: 'sectionProceduresHx',
+    loinc: '47519-4',
+    verifiedDisplay: 'History of Procedures Document',
+  },
   { slice: 'sectionMedicalDevices', loinc: '46264-8' },
   { slice: 'sectionAdvanceDirectives', loinc: '42348-3' },
   { slice: 'sectionAlerts', loinc: '104605-1', verifiedDisplay: 'Alert' },
@@ -1177,7 +1167,7 @@ export function summariseResource(resource: unknown): string {
 
   for (const key of SUMMARY_CONCEPT_FIELDS) {
     const value = field(record, key);
-    const first = Array.isArray(value) ? value[0] : value;
+    const first: unknown = Array.isArray(value) ? value[0] : value;
     const text = codeableConceptText(first);
     if (text !== undefined) return text;
   }

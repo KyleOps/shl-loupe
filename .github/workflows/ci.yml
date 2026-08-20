@@ -1,0 +1,78 @@
+# Typecheck, lint, test, build. Nothing else: there is no backend to deploy and
+# no secret to hold, so this workflow needs read access and nothing more.
+#
+# Action versions are the current major at the time of writing, checked with
+# `gh api repos/OWNER/REPO/releases/latest` rather than from memory:
+#   actions/checkout      v7.0.1
+#   pnpm/action-setup      v6.0.10
+#   actions/setup-node    v7.0.0
+# Node 24 is the active LTS line (`Krypton`), from https://nodejs.org/dist/index.json;
+# v26 exists but is Current, not LTS.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A second push to the same branch makes the first run's answer worthless, so
+# cancel it. Never cancel on main: that history is the record of what was green.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  checks:
+    name: Typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Before setup-node, because setup-node's `cache: pnpm` needs the pnpm
+      # binary on PATH to locate the store. No `version:` here: the action reads
+      # `packageManager` from package.json, so the lockfile and CI cannot drift
+      # onto different pnpm majors.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # A step per gate rather than one `&&` chain, so a red run names which gate
+      # failed on the check list without anyone opening the log. They share one
+      # job because the install dominates the runtime, and paying for it once per
+      # gate to parallelise a handful of fast commands is a worse trade.
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      # `pnpm test` is the offline suite. The live-server suite
+      # (`pnpm run test:live`) is deliberately not run here: it depends on third
+      # party servers being up, and a check that goes red for reasons outside the
+      # change under review teaches people to ignore the check.
+      - name: Test
+        run: pnpm run test
+
+      # `pnpm run format:check` is deliberately not a step yet. Prettier
+      # currently reports 53 files in this repo as unformatted, all of them
+      # pre-existing, so adding the gate today would make every run red for
+      # reasons unrelated to the change under review. Run `pnpm format` once,
+      # commit it, and add the step here in that same commit.
+
+      # Last, because it is the slowest and it subsumes the typecheck. A build
+      # break that the typecheck missed is a bundler or asset problem, which is
+      # a different diagnosis, so it is worth having both.
+      - name: Build
+        run: pnpm run build

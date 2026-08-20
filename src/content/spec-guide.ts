@@ -98,14 +98,7 @@ const EXAMPLE_JWS_HEADER_JSON =
 export type GuideTone = 'pass' | 'warn' | 'fail' | 'info';
 
 export type SectionId =
-  | 'what'
-  | 'payload'
-  | 'flags'
-  | 'manifest'
-  | 'encryption'
-  | 'cards'
-  | 'errors'
-  | 'cors';
+  'what' | 'payload' | 'flags' | 'manifest' | 'encryption' | 'cards' | 'errors' | 'cors';
 
 export type AnatomyId = 'link' | 'payload' | 'jwe' | 'jws';
 
@@ -429,7 +422,8 @@ const PAYLOAD_MEMBERS: readonly PayloadMember[] = [
       'Establish a SMART Health Link Manifest URL',
       'SHALL NOT exceed 128 characters in length (note, this maximum applies to the `url` field of the SMART Health Link Payload, not to the entire SMART Health Link URI).',
     ),
-    example: 'https://raw.githubusercontent.com/seanno/shc-demo-data/main/ips/IPS_IG-bundle-01-enc.txt',
+    example:
+      'https://raw.githubusercontent.com/seanno/shc-demo-data/main/ips/IPS_IG-bundle-01-enc.txt',
     exampleNote:
       '88 characters, comfortably inside the cap. No scheme is mandated anywhere in the specification, so an http URL is technically conformant and practically unopenable from an https page.',
   },
@@ -554,7 +548,11 @@ const FLAG_COMBINATIONS: readonly FlagCombination[] = [
     note: 'Manifest-based, no passcode. One request, one snapshot.',
   },
   { combo: 'L', legal: true, note: 'Manifest-based, worth re-checking later.' },
-  { combo: 'LP', legal: true, note: 'Long-lived and passcode-protected. Alphabetical, so L first.' },
+  {
+    combo: 'LP',
+    legal: true,
+    note: 'Long-lived and passcode-protected. Alphabetical, so L first.',
+  },
   {
     combo: 'LU',
     legal: true,
@@ -987,7 +985,13 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
         title: 'A location URL is single-use and expires within the hour',
         body: 'A retry button that re-fetches a location that has already been consumed will fail and look like a server bug. The only correct retry is to request the manifest again, which on a passcode-protected link means asking for the passcode again, which can cost one of a finite number of attempts. Loupe refuses a location older than sixty minutes and says why rather than showing you an opaque 403 from a bucket.',
       },
-      { kind: 'quote', citation: shl('.files.location links', 'The lifetime of `.files.location` links SHALL NOT exceed one hour.') },
+      {
+        kind: 'quote',
+        citation: shl(
+          '.files.location links',
+          'The lifetime of `.files.location` links SHALL NOT exceed one hour.',
+        ),
+      },
       {
         kind: 'table',
         caption: 'The U flag path, compared',
@@ -1516,7 +1520,8 @@ export const RULE_GUIDE: readonly RuleGuideEntry[] = [
     group: 'time',
     severity: 'warning',
     audience: 'you',
-    fires: 'exp is within the hour. Open it now, and ask for a longer-lived one to demonstrate from.',
+    fires:
+      'exp is within the hour. Open it now, and ask for a longer-lived one to demonstrate from.',
     tryPreset: 'SHL-EXP-IMMINENT',
   },
   {

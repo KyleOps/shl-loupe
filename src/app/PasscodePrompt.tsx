@@ -16,7 +16,7 @@
  *    somebody's attempts on one guess is the exact defect this file exists to
  *    prevent.
  */
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type SyntheticEvent, type ReactNode } from 'react';
 import { KeyRound } from 'lucide-react';
 import type { TraceRun } from '../core/trace';
 import { Button, Callout, Chip } from '../ui/primitives';
@@ -96,11 +96,19 @@ export function PasscodePrompt({
   const state = passcodeState(run);
   const reveal = useSettings((settings) => settings.revealSecrets);
   const [passcode, setPasscode] = useState('');
-  const [sent, setSent] = useState(false);
-
-  // A new run is a new attempt, so the one-press guard lifts only when the run
-  // it was guarding has actually been replaced.
-  useEffect(() => setSent(false), [run?.id]);
+  /**
+   * The one-press guard, keyed by the run it is guarding rather than reset in an
+   * effect.
+   *
+   * This is the one place in the app where a double submit does lasting damage:
+   * every wrong passcode is charged against a lifetime limit that permanently
+   * disables the patient's link, so two presses of one guess cost two of their
+   * attempts. Storing the run id the guard belongs to means it lifts exactly when
+   * a new run replaces the old one, with no window in which a stale `true`
+   * blocks a legitimate second attempt and no cascading render to arrange it.
+   */
+  const [sentForRun, setSentForRun] = useState<string | undefined>(undefined);
+  const sent = sentForRun !== undefined && sentForRun === run?.id;
 
   if (!state.needed) return null;
 
@@ -109,16 +117,16 @@ export function PasscodePrompt({
       <Callout tone="fail" title="That was the last attempt this link allowed.">
         The server counts wrong passcodes against a lifetime limit so nobody can search for the
         passcode by trying every value. The limit is now reached, which disables this link
-        permanently: further requests will answer 404 whatever passcode is sent. Ask the sender for a
-        new link.
+        permanently: further requests will answer 404 whatever passcode is sent. Ask the sender for
+        a new link.
       </Callout>
     );
   }
 
-  const submit = (event: FormEvent): void => {
+  const submit = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
     if (sent || running || passcode.length === 0) return;
-    setSent(true);
+    setSentForRun(run?.id);
     onSubmit(passcode);
   };
 
@@ -165,18 +173,14 @@ export function PasscodePrompt({
           onChange={(event) => setPasscode(event.target.value)}
           disabled={running || sent}
         />
-        <Button
-          type="submit"
-          variant="primary"
-          disabled={running || sent || passcode.length === 0}
-        >
+        <Button type="submit" variant="primary" disabled={running || sent || passcode.length === 0}>
           {sent || running ? 'Sending one attempt…' : 'Send this passcode once'}
         </Button>
       </div>
 
       <p className="passcode-note">
-        Loupe sends exactly one attempt per press. It never retries, never guesses, and never sends a
-        passcode as part of a probe.
+        Loupe sends exactly one attempt per press. It never retries, never guesses, and never sends
+        a passcode as part of a probe.
       </p>
     </form>
   );

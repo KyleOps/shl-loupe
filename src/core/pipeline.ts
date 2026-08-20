@@ -158,10 +158,7 @@ const LOCATION_LIFETIME_MS = 60 * 60 * 1000;
 export async function openShl(options: PipelineOptions): Promise<PipelineResult> {
   const now = options.now ?? (() => Date.now());
   const transport = options.transport ?? new BrowserTransport();
-  const recorder = new Recorder(
-    { kind: 'shlink', source: options.input.trim() },
-    now,
-  );
+  const recorder = new Recorder({ kind: 'shlink', source: options.input.trim() }, now);
   if (options.onProgress) recorder.subscribe(options.onProgress);
 
   const files: OpenedFile[] = [];
@@ -445,7 +442,11 @@ async function fetchManifest(
         purpose: 'manifest' as const,
       };
       step.request(toRequestRecord(request));
-      step.command('Reproduce outside the browser', 'bash', curlForManifest({ url: link.url, recipient: options.recipient }));
+      step.command(
+        'Reproduce outside the browser',
+        'bash',
+        curlForManifest({ url: link.url, recipient: options.recipient }),
+      );
       step.command(
         'Check the preflight the browser sends first',
         'bash',
@@ -659,7 +660,8 @@ async function recordNetworkFailure(
       {
         kind: 'net.reachability',
         title: 'Probe whether anything is answering',
-        summary: 'A plain GET, which needs no CORS, to tell a silent server from an unreachable one.',
+        summary:
+          'A plain GET, which needs no CORS, to tell a silent server from an unreachable one.',
         parentId: step.id,
       },
       async (probeStep) => {
@@ -694,7 +696,10 @@ async function recordNetworkFailure(
         const result = await probeDns(transport, url.hostname);
         probeStep.kv([
           { key: 'resolver', value: result.resolver },
-          { key: 'DNS status', value: result.status === undefined ? 'no answer' : String(result.status) },
+          {
+            key: 'DNS status',
+            value: result.status === undefined ? 'no answer' : String(result.status),
+          },
           { key: 'addresses', value: result.addresses?.join(', ') ?? 'none' },
         ]);
         probeStep.note(result.interpretation);
@@ -850,7 +855,9 @@ async function validateManifest(
             entry.embedded === undefined
               ? undefined
               : `embedded (${formatBytes(entry.embedded.length)})`,
-            entry.location === undefined ? undefined : `location ${new URL(entry.location, link.url).origin}`,
+            entry.location === undefined
+              ? undefined
+              : `location ${new URL(entry.location, link.url).origin}`,
             entry.lastUpdated === undefined ? undefined : `updated ${entry.lastUpdated}`,
           ]
             .filter(Boolean)
@@ -887,7 +894,9 @@ async function validateManifest(
             title: 'The server embedded a file larger than the maximum this client asked for.',
             detail: `The request set embeddedLengthMax to ${formatBytes(embeddedLengthMax)}, and ${oversize
               .map((entry) => `files[${entry.index}] is ${formatBytes(entry.length)}`)
-              .join(', ')}. The specification says a server shall not return an embedded payload longer than the client's stated maximum, and is expected to serve a location instead. Nothing breaks here, since Loupe reads it anyway, but a client that sized a buffer from that number would.`,
+              .join(
+                ', ',
+              )}. The specification says a server shall not return an embedded payload longer than the client's stated maximum, and is expected to serve a location instead. Nothing breaks here, since Loupe reads it anyway, but a client that sized a buffer from that number would.`,
             citation: CITATIONS.manifestRequest,
           });
           step.end('warn');
@@ -936,7 +945,11 @@ async function fetchDirectFile(
     async (step) => {
       const target = new URL(link.url);
       target.searchParams.set('recipient', options.recipient);
-      const request = { method: 'GET' as const, url: target.toString(), purpose: 'direct-file' as const };
+      const request = {
+        method: 'GET' as const,
+        url: target.toString(),
+        purpose: 'direct-file' as const,
+      };
       step.request(toRequestRecord(request));
       step.command('Reproduce outside the browser', 'bash', curlForDirectFile(target.toString()));
       step.note(
@@ -1042,7 +1055,11 @@ async function openManifestFile(
           purpose: 'manifest-file' as const,
         };
         step.request(toRequestRecord(request));
-        step.command('Reproduce outside the browser', 'bash', curlForDirectFile(locationUrl.toString()));
+        step.command(
+          'Reproduce outside the browser',
+          'bash',
+          curlForDirectFile(locationUrl.toString()),
+        );
         recorder.markNetworkUsed();
         const response = await transport.send(request);
         step.response(toResponseRecord(response));
@@ -1109,7 +1126,11 @@ async function openFile(
         const ciphertext = base64urlToBytes(parts.ciphertextB64);
         step.json('Protected header', parts.header);
         step.kv([
-          { key: 'alg', value: String(parts.header.alg), status: parts.header.alg === 'dir' ? 'ok' : 'fail' },
+          {
+            key: 'alg',
+            value: String(parts.header.alg),
+            status: parts.header.alg === 'dir' ? 'ok' : 'fail',
+          },
           {
             key: 'enc',
             value: String(parts.header.enc),
@@ -1126,11 +1147,18 @@ async function openFile(
             status: 'ok',
             ...(parts.header.cty === undefined
               ? {
-                  note: 'The prose asks for a cty header, and in practice almost nothing sends one, including the IG\'s own examples. Loupe resolves the content type from the manifest first, then cty, then by sniffing the plaintext.',
+                  note: "The prose asks for a cty header, and in practice almost nothing sends one, including the IG's own examples. Loupe resolves the content type from the manifest first, then cty, then by sniffing the plaintext.",
                 }
               : {}),
           },
-          { key: 'encrypted key', value: parts.encryptedKeyB64 === '' ? '(empty, correct for alg=dir)' : `${parts.encryptedKeyB64.length} characters`, status: parts.encryptedKeyB64 === '' ? 'ok' : 'fail' },
+          {
+            key: 'encrypted key',
+            value:
+              parts.encryptedKeyB64 === ''
+                ? '(empty, correct for alg=dir)'
+                : `${parts.encryptedKeyB64.length} characters`,
+            status: parts.encryptedKeyB64 === '' ? 'ok' : 'fail',
+          },
           {
             key: 'iv',
             value: `${iv.byteLength} bytes`,
@@ -1140,7 +1168,11 @@ async function openFile(
               : { note: describeIvLength(iv.byteLength) as string }),
           },
           { key: 'ciphertext', value: formatBytes(ciphertext.byteLength) },
-          { key: 'tag', value: `${tag.byteLength} bytes`, status: tag.byteLength === 16 ? 'ok' : 'fail' },
+          {
+            key: 'tag',
+            value: `${tag.byteLength} bytes`,
+            status: tag.byteLength === 16 ? 'ok' : 'fail',
+          },
         ]);
         step.cite(CITATIONS.jweCompact);
 
@@ -1190,7 +1222,10 @@ async function openFile(
         const result = await decryptDirA256Gcm(jwe, base64urlToBytes(link.key));
         step.kv([
           { key: 'plaintext', value: formatBytes(result.sizes.plaintext) },
-          { key: 'expansion', value: `${result.sizes.ciphertext - result.sizes.plaintext} bytes of overhead` },
+          {
+            key: 'expansion',
+            value: `${result.sizes.ciphertext - result.sizes.plaintext} bytes of overhead`,
+          },
         ]);
         step.cite(CITATIONS.encryption);
         return result.plaintext;
@@ -1297,7 +1332,10 @@ async function openFile(
       const kind = classifyContent(parsed, entry?.contentType, header.cty);
       step.kv([
         { key: 'declared by manifest', value: entry?.contentType ?? '(none)' },
-        { key: 'declared by cty', value: header.cty === undefined ? '(none)' : headerValueText(header.cty) },
+        {
+          key: 'declared by cty',
+          value: header.cty === undefined ? '(none)' : headerValueText(header.cty),
+        },
         { key: 'identified as', value: kind, status: kind === 'unknown' ? 'warn' : 'ok' },
         { key: 'size', value: formatBytes(plainBytes.byteLength) },
       ]);
@@ -1351,11 +1389,7 @@ function contentTypeFor(kind: FileKind): string {
  * file is a real and observed condition. The declared types are still recorded,
  * and a disagreement is reported rather than silently resolved.
  */
-export function classifyContent(
-  value: unknown,
-  declared?: string,
-  cty?: unknown,
-): FileKind {
+export function classifyContent(value: unknown, declared?: string, cty?: unknown): FileKind {
   if (typeof value === 'object' && value !== null) {
     const record = value as Record<string, unknown>;
     if (Array.isArray(record.verifiableCredential)) return 'smart-health-card';

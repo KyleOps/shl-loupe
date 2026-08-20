@@ -6,7 +6,11 @@ import type { ShlLink } from '../shlink';
 
 const NOW = Date.parse('2026-08-20T00:00:00Z');
 
-function context(url: string, link: Partial<ShlLink> = {}, viewer = HTTPS_VIEWER): DiagnosisContext {
+function context(
+  url: string,
+  link: Partial<ShlLink> = {},
+  viewer = HTTPS_VIEWER,
+): DiagnosisContext {
   return {
     url: new URL(url),
     rawUrl: url,
@@ -31,7 +35,9 @@ describe('rule identity', () => {
   it('never emits a finding whose ruleId disagrees with the rule that made it', () => {
     // A report quotes the id, so a mismatch would send someone to the wrong rule.
     for (const rule of STATIC_RULES) {
-      const finding = rule.evaluate(context('https://localhost:5173/m?bid=1', { flags: ['P', 'U'], exp: 1 }));
+      const finding = rule.evaluate(
+        context('https://localhost:5173/m?bid=1', { flags: ['P', 'U'], exp: 1 }),
+      );
       if (finding !== undefined) expect(finding.ruleId).toBe(rule.id);
     }
   });
@@ -142,7 +148,9 @@ describe('time', () => {
       const found = runStaticRules(
         context('https://example.org/m', { exp: Math.floor(NOW / 1000) - ago }),
       );
-      expect(found.find((f) => f.ruleId === 'SHL-EXP-PAST')?.title, String(ago)).toContain(expected);
+      expect(found.find((f) => f.ruleId === 'SHL-EXP-PAST')?.title, String(ago)).toContain(
+        expected,
+      );
     }
   });
 
@@ -151,9 +159,9 @@ describe('time', () => {
       context('https://example.org/m', { exp: Math.floor(NOW / 1000) + 600 }),
     );
     expect(found.find((f) => f.ruleId === 'SHL-EXP-IMMINENT')?.severity).toBe('warning');
-    expect(ids(context('https://example.org/m', { exp: Math.floor(NOW / 1000) + 600 }))).not.toContain(
-      'SHL-EXP-PAST',
-    );
+    expect(
+      ids(context('https://example.org/m', { exp: Math.floor(NOW / 1000) + 600 })),
+    ).not.toContain('SHL-EXP-PAST');
   });
 
   it('catches the Date.now() mistake', () => {

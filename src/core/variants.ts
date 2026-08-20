@@ -137,7 +137,8 @@ export interface VariantIdentification {
 // Citations
 // ---------------------------------------------------------------------------
 
-const SHL_SPEC = 'https://build.fhir.org/ig/HL7/smart-health-cards-and-links/links-specification.html';
+const SHL_SPEC =
+  'https://build.fhir.org/ig/HL7/smart-health-cards-and-links/links-specification.html';
 
 const CITE = {
   extensions: {
@@ -513,7 +514,8 @@ export const VARIANTS: Record<VariantId, Variant> = {
     id: 'fhir-icvp',
     name: 'ICVP patient summary bundle',
     family: 'content',
-    summary: 'An IPS-profiled Bundle carrying an International Certificate of Vaccination or Prophylaxis.',
+    summary:
+      'An IPS-profiled Bundle carrying an International Certificate of Vaccination or Prophylaxis.',
     differences: [],
     support: 'full',
     missing: [],
@@ -547,7 +549,8 @@ export const VARIANTS: Record<VariantId, Variant> = {
     id: 'fhir-unprofiled',
     name: 'FHIR content with no profile claimed',
     family: 'content',
-    summary: 'FHIR that stamps no `meta.profile`, so what it conforms to has to be judged structurally.',
+    summary:
+      'FHIR that stamps no `meta.profile`, so what it conforms to has to be judged structurally.',
     differences: [],
     support: 'full',
     missing: [],
@@ -656,7 +659,10 @@ export function base45Encode(bytes: Uint8Array): string {
   for (let i = 0; i < bytes.length; i += 2) {
     if (i + 1 < bytes.length) {
       const n = (bytes[i] as number) * 256 + (bytes[i + 1] as number);
-      out += (BASE45[n % 45] as string) + (BASE45[Math.floor(n / 45) % 45] as string) + (BASE45[Math.floor(n / 2025)] as string);
+      out +=
+        (BASE45[n % 45] as string) +
+        (BASE45[Math.floor(n / 45) % 45] as string) +
+        (BASE45[Math.floor(n / 2025)] as string);
     } else {
       const n = bytes[i] as number;
       out += (BASE45[n % 45] as string) + (BASE45[Math.floor(n / 45)] as string);
@@ -1109,7 +1115,9 @@ function regionName(code: string): string | undefined {
     // Present in every browser this tool targets and in Node's full ICU build,
     // and it is local: no list is fetched, no data is added to the bundle.
     const display = new Intl.DisplayNames(['en'], { type: 'region' }).of(code.toUpperCase());
-    return display === undefined || display.toUpperCase() === code.toUpperCase() ? undefined : display;
+    return display === undefined || display.toUpperCase() === code.toUpperCase()
+      ? undefined
+      : display;
   } catch {
     return undefined;
   }
@@ -1427,7 +1435,10 @@ function identifyHcert(hcert: HcertReport): VariantIdentification {
     const label = HCERT_SUBCLAIMS[claim];
     signals.push({
       observation: `HCERT subclaim ${claim} is present.`,
-      meaning: label === undefined ? 'No published profile in Loupe names this subclaim.' : `That slot carries the ${label}.`,
+      meaning:
+        label === undefined
+          ? 'No published profile in Loupe names this subclaim.'
+          : `That slot carries the ${label}.`,
       severity: 'info',
     });
   }
@@ -1571,7 +1582,11 @@ function identifyPayload(payload: ShlPayload, inherited: VariantSignal[]): Varia
     if (type === 'vhl' || protocol === 'vhl-list-search') return VARIANTS.vhl;
     if (type === 'shl') return VARIANTS['shl-who-phw'];
     if (ktc.length > 0) return VARIANTS['shl-ktc'];
-    if (members.includes('extension') || members.includes('extensions') || unattributed.length > 0) {
+    if (
+      members.includes('extension') ||
+      members.includes('extensions') ||
+      unattributed.length > 0
+    ) {
       return VARIANTS['shl-extension-unknown'];
     }
     return VARIANTS['shl-baseline'];
@@ -1608,7 +1623,10 @@ function identifyManifest(manifest: unknown): VariantIdentification {
       citation: CITE.contentTypes,
     },
   ];
-  const record = (typeof manifest === 'object' && manifest !== null ? manifest : {}) as Record<string, unknown>;
+  const record = (typeof manifest === 'object' && manifest !== null ? manifest : {}) as Record<
+    string,
+    unknown
+  >;
   const files = Array.isArray(record.files) ? record.files : [];
   const contentTypes = new Set<string>();
   for (const file of files) {
@@ -1646,7 +1664,11 @@ function identifyManifest(manifest: unknown): VariantIdentification {
     const extension = listRecord.extension;
     if (Array.isArray(extension) && extension.length > 0) {
       const urls = extension
-        .map((entry) => (typeof entry === 'object' && entry !== null ? (entry as Record<string, unknown>).url : undefined))
+        .map((entry) =>
+          typeof entry === 'object' && entry !== null
+            ? (entry as Record<string, unknown>).url
+            : undefined,
+        )
         .filter((value): value is string => typeof value === 'string');
       signals.push({
         observation: `The manifest’s \`list\` carries ${extension.length} FHIR extension${extension.length === 1 ? '' : 's'}${urls.length === 0 ? '' : `: ${urls.join(', ')}`}.`,
@@ -1697,7 +1719,9 @@ function identifyContent(content: unknown, declaredContentType?: string): Varian
     return { variant: VARIANTS.shc, protocol: 'self-contained', signals };
   }
 
-  const vcTypes = Array.isArray(record.type) ? record.type.filter((t): t is string => typeof t === 'string') : [];
+  const vcTypes = Array.isArray(record.type)
+    ? record.type.filter((t): t is string => typeof t === 'string')
+    : [];
   if (vcTypes.includes('VerifiableCredential') || record['@context'] !== undefined) {
     const subject = record.credentialSubject;
     const carriesLink =
@@ -1707,7 +1731,9 @@ function identifyContent(content: unknown, declaredContentType?: string): Varian
       typeof (subject as Record<string, unknown>).key === 'string';
     const proof = record.proof;
     const proofType =
-      typeof proof === 'object' && proof !== null ? (proof as Record<string, unknown>).type : undefined;
+      typeof proof === 'object' && proof !== null
+        ? (proof as Record<string, unknown>).type
+        : undefined;
     signals.push({
       observation: `A W3C Verifiable Credential with type ${vcTypes.length === 0 ? 'unstated' : `\`${vcTypes.join('`, `')}\``}${typeof proofType === 'string' ? ` and a \`${proofType}\`` : ''}.`,
       meaning:
@@ -1748,7 +1774,11 @@ function identifyContent(content: unknown, declaredContentType?: string): Varian
     for (const profile of profiles) {
       const noted = NOTED_PROFILES.find((entry) => profile.startsWith(entry.prefix));
       if (noted !== undefined) {
-        signals.push({ observation: `Claims the profile ${profile}.`, meaning: noted.note, severity: 'info' });
+        signals.push({
+          observation: `Claims the profile ${profile}.`,
+          meaning: noted.note,
+          severity: 'info',
+        });
       }
     }
     if (family !== undefined) {

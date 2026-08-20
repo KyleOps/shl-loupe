@@ -65,7 +65,10 @@ export function buildDiagnosisReport(
   // `describeInput` for why no truncation rule fixes this.
   const withoutRawInput: TraceRun = {
     ...run,
-    input: { ...run.input, source: `${run.input.kind}, ${run.input.source.trim().length} characters` },
+    input: {
+      ...run.input,
+      source: `${run.input.kind}, ${run.input.source.trim().length} characters`,
+    },
   };
   const safe = redactor === undefined ? withoutRawInput : redactRun(withoutRawInput, redactor);
   if (options.format === 'json') {

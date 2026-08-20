@@ -100,7 +100,9 @@ describe('SNOMED CT absence codes still work', () => {
   });
 
   it('ignores a code from a system it does not know', () => {
-    expect(absenceAssertion(allergy('http://example.org/codes', 'no-known-allergies'))).toBeUndefined();
+    expect(
+      absenceAssertion(allergy('http://example.org/codes', 'no-known-allergies')),
+    ).toBeUndefined();
   });
 });
 

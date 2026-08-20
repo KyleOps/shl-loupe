@@ -182,7 +182,11 @@ describe('buildStepTree', () => {
       step({ id: 'a', parentId: 'b' }),
       step({ id: 'b', parentId: 'a' }),
     ]);
-    expect(flattenStepTree(tree).map((node) => node.step.id).sort()).toEqual(['a', 'b']);
+    expect(
+      flattenStepTree(tree)
+        .map((node) => node.step.id)
+        .sort(),
+    ).toEqual(['a', 'b']);
   });
 });
 
@@ -252,7 +256,9 @@ describe('run level helpers', () => {
     steps: [
       step({
         id: 'a',
-        evidence: [{ type: 'request', request: { method: 'POST', url: 'https://x/', headers: {} } }],
+        evidence: [
+          { type: 'request', request: { method: 'POST', url: 'https://x/', headers: {} } },
+        ],
       }),
       step({ id: 'b' }),
     ],
@@ -291,9 +297,9 @@ describe('evidenceLabel', () => {
       'Decoded payload',
     );
     expect(evidenceLabel({ type: 'response', response: response() })).toBe('Response');
-    expect(evidenceLabel({ type: 'citation', citation: { spec: 'S', section: 'x', url: 'u' } })).toBe(
-      'Specification',
-    );
+    expect(
+      evidenceLabel({ type: 'citation', citation: { spec: 'S', section: 'x', url: 'u' } }),
+    ).toBe('Specification');
   });
 });
 
@@ -357,7 +363,11 @@ describe('reading the link back out of the run', () => {
       {
         type: 'json',
         label: 'Decoded payload',
-        value: { url: 'https://localhost:5173/api/shl-manifest?bid=1', key: 'k', exp: 1_800_000_000 },
+        value: {
+          url: 'https://localhost:5173/api/shl-manifest?bid=1',
+          key: 'k',
+          exp: 1_800_000_000,
+        },
       },
     ],
   });

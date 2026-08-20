@@ -116,9 +116,7 @@ export interface StopPoint {
 
 /** The first step that could not complete, numbered as the trace numbers it. */
 export function stoppedAt(run: TraceRun): StopPoint | undefined {
-  const index = run.steps.findIndex(
-    (step) => step.status === 'fail' || step.status === 'blocked',
-  );
+  const index = run.steps.findIndex((step) => step.status === 'fail' || step.status === 'blocked');
   const step = run.steps[index];
   return step === undefined ? undefined : { number: index + 1, title: step.title };
 }
@@ -410,8 +408,8 @@ function useLayoutMode(): LayoutMode {
 
 function LinkPane({ run }: { run: TraceRun }): ReactNode {
   const facts = linkFactsFromRun(run);
-  const key = typeof facts.payload?.['key'] === 'string' ? (facts.payload['key'] as string) : undefined;
-  const flag = typeof facts.payload?.['flag'] === 'string' ? (facts.payload['flag'] as string) : undefined;
+  const key = typeof facts.payload?.['key'] === 'string' ? facts.payload['key'] : undefined;
+  const flag = typeof facts.payload?.['flag'] === 'string' ? facts.payload['flag'] : undefined;
   const flags = describeFlags(flag);
   const conflict = flagConflict(flag);
 
@@ -623,8 +621,8 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
               <code>https://localhost:5173/api/shl-manifest</code> gets a named verdict, the
               offending substring pointed at, and the clause of the specification it breaks, without
               a single packet leaving. The common viewer issues the request first and reports the
-              browser&rsquo;s own <code>TypeError</code> as the diagnosis, which is how a sender ends
-              up sure their link is fine.
+              browser&rsquo;s own <code>TypeError</code> as the diagnosis, which is how a sender
+              ends up sure their link is fine.
             </p>
           </li>
           <li>
@@ -634,10 +632,10 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
             </h3>
             <p>
               Every hop keeps its request, its response, the headers a browser actually let script
-              read, and its timing. A cross-origin failure gives JavaScript one word and no cause, so
-              the trace gives you the equivalent <code>curl</code> instead. A curl that succeeds where
-              the browser failed is a positive diagnosis of a CORS misconfiguration, and nothing
-              observable inside the page can prove that on its own.
+              read, and its timing. A cross-origin failure gives JavaScript one word and no cause,
+              so the trace gives you the equivalent <code>curl</code> instead. A curl that succeeds
+              where the browser failed is a positive diagnosis of a CORS misconfiguration, and
+              nothing observable inside the page can prove that on its own.
             </p>
           </li>
           <li>
@@ -658,8 +656,8 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
       <Callout tone="info" title="What it never does">
         <p>
           No link, key, passcode or payload is uploaded anywhere, and none is written to storage.
-          Only your settings persist. Two probes can reach a third party, they are off until you turn
-          them on in settings, and each says there what it discloses.
+          Only your settings persist. Two probes can reach a third party, they are off until you
+          turn them on in settings, and each says there what it discloses.
         </p>
         <p className="idle-offline">
           <ShieldCheck size={14} aria-hidden /> Nothing is fetched to render this page, so it works

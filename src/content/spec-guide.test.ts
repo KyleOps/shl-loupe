@@ -252,7 +252,14 @@ describe('the sections', () => {
   });
 
   it('documents all six payload members, in the order the spec lists them', () => {
-    expect(memberNames(sectionById('payload'))).toEqual(['url', 'key', 'exp', 'flag', 'label', 'v']);
+    expect(memberNames(sectionById('payload'))).toEqual([
+      'url',
+      'key',
+      'exp',
+      'flag',
+      'label',
+      'v',
+    ]);
   });
 
   it('gives every payload member a cardinality, a worked example and a note about it', () => {

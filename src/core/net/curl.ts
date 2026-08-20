@@ -33,7 +33,10 @@ const shellQuote = (value: string): string => `'${value.replace(/'/g, `'\\''`)}'
  * A curl command that shows the whole story: the redirect chain, the response
  * headers the browser hid, and the body pretty-printed if jq is present.
  */
-export function curlForManifest(shape: ManifestRequestShape, options: { passcode?: boolean } = {}): string {
+export function curlForManifest(
+  shape: ManifestRequestShape,
+  options: { passcode?: boolean } = {},
+): string {
   const body = manifestBody({
     ...shape,
     ...(options.passcode === true && shape.passcode === undefined ? { passcode: 'PASSCODE' } : {}),

@@ -49,8 +49,8 @@ const relative = (seconds: number): string => {
  */
 const INVISIBLE = new RegExp(
   `[${[
-    0x00, 0x09, 0x0a, 0x0d, 0x1f, 0x20, 0xa0, 0x180e, 0x200b, 0x200c, 0x200d, 0x200e,
-    0x200f, 0x2028, 0x2029, 0x202f, 0x205f, 0x2060, 0x3000, 0xfeff,
+    0x00, 0x09, 0x0a, 0x0d, 0x1f, 0x20, 0xa0, 0x180e, 0x200b, 0x200c, 0x200d, 0x200e, 0x200f,
+    0x2028, 0x2029, 0x202f, 0x205f, 0x2060, 0x3000, 0xfeff,
   ]
     .map((code) => `\\u${code.toString(16).padStart(4, '0')}`)
     .join('')}]`,
@@ -377,7 +377,8 @@ export const STATIC_RULES: Rule[] = [
         title: `The manifest URL is ${link.url.length} characters, and the cap is 128.`,
         detail:
           'The specification caps the url member (not the whole link) at 128 characters, so that a link stays inside a QR code that scans comfortably. Nothing will refuse this link over it, but it makes the QR denser than intended and the constraint exists for a reason.',
-        remedy: 'Shorten the manifest path, or put the identifier in the path rather than a long query.',
+        remedy:
+          'Shorten the manifest path, or put the identifier in the path rather than a long query.',
         citation: CITATIONS.payloadUrl,
       };
     },
@@ -500,7 +501,6 @@ export const STATIC_RULES: Rule[] = [
     },
   },
 ];
-
 
 /**
  * Decide whether anything in a manifest URL could plausibly carry 256 bits of

@@ -66,7 +66,9 @@ export function extractShlink(input: string): ShlinkExtraction | undefined {
 
   const decoded = safeDecodeUriComponent(text);
 
-  const viewerFragment = decoded.match(new RegExp(`^(https?://[^#]*)#shlink:/{1,2}(${ENCODED})`, 'i'));
+  const viewerFragment = decoded.match(
+    new RegExp(`^(https?://[^#]*)#shlink:/{1,2}(${ENCODED})`, 'i'),
+  );
   if (viewerFragment) {
     return {
       form: 'viewer-fragment',
@@ -321,10 +323,13 @@ export function validateShlPayload(payload: ShlPayload): ShlValidation {
     }
     const lowercase = flagValue !== flagValue.toUpperCase();
     const notes: string[] = [];
-    if (unknown.length > 0) notes.push(`Unrecognised flag ${unknown.map((c) => `"${c}"`).join(', ')}.`);
+    if (unknown.length > 0)
+      notes.push(`Unrecognised flag ${unknown.map((c) => `"${c}"`).join(', ')}.`);
     if (lowercase) notes.push('Flags are uppercase characters.');
     if (flags.includes('U') && flags.includes('P')) {
-      notes.push('U and P cannot be combined: a direct-GET link has no manifest request to carry a passcode.');
+      notes.push(
+        'U and P cannot be combined: a direct-GET link has no manifest request to carry a passcode.',
+      );
     }
     verdicts.push({
       member: 'flag',

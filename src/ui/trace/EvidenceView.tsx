@@ -59,16 +59,28 @@ interface Masking {
   revealed: boolean;
 }
 
+/**
+ * `JSON.stringify` for display, with the one unsoundness in TypeScript's lib
+ * types handled in a single place.
+ *
+ * `JSON.stringify` is typed as returning `string`, and it returns `undefined` for
+ * `undefined`, a function or a symbol. Evidence values are `unknown`, so the case
+ * is reachable, and without this every call site needs a `?? 'null'` that the
+ * type checker believes is dead code. One helper carrying one suppression beats
+ * five scattered ones.
+ */
+function jsonText(value: unknown, indent?: number): string {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- lib types say string; the runtime disagrees for undefined
+  return JSON.stringify(value, null, indent) ?? 'null';
+}
+
 function useMasking(): Masking {
   const redactor = useSession((state) => state.redactor);
   const revealed = useSettings((state) => state.revealSecrets);
   const active = redactor?.isActive === true;
   const masking = active && !revealed ? redactor : undefined;
 
-  const mask = useCallback(
-    (text: string) => (masking ? masking.text(text) : text),
-    [masking],
-  );
+  const mask = useCallback((text: string) => (masking ? masking.text(text) : text), [masking]);
   const maskJson = useCallback(
     <T,>(value: T) => (masking ? masking.json(value) : value),
     [masking],
@@ -138,14 +150,8 @@ function LongString({ value }: { value: string }): ReactNode {
   return (
     <span className="long-string">
       <span className="opaque-value">{expanded ? value : value.slice(0, LONG_STRING)}</span>
-      <Button
-        size="sm"
-        onClick={() => setExpanded(!expanded)}
-        aria-expanded={expanded}
-      >
-        {expanded
-          ? 'Show less'
-          : `Show all ${value.length.toLocaleString('en-AU')} characters`}
+      <Button size="sm" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+        {expanded ? 'Show less' : `Show all ${value.length.toLocaleString('en-AU')} characters`}
       </Button>
     </span>
   );
@@ -172,14 +178,14 @@ function branchSummary(value: Record<string, unknown> | unknown[]): string {
 }
 
 function JsonLeaf({ name, value }: { name?: string; value: unknown }): ReactNode {
-  const text = typeof value === 'string' ? value : JSON.stringify(value);
+  const text = typeof value === 'string' ? value : jsonText(value);
   return (
     <div className="json-row json-leaf">
       {name !== undefined && <span className="json-key">{name}</span>}
       <span className={clsx('json-value', `json-${typeof value}`, value === null && 'json-null')}>
-        {typeof value === 'string' ? <LongString value={value} /> : (text ?? 'null')}
+        {typeof value === 'string' ? <LongString value={value} /> : text}
       </span>
-      <CopyButton value={text ?? 'null'} label="Copy" className="json-copy" />
+      <CopyButton value={text} label="Copy" className="json-copy" />
     </div>
   );
 }
@@ -208,11 +214,7 @@ function JsonNode({
           aria-expanded={open}
           onClick={() => setOpen(!open)}
         >
-          <ChevronRight
-            size={13}
-            aria-hidden
-            className={clsx('json-chevron', open && 'is-open')}
-          />
+          <ChevronRight size={13} aria-hidden className={clsx('json-chevron', open && 'is-open')} />
           {name !== undefined && <span className="json-key">{name}</span>}
           <span className="json-summary">{branchSummary(value)}</span>
         </button>
@@ -367,8 +369,8 @@ function ResponseView({ response }: { response: HttpResponseRecord }): ReactNode
 
       {response.status === 0 && (
         <p className="wire-note">
-          No response reached this page. The status column is empty rather than zero, because zero is
-          not something a server can send.
+          No response reached this page. The status column is empty rather than zero, because zero
+          is not something a server can send.
         </p>
       )}
 
@@ -432,8 +434,7 @@ const SHELL_NAME: Record<'bash' | 'powershell', string> = {
 /** Small enough that a tree would be more chrome than content. */
 function fitsInABlock(value: unknown): boolean {
   if (!isBranch(value)) return true;
-  const text = JSON.stringify(value, null, 2) ?? '';
-  return text.split('\n').length <= 3;
+  return jsonText(value, 2).split('\n').length <= 3;
 }
 
 export function EvidenceView({ evidence }: { evidence: Evidence }): ReactNode {
@@ -457,14 +458,12 @@ export function EvidenceView({ evidence }: { evidence: Evidence }): ReactNode {
       return (
         <div className="evidence">
           <FieldTable rows={kvRows(evidence.rows, mask)} />
-          <MaskNotice
-            masked={evidence.rows.some((row) => mask(row.value) !== row.value)}
-          />
+          <MaskNotice masked={evidence.rows.some((row) => mask(row.value) !== row.value)} />
         </div>
       );
 
     case 'json': {
-      const pretty = JSON.stringify(json, null, 2) ?? 'null';
+      const pretty = jsonText(json, 2);
       return (
         <div className="evidence">
           <p className="evidence-label">{label}</p>
@@ -478,7 +477,7 @@ export function EvidenceView({ evidence }: { evidence: Evidence }): ReactNode {
               <JsonTree value={json} openToDepth={evidence.collapsed === true ? 1 : 2} />
             </>
           )}
-          <MaskNotice masked={pretty !== (JSON.stringify(evidence.value, null, 2) ?? 'null')} />
+          <MaskNotice masked={pretty !== jsonText(evidence.value, 2)} />
         </div>
       );
     }
@@ -488,9 +487,7 @@ export function EvidenceView({ evidence }: { evidence: Evidence }): ReactNode {
       return (
         <div className="evidence">
           <p className="evidence-label">{label}</p>
-          <CodeBlock
-            {...(evidence.language === undefined ? {} : { language: evidence.language })}
-          >
+          <CodeBlock {...(evidence.language === undefined ? {} : { language: evidence.language })}>
             {masked}
           </CodeBlock>
           <MaskNotice masked={masked !== evidence.value} />

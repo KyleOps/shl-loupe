@@ -46,7 +46,11 @@ function memberStatuses(run: TraceRun): Map<string, string> {
 
 describe('mintShl', () => {
   it('produces a link that decodes, validates and decrypts back to its content', async () => {
-    const minted = await mintShl({ content: SAMPLE, contentType: FHIR, url: 'https://shl.example.org/m/abc' });
+    const minted = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://shl.example.org/m/abc',
+    });
 
     const extraction = extractShlink(minted.shlink);
     expect(extraction?.form).toBe('shlink-uri');
@@ -59,21 +63,37 @@ describe('mintShl', () => {
   });
 
   it('sets kid to the RFC 7638 thumbprint of its own key, so a receiver can prove a mismatch', async () => {
-    const minted = await mintShl({ content: SAMPLE, contentType: FHIR, url: 'https://shl.example.org/m/abc' });
+    const minted = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://shl.example.org/m/abc',
+    });
     expect(minted.kid).toBe(await octThumbprint(minted.key));
     expect(parseJweCompact(minted.file.jwe).header.kid).toBe(minted.kid);
   });
 
   it('generates a fresh 32-byte key each time', async () => {
-    const first = await mintShl({ content: SAMPLE, contentType: FHIR, url: 'https://a.example.org/m' });
-    const second = await mintShl({ content: SAMPLE, contentType: FHIR, url: 'https://a.example.org/m' });
+    const first = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://a.example.org/m',
+    });
+    const second = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://a.example.org/m',
+    });
     expect(first.key).not.toBe(second.key);
     expect(base64urlToBytes(first.key).byteLength).toBe(32);
     expect(first.key.length).toBe(43);
   });
 
   it('leaves the encrypted key part empty and the IV at 12 bytes', async () => {
-    const minted = await mintShl({ content: SAMPLE, contentType: FHIR, url: 'https://a.example.org/m' });
+    const minted = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://a.example.org/m',
+    });
     const parts = parseJweCompact(minted.file.jwe);
     expect(parts.encryptedKeyB64).toBe('');
     expect(base64urlToBytes(parts.ivB64).byteLength).toBe(12);
@@ -81,8 +101,16 @@ describe('mintShl', () => {
   });
 
   it('raw DEFLATEs the plaintext when asked, with no zlib framing', async () => {
-    const big = { resourceType: 'Bundle', entry: Array.from({ length: 40 }, () => ({ resource: SAMPLE })) };
-    const minted = await mintShl({ content: big, contentType: FHIR, url: 'https://a.example.org/m', compress: true });
+    const big = {
+      resourceType: 'Bundle',
+      entry: Array.from({ length: 40 }, () => ({ resource: SAMPLE })),
+    };
+    const minted = await mintShl({
+      content: big,
+      contentType: FHIR,
+      url: 'https://a.example.org/m',
+      compress: true,
+    });
     expect(parseJweCompact(minted.file.jwe).header.zip).toBe('DEF');
 
     const decrypted = await decryptDirA256Gcm(minted.file.jwe, base64urlToBytes(minted.key));
@@ -134,7 +162,12 @@ describe('mintShl', () => {
 
   it('rejects a key that is not 32 bytes rather than encrypting with a coerced one', async () => {
     await expect(
-      mintShl({ content: SAMPLE, contentType: FHIR, url: 'https://a.example.org/m', key: 'tooshort' }),
+      mintShl({
+        content: SAMPLE,
+        contentType: FHIR,
+        url: 'https://a.example.org/m',
+        key: 'tooshort',
+      }),
     ).rejects.toThrow(/32 bytes/);
   });
 });
@@ -248,9 +281,10 @@ describe('BROKEN_PRESETS', () => {
       const raised = result.run.findings.map((finding) => finding.ruleId);
 
       for (const ruleId of preset.expect.ruleIds) {
-        expect(raised, `${preset.id} should raise ${ruleId}, raised ${raised.join(', ')}`).toContain(
-          ruleId,
-        );
+        expect(
+          raised,
+          `${preset.id} should raise ${ruleId}, raised ${raised.join(', ')}`,
+        ).toContain(ruleId);
       }
       expect(result.outcome, preset.id).toBe(preset.expect.outcome);
 

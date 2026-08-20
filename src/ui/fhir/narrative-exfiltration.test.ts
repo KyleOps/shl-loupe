@@ -27,18 +27,36 @@ const NETWORK_REACHING =
 
 const cases: Array<[string, string]> = [
   ['a tracking pixel', '<p>Dispensed today</p><img src="https://tracker.example/p.gif?id=1">'],
-  ['a pixel via srcset', '<img srcset="https://tracker.example/p.png 1x, https://tracker.example/q.png 2x">'],
-  ['a table background image', '<table background="https://tracker.example/t.gif"><tr><td>Result</td></tr></table>'],
+  [
+    'a pixel via srcset',
+    '<img srcset="https://tracker.example/p.png 1x, https://tracker.example/q.png 2x">',
+  ],
+  [
+    'a table background image',
+    '<table background="https://tracker.example/t.gif"><tr><td>Result</td></tr></table>',
+  ],
   ['a stylesheet link', '<link rel="stylesheet" href="https://tracker.example/x.css">'],
   ['a preload link', '<link rel="preload" as="image" href="https://tracker.example/x.png">'],
-  ['a style block with a remote url', '<style>body{background:url(https://tracker.example/x)}</style>'],
-  ['a style attribute with a remote url', '<div style="background:url(https://tracker.example/x)">Result</div>'],
-  ['a base tag rewriting every relative link', '<base href="https://evil.example/"><a href="/x">Report</a>'],
+  [
+    'a style block with a remote url',
+    '<style>body{background:url(https://tracker.example/x)}</style>',
+  ],
+  [
+    'a style attribute with a remote url',
+    '<div style="background:url(https://tracker.example/x)">Result</div>',
+  ],
+  [
+    'a base tag rewriting every relative link',
+    '<base href="https://evil.example/"><a href="/x">Report</a>',
+  ],
   ['a meta refresh redirect', '<meta http-equiv="refresh" content="0;url=https://evil.example">'],
   ['an xlink href inside svg', '<svg><a xlink:href="https://evil.example">x</a></svg>'],
   ['a video poster', '<video poster="https://tracker.example/p.jpg"></video>'],
   ['an audio source', '<audio><source src="https://tracker.example/a.mp3"></audio>'],
-  ['a picture source', '<picture><source srcset="https://tracker.example/p.webp"><img src="https://tracker.example/p.png"></picture>'],
+  [
+    'a picture source',
+    '<picture><source srcset="https://tracker.example/p.webp"><img src="https://tracker.example/p.png"></picture>',
+  ],
   ['an object data reference', '<object data="https://evil.example/x.swf"></object>'],
   ['an iframe', '<iframe src="https://evil.example/"></iframe>'],
   ['a track element', '<track src="https://tracker.example/t.vtt">'],
@@ -95,7 +113,9 @@ describe('the shape of the output', () => {
     // defeated by nesting; a reserialiser cannot emit a tag that is not on the
     // allowlist. The give-away is that a disallowed element vanishes along with
     // its attributes rather than leaving fragments behind.
-    const output = sanitiseNarrativeHtml('<p>before<iframe src="x" data-a="b">mid</iframe>after</p>');
+    const output = sanitiseNarrativeHtml(
+      '<p>before<iframe src="x" data-a="b">mid</iframe>after</p>',
+    );
     expect(output).not.toContain('data-a');
     expect(output).not.toContain('iframe');
     expect(output).toContain('before');

@@ -278,7 +278,8 @@ export async function openOfflineLink(input: OfflineInput): Promise<PipelineResu
             title: 'Loupe needs the manifest response before it can open this link.',
             detail:
               'Offline mode issues no requests, so the manifest has to arrive the same way everything else here does: pasted. The command above fetches it from a shell, where the browser rules that block this page do not apply.',
-            remedy: 'Run the command, then paste its output into the manifest box and open it again.',
+            remedy:
+              'Run the command, then paste its output into the manifest box and open it again.',
             citation: CITATIONS.manifestRequest,
           });
           step.end('blocked');
@@ -817,10 +818,17 @@ export async function openOfflineFhir(input: OfflineInput): Promise<PipelineResu
           typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
             ? (parsed as Record<string, unknown>)
             : undefined;
-        const resourceType = typeof record?.resourceType === 'string' ? record.resourceType : undefined;
+        const resourceType =
+          typeof record?.resourceType === 'string' ? record.resourceType : undefined;
         step.kv([
-          { key: 'resourceType', value: resourceType ?? '(absent)', status: resourceType === undefined ? 'fail' : 'ok' },
-          ...(Array.isArray(record?.entry) ? [{ key: 'entries', value: String(record.entry.length) }] : []),
+          {
+            key: 'resourceType',
+            value: resourceType ?? '(absent)',
+            status: resourceType === undefined ? 'fail' : 'ok',
+          },
+          ...(Array.isArray(record?.entry)
+            ? [{ key: 'entries', value: String(record.entry.length) }]
+            : []),
         ]);
         if (resourceType === undefined) {
           step.find({
@@ -895,7 +903,9 @@ export async function openOfflineHealthCard(input: OfflineInput): Promise<Pipeli
           const parsed: unknown = JSON.parse(text);
           const record = parsed as { verifiableCredential?: unknown };
           const list = Array.isArray(record.verifiableCredential)
-            ? record.verifiableCredential.filter((value): value is string => typeof value === 'string')
+            ? record.verifiableCredential.filter(
+                (value): value is string => typeof value === 'string',
+              )
             : [];
           step.kv([
             { key: 'form', value: 'a health-card file wrapper' },
@@ -974,7 +984,11 @@ function readJwks(recorder: Recorder, jwks: string | undefined): EcJwk[] | undef
   try {
     const parsed: unknown = JSON.parse(text);
     const record = parsed as { keys?: unknown };
-    const keys = Array.isArray(record.keys) ? record.keys : Array.isArray(parsed) ? parsed : [parsed];
+    const keys = Array.isArray(record.keys)
+      ? record.keys
+      : Array.isArray(parsed)
+        ? parsed
+        : [parsed];
     return keys.filter((key): key is EcJwk => typeof key === 'object' && key !== null);
   } catch {
     recorder.find({
@@ -995,7 +1009,12 @@ async function openCard(
   index: number,
   keySet: EcJwk[] | undefined,
 ): Promise<OpenedFile> {
-  const base: OpenedFile = { index, source: 'embedded', kind: 'smart-health-card', compressed: true };
+  const base: OpenedFile = {
+    index,
+    source: 'embedded',
+    kind: 'smart-health-card',
+    compressed: true,
+  };
 
   let jws: JwsParts;
   let payload: Record<string, unknown>;
@@ -1031,8 +1050,7 @@ async function openCard(
         step.cite(CITATIONS.shcJws);
 
         const rawPayload = base64urlToBytes(parts.payloadB64);
-        const bytes =
-          parts.header.zip === 'DEF' ? inflateForgiving(rawPayload).bytes : rawPayload;
+        const bytes = parts.header.zip === 'DEF' ? inflateForgiving(rawPayload).bytes : rawPayload;
         const parsed: unknown = JSON.parse(utf8Decode(bytes));
         if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
           throw new StepFailure('Card payload is not a JSON object');
@@ -1250,20 +1268,17 @@ async function openUnsupported(
   detail: string,
 ): Promise<PipelineResult> {
   const recorder = newRecorder(input, kind);
-  await recorder.run(
-    { kind: 'input.detect', title: 'Recognise what was pasted' },
-    (step) => {
-      step.note(NO_NETWORK_NOTE);
-      step.find({
-        ruleId: kind === 'hcert' ? 'OFFLINE-HCERT-UNSUPPORTED' : 'OFFLINE-UNRECOGNISED',
-        severity: 'error',
-        audience: 'you',
-        title,
-        detail,
-      });
-      step.end('blocked');
-    },
-  );
+  await recorder.run({ kind: 'input.detect', title: 'Recognise what was pasted' }, (step) => {
+    step.note(NO_NETWORK_NOTE);
+    step.find({
+      ruleId: kind === 'hcert' ? 'OFFLINE-HCERT-UNSUPPORTED' : 'OFFLINE-UNRECOGNISED',
+      severity: 'error',
+      audience: 'you',
+      title,
+      detail,
+    });
+    step.end('blocked');
+  });
   return finish(recorder, [], undefined);
 }
 

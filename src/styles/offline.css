@@ -1,1 +1,565 @@
-/* offline area styles. */
+/*
+ * Offline mode, and the command palette.
+ *
+ * Both live here because both are "the page hands over to something outside the
+ * browser and takes the answer back": one to a shell, one to the keyboard. Every
+ * selector below is under `.offline`, `.palette` or `.sheet-palette`, so this
+ * file cannot reach into another area's styles.
+ *
+ * Two rules from tokens.css are load bearing here and easy to break:
+ *
+ *  - A hairline is decorative. Nothing below uses a border as the only carrier
+ *    of a status; the drop zone's active state changes its background as well as
+ *    its border, and every verdict carries an icon and a word from the
+ *    primitives.
+ *  - A status colour and its tinted surface travel together through the `tone-*`
+ *    classes, so nothing here names a status token directly.
+ */
+
+/* --------------------------------------------------------------------------
+   Offline: layout
+   -------------------------------------------------------------------------- */
+
+.offline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+.offline-lede {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 82ch;
+}
+
+.offline-lede h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.offline-lede p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.offline-lede-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--fg-muted);
+}
+
+/*
+ * One column until there is room for two. The form stays visible beside the
+ * result on purpose: the round trip this screen exists for is paste, copy a
+ * command, paste the answer, and a layout that scrolls the form off screen to
+ * show the trace turns that into a hunt.
+ */
+.offline-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+@media (min-width: 1100px) {
+  .offline-columns {
+    grid-template-columns: minmax(360px, 34%) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+.offline-form,
+.offline-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Offline: the paste box
+   -------------------------------------------------------------------------- */
+
+.offline-drop {
+  border: var(--hairline-width) dashed var(--border-meaningful);
+  border-radius: var(--radius-card);
+  background: var(--bg-inset);
+  padding: var(--space-2);
+  transition:
+    background var(--motion-state) var(--motion-ease),
+    border-color var(--motion-state) var(--motion-ease);
+}
+
+.offline-drop.is-dragging {
+  border-color: var(--accent);
+  border-style: solid;
+  background: var(--accent-bg);
+}
+
+.offline-textarea {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  resize: vertical;
+  padding: var(--space-5);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--fg-default);
+  font-size: 13px;
+  line-height: 20px;
+  /* An opaque value wraps rather than scrolling sideways: a truncated key that
+     looks complete is worse than one that obviously is not. */
+  overflow-wrap: anywhere;
+}
+
+.offline-textarea::placeholder {
+  color: var(--fg-muted);
+  opacity: 1;
+}
+
+.offline-textarea-small {
+  min-height: 92px;
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-hairline);
+}
+
+.offline-file-button {
+  cursor: pointer;
+}
+
+/*
+ * The file input inside the label is clipped, not removed, so it keeps its place
+ * in the tab order. That leaves the focus ring drawn around a 1px box nobody can
+ * see, so the label wears it instead.
+ */
+.offline-file-button:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Offline: the live verdict
+   -------------------------------------------------------------------------- */
+
+.offline-verdict {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  min-width: 0;
+}
+
+.offline-verdict-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.offline-verdict-head strong {
+  font-weight: 600;
+}
+
+.offline-verdict-sentence {
+  flex: 1 1 32ch;
+  min-width: 0;
+  color: var(--fg-muted);
+}
+
+.offline-facts {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 19px;
+  color: var(--fg-muted);
+  overflow-wrap: anywhere;
+}
+
+.offline-plan {
+  margin: 0;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--bg-raised);
+  /* fg-subtle is 3.52:1 on bg-raised and banned there, so this steps up. */
+  color: var(--fg-muted);
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.offline-plan-label {
+  color: var(--fg-default);
+  font-weight: 600;
+}
+
+.offline-http {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.offline-http-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Offline: fields
+   -------------------------------------------------------------------------- */
+
+.offline-field,
+.offline-key {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.offline-field + .offline-field {
+  margin-top: var(--space-7);
+}
+
+.offline-field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.offline-field-note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+  max-width: 72ch;
+}
+
+.offline-field-note-strong {
+  color: var(--fg-default);
+}
+
+.offline-key-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.offline-input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-4) var(--space-5);
+  border: var(--hairline-width) solid var(--border-meaningful);
+  border-radius: var(--radius-control);
+  background: var(--bg-inset);
+  color: var(--fg-default);
+  font-size: 13px;
+}
+
+.offline-input::placeholder {
+  color: var(--fg-muted);
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Offline: the handoff
+   -------------------------------------------------------------------------- */
+
+.offline-handoff {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.offline-handoff-lede {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--fg-default);
+}
+
+.offline-handoff-lede svg {
+  flex: none;
+  margin-top: var(--space-2);
+  color: var(--fg-muted);
+}
+
+.offline-handoff .offline-field {
+  margin-top: var(--space-3);
+}
+
+.offline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.offline-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* --------------------------------------------------------------------------
+   The command palette
+   -------------------------------------------------------------------------- */
+
+/*
+ * The one shadow in the whole app, and it is here for a structural reason
+ * rather than a decorative one: this layer floats over arbitrary content, and a
+ * hairline at 1.55:1 cannot guarantee a boundary against a payload pane full of
+ * cards. Elevation everywhere else is a background step plus a hairline.
+ *
+ * The shadow colour is mixed from --bg-inset rather than written as an rgba
+ * literal, which keeps it inside the token system. That makes it near-invisible
+ * in the light theme, where bg-inset is pale, so the boundary is actually
+ * carried by the ring in the first shadow layer: --border-meaningful is 3.61 /
+ * 3.30 dark and light, which clears 1.4.11 in both, and the soft layer is only
+ * depth on top of it.
+ */
+.sheet-palette {
+  width: min(680px, 100%);
+  max-height: min(72vh, 640px);
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 0 0 var(--hairline-width) var(--border-meaningful),
+    0 24px 64px color-mix(in srgb, var(--bg-inset) 70%, transparent);
+}
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.palette-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+.palette-search-icon {
+  flex: none;
+  color: var(--fg-muted);
+}
+
+.palette-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg-default);
+  font-size: 16px;
+  line-height: 24px;
+  padding: var(--space-2) 0;
+}
+
+/* The default focus ring stands. A borderless field inside a dialog is exactly
+   where suppressing it looks tidy and leaves a keyboard user with nothing. */
+
+.palette-input::placeholder {
+  color: var(--fg-muted);
+  opacity: 1;
+}
+
+.palette-list {
+  margin: 0;
+  padding: var(--space-4) 0 var(--space-5);
+  list-style: none;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.palette-section {
+  display: block;
+}
+
+.palette-group {
+  display: block;
+  padding: var(--space-4) var(--space-6) var(--space-2);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.palette-option {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+  padding: var(--space-4) var(--space-6);
+  cursor: pointer;
+  border-left: var(--rail-width) solid transparent;
+}
+
+/*
+ * The highlight is a background step and a full-strength rail, never a border
+ * on its own: on a projector a tinted background survives and a hairline does
+ * not.
+ */
+.palette-option.is-active {
+  background: var(--bg-hover);
+  border-left-color: var(--accent);
+}
+
+/* Dimmed by dropping the label a text tier, never by `opacity`: an opacity
+   sweep takes the reason text below its contrast ratio at the moment it is the
+   only thing explaining why the row will not run. */
+.palette-option.is-unavailable {
+  cursor: not-allowed;
+}
+
+.palette-option.is-unavailable .palette-option-label {
+  color: var(--fg-muted);
+}
+
+.palette-option-icon {
+  flex: none;
+  display: inline-flex;
+  margin-top: var(--space-2);
+  color: var(--fg-muted);
+}
+
+.palette-option.is-active .palette-option-icon {
+  color: var(--accent);
+}
+
+.palette-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.palette-option-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg-default);
+}
+
+.palette-option-hint {
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+  max-width: 68ch;
+}
+
+.palette-option-blocked {
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--status-warn);
+}
+
+.palette-empty {
+  padding: var(--space-7) var(--space-6);
+  color: var(--fg-muted);
+  font-size: 13.5px;
+  line-height: 21px;
+  max-width: 60ch;
+}
+
+.palette-keys {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+  background: var(--bg-raised);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.palette-keys table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.palette-keys th,
+.palette-keys td {
+  text-align: left;
+  vertical-align: baseline;
+  padding: var(--space-2) var(--space-5) var(--space-2) 0;
+  font-weight: 400;
+  /* fg-subtle is banned on bg-raised, so the whole table sits on fg-muted or
+     above. See the ratio table in tokens.css. */
+  color: var(--fg-default);
+}
+
+.palette-keys th {
+  white-space: nowrap;
+}
+
+.palette-keys-or,
+.palette-keys-where {
+  color: var(--fg-muted);
+}
+
+.palette-keys kbd {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border: var(--hairline-width) solid var(--border-meaningful);
+  border-radius: var(--radius-chip);
+  background: var(--bg-surface);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.palette-notice {
+  margin: 0;
+  padding: 0 var(--space-6);
+  min-height: 20px;
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+
+.palette-notice:empty {
+  display: none;
+}
+
+.palette-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  color: var(--fg-muted);
+}
+
+.palette-footer p {
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.palette-footer kbd {
+  display: inline-block;
+  padding: 0 var(--space-3);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-chip);
+  background: var(--bg-surface);
+  font-size: 11.5px;
+}

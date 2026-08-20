@@ -87,7 +87,12 @@ describe('JWS ES256', () => {
       'verify',
     ]);
     const jwk = (await crypto.subtle.exportKey('jwk', pair.publicKey)) as Record<string, string>;
-    const kid = await jwkThumbprint({ kty: 'EC', crv: 'P-256', x: jwk.x as string, y: jwk.y as string });
+    const kid = await jwkThumbprint({
+      kty: 'EC',
+      crv: 'P-256',
+      x: jwk.x as string,
+      y: jwk.y as string,
+    });
     const header = bytesToBase64url(utf8Encode(JSON.stringify({ alg: 'ES256', kid, zip: 'DEF' })));
     const payload = bytesToBase64url(utf8Encode('payload-bytes'));
     const signature = new Uint8Array(

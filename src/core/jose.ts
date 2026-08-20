@@ -114,7 +114,6 @@ export function parseJweCompact(compact: string): JweParts {
   return { protectedHeaderB64, encryptedKeyB64, ivB64, ciphertextB64, tagB64, header };
 }
 
-
 /**
  * Render an untrusted header value for display.
  *
@@ -310,7 +309,13 @@ export function parseJwsCompact(compact: string): JwsParts {
   } catch {
     throw new JoseError('The JWS header is not base64url-encoded JSON.', 'header-not-json');
   }
-  return { headerB64, payloadB64, signatureB64, header, signingInput: `${headerB64}.${payloadB64}` };
+  return {
+    headerB64,
+    payloadB64,
+    signatureB64,
+    header,
+    signingInput: `${headerB64}.${payloadB64}`,
+  };
 }
 
 export interface EcJwk {

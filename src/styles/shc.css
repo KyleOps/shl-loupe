@@ -1,1 +1,313 @@
-/* shc area styles. */
+/*
+ * SMART Health Card verification.
+ *
+ * Two things in here are doing real work rather than decorating.
+ *
+ * The posture block and every ladder rung read their colour from the tone-*
+ * class the component sets, so the status colour and its tinted surface can
+ * never come apart: there is no place in this file where a foreground is picked
+ * without the matching --tone-bg behind it.
+ *
+ * The ladder is a grid with a fixed first column, so the verdict words line up
+ * down the left edge and the eye can find the one failure in twenty-one rows
+ * without reading any of them. That is the whole reason the rung is not a
+ * paragraph with a chip in front of it.
+ */
+
+.shc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+.shc-lede {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--fg-muted);
+  max-width: 78ch;
+}
+
+.shc-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fg-muted);
+  max-width: 78ch;
+}
+
+.shc-note code {
+  font-size: 12.5px;
+  color: var(--fg-default);
+}
+
+/* --------------------------------------------------------------------------
+   Posture
+   -------------------------------------------------------------------------- */
+
+.shc-posture {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--tone-bg);
+  /* Full-strength status colour, not a hairline: this border is the one carrying
+     the verdict, and a decorative 1.55:1 line cannot be asked to do that. */
+  border: var(--hairline-width) solid var(--tone-fg);
+}
+
+.shc-posture > p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--fg-default);
+  max-width: 82ch;
+}
+
+/* --------------------------------------------------------------------------
+   Sections
+   -------------------------------------------------------------------------- */
+
+.shc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+/* A second card in the same file is a boundary the reader has to perceive, so it
+   gets a meaningful rule rather than a hairline. */
+.shc-card + .shc-card {
+  padding-top: var(--space-7);
+  border-top: var(--hairline-width) solid var(--border-meaningful);
+}
+
+.shc-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.shc-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.shc-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.shc-heading svg {
+  flex: none;
+}
+
+/* --------------------------------------------------------------------------
+   The action, and the in-flight state
+   -------------------------------------------------------------------------- */
+
+.shc-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.shc-action-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fg-muted);
+  max-width: 78ch;
+  /* The URL in this sentence is long and must wrap rather than push the pane
+     sideways. */
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------------------------
+   The ladder
+   -------------------------------------------------------------------------- */
+
+.shc-ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shc-rung {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, max-content) 1fr;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-control);
+  min-width: 0;
+}
+
+/* Only a rung that is saying something gets a tint. Twenty-one tinted rows is a
+   wall of colour with no signal in it. */
+.shc-rung.tone-warn,
+.shc-rung.tone-fail,
+.shc-rung.tone-exception {
+  background: var(--tone-bg);
+}
+
+.shc-rung-state {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  color: var(--tone-fg);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+}
+
+.shc-rung-state .status-icon {
+  /* Baseline alignment puts an icon a shade high beside small caps. */
+  transform: translateY(2px);
+}
+
+.shc-rung-word {
+  white-space: nowrap;
+}
+
+.shc-rung-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.shc-rung-label {
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--fg-default);
+}
+
+.shc-rung-detail {
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+  max-width: 78ch;
+  overflow-wrap: anywhere;
+}
+
+.shc-rung-id {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Options
+   -------------------------------------------------------------------------- */
+
+.shc-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.shc-option {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+}
+
+.shc-option + .shc-option {
+  border-top: var(--hairline-width) solid var(--border-hairline);
+}
+
+.shc-option-lede {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fg-muted);
+  max-width: 78ch;
+}
+
+.shc-option-lede svg {
+  flex: none;
+  margin-top: var(--space-3);
+}
+
+.shc-check {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-5);
+  align-items: start;
+  cursor: pointer;
+}
+
+.shc-check input {
+  margin: 0;
+  /* accent-color takes the theme's accent token, so a checked box is the same
+     blue as every other control in either mode. */
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  margin-top: var(--space-3);
+}
+
+.shc-check > span {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  font-size: 13.5px;
+}
+
+.shc-option-note {
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+  max-width: 78ch;
+}
+
+.shc-option-url {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Findings
+   -------------------------------------------------------------------------- */
+
+.shc-findings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Narrow
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .shc-rung {
+    /* The verdict column stops earning its width below this: a rung reads better
+       as two stacked lines than as a 4rem word beside a 6rem sentence. */
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}

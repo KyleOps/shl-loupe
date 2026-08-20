@@ -14,12 +14,14 @@ const RFC7516 = 'https://www.rfc-editor.org/rfc/rfc7516';
 const RFC7638 = 'https://www.rfc-editor.org/rfc/rfc7638';
 const FETCH_CORS = 'https://fetch.spec.whatwg.org/#cors-protocol';
 
-const cite = (spec: string, url: string) => (section: string, quote?: string): Citation => ({
-  spec,
-  section,
-  url,
-  ...(quote === undefined ? {} : { quote }),
-});
+const cite =
+  (spec: string, url: string) =>
+  (section: string, quote?: string): Citation => ({
+    spec,
+    section,
+    url,
+    ...(quote === undefined ? {} : { quote }),
+  });
 
 const shl = cite('SMART Health Links', SHL);
 const shc = cite('SMART Health Cards', SHC);

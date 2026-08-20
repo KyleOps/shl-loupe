@@ -37,8 +37,7 @@ export function FindingCard({ finding }: { finding: Finding }): ReactNode {
       )}
 
       <p className="finding-audience">
-        <strong>{AUDIENCE_LABEL[finding.audience]}.</strong>{' '}
-        {AUDIENCE_ACTION[finding.audience]}
+        <strong>{AUDIENCE_LABEL[finding.audience]}.</strong> {AUDIENCE_ACTION[finding.audience]}
       </p>
 
       {finding.citation !== undefined && <CitationView citation={finding.citation} />}

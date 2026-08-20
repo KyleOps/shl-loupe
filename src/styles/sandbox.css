@@ -1,1 +1,636 @@
-/* sandbox area styles. */
+/*
+ * Sandbox area: the mint form, the broken-link catalogue, and the two QR
+ * components.
+ *
+ * The QR and scanner rules live here rather than in a file of their own because
+ * app.css owns the per-area import list and this is the area that asked for
+ * them. If a third area starts using the scanner, lift both blocks into their
+ * own stylesheet and add the import there.
+ */
+
+/* --------------------------------------------------------------------------
+   The page
+   -------------------------------------------------------------------------- */
+
+.sandbox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+.sandbox-lede h1 {
+  margin: 0 0 var(--space-4);
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.01em;
+}
+
+.sandbox-lede p {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Mint form
+   -------------------------------------------------------------------------- */
+
+.mint {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+/* auto-fit rather than a media query: this form sits in a panel whose width
+   depends on the shell, so the breakpoint belongs to the container. */
+.mint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.mint-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/*
+ * A legend's participation in a flex fieldset is inconsistent across engines
+ * (it has historically been laid out outside the principal box), so a fieldset
+ * stays in block flow and spaces its children with margins instead of a gap.
+ */
+fieldset.mint-field {
+  display: block;
+}
+
+fieldset.mint-field > * + * {
+  margin-top: var(--space-4);
+}
+
+.mint-field-wide {
+  grid-column: 1 / -1;
+}
+
+.mint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.mint-field legend,
+.mint-label {
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* A legend does not participate in the flex column, so the gap above the first
+   control has to be its own margin. */
+.mint-field legend {
+  margin-bottom: var(--space-4);
+}
+
+.mint-note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+  max-width: 70ch;
+}
+
+.mint-control {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-inset);
+  color: var(--fg-default);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.mint-control:hover {
+  border-color: var(--border-meaningful);
+}
+
+.mint-json {
+  width: 100%;
+  min-width: 0;
+  resize: vertical;
+  padding: var(--space-5);
+  background: var(--bg-inset);
+  color: var(--fg-default);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  white-space: pre;
+}
+
+.mint-samples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.mint-sample {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  text-align: left;
+  background: var(--bg-raised);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+}
+
+.mint-sample:hover {
+  background: var(--bg-hover);
+}
+
+/* aria-pressed carries the state for a screen reader; the accent border and the
+   full-strength label carry it visually. A hairline alone would not: it is
+   1.55:1 on the canvas and cannot be the sole signal. */
+.mint-sample[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.mint-sample-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.mint-sample-blurb {
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+}
+
+.mint-checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.mint-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: start;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--fg-default);
+  cursor: pointer;
+}
+
+.mint-check input {
+  margin: var(--space-2) 0 0;
+  accent-color: var(--accent);
+}
+
+.mint-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Minted output
+   -------------------------------------------------------------------------- */
+
+.mint-output {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-6);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  min-width: 0;
+}
+
+.mint-output h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.mint-output h4 {
+  margin: var(--space-3) 0 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+.mint-output-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-7);
+  align-items: start;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .mint-output-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mint-output-facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.mint-output-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.mint-output ul {
+  margin: var(--space-3) 0 0;
+  padding-left: var(--space-7);
+}
+
+.mint-output li + li {
+  margin-top: var(--space-3);
+}
+
+/* --------------------------------------------------------------------------
+   The broken catalogue
+   -------------------------------------------------------------------------- */
+
+.catalogue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.catalogue-waiting,
+.preset-waiting {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 13px;
+}
+
+.preset-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  padding: var(--space-6);
+  background: var(--bg-raised);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.preset-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.preset-head h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 15px;
+}
+
+.preset-verdict {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
+}
+
+.preset-verdict-label {
+  font-size: 11px;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.preset-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.preset-facts dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.preset-facts dd {
+  margin: 0 0 var(--space-4);
+  font-size: 13px;
+  line-height: 20px;
+  max-width: 70ch;
+}
+
+.preset-rules {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-right: var(--space-4);
+}
+
+.preset-source,
+.preset-gap {
+  color: var(--fg-muted);
+}
+
+.preset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.preset-reach {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+  max-width: 70ch;
+}
+
+/* --------------------------------------------------------------------------
+   QR code
+   -------------------------------------------------------------------------- */
+
+.qr-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/*
+ * A QR is dark modules on a light field in BOTH themes. An inverted symbol
+ * fails on plenty of phone cameras, so this pairing does not follow the theme
+ * the way a status colour does: it is fixed in one direction and only the two
+ * tokens that are actually dark or actually light are eligible.
+ * --fg-on-accent is white in both themes; the ink token differs because dark
+ * mode's near-black is a surface and light mode's is text.
+ */
+.qr-figure {
+  --qr-paper: var(--fg-on-accent);
+  --qr-ink: var(--bg-inset);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  max-width: 100%;
+}
+
+:root[data-theme='light'] .qr-figure {
+  --qr-ink: var(--fg-default);
+}
+
+.qr-svg {
+  display: block;
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  /* The symbol's own quiet zone is inside the SVG, so the border sits on the
+     paper edge rather than eating into the margin a scanner needs. */
+  border: var(--hairline-width) solid var(--border-hairline);
+}
+
+.qr-svg svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.qr-caption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--fg-muted);
+}
+
+.qr-caption-lede {
+  color: var(--fg-default);
+}
+
+.qr-caption-meta {
+  font-size: 11.5px;
+}
+
+/*
+ * Print. The rendered width is an inline style, so overriding it needs
+ * !important; a 45mm symbol is comfortably above the 40mm the specifications
+ * treat as the printed floor, and page-break-inside keeps the symbol whole.
+ */
+@media print {
+  .qr-figure {
+    width: 45mm !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .qr-svg {
+    border: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   QR scanner
+   -------------------------------------------------------------------------- */
+
+.scanner {
+  width: min(560px, calc(100vw - var(--space-8)));
+  max-height: calc(100vh - var(--space-9));
+  padding: 0;
+  border: var(--hairline-width) solid var(--border-meaningful);
+  border-radius: var(--radius-pane);
+  background: var(--bg-surface);
+  color: var(--fg-default);
+  overflow: auto;
+}
+
+.scanner::backdrop {
+  /* color-mix keeps the scrim in the theme rather than hardcoding a black. */
+  background: color-mix(in srgb, var(--bg-inset) 78%, transparent);
+}
+
+.scanner-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.scanner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+.scanner-head h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 15px;
+}
+
+.scanner-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  min-width: 0;
+}
+
+.scanner-camera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.scanner-stage {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.scanner-stage[data-live='no'] .scanner-video {
+  visibility: hidden;
+}
+
+.scanner-stage-idle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--fg-muted);
+}
+
+.scanner-stage-idle p {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 13px;
+}
+
+.scanner-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.scanner-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+  color: var(--fg-muted);
+  border: var(--hairline-width) dashed var(--border-meaningful);
+  border-radius: var(--radius-card);
+}
+
+.scanner-drop p {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.scanner-drop kbd {
+  padding: 0 var(--space-2);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-chip);
+  background: var(--bg-inset);
+}
+
+/* The file input is visually hidden but focusable, so the ring has to come from
+   the label it lives in or keyboard users get no focus indication at all. */
+.scanner-file:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.scanner-status {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/*
+ * The frame-grabbing canvas. Off-screen rather than display:none: a
+ * display:none canvas still has a backing store in every current engine, but
+ * keeping it in the layout as a 1px absolute element avoids relying on that.
+ */
+.scanner-canvas {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  .preset-list,
+  .mint-samples,
+  .mint-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

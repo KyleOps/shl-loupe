@@ -247,7 +247,8 @@ export const SAMPLE_PAYLOADS: SamplePayload[] = [
     id: 'ips-tiny',
     label: 'Patient summary document (tiny)',
     contentType: SHL_CONTENT_TYPES.fhir,
-    blurb: 'A document Bundle whose first entry is a Composition, which is the shape a summary takes.',
+    blurb:
+      'A document Bundle whose first entry is a Composition, which is the shape a summary takes.',
     content: {
       resourceType: 'Bundle',
       type: 'document',
@@ -310,7 +311,11 @@ export const SAMPLE_PAYLOADS: SamplePayload[] = [
             },
             code: {
               coding: [
-                { system: 'http://snomed.info/sct', code: '716186003', display: 'No known allergy' },
+                {
+                  system: 'http://snomed.info/sct',
+                  code: '716186003',
+                  display: 'No known allergy',
+                },
               ],
             },
             patient: { reference: 'urn:uuid:0f8f6a1e-5b0e-4a3a-9a41-8a2d4e6c1b02' },
@@ -323,7 +328,8 @@ export const SAMPLE_PAYLOADS: SamplePayload[] = [
     id: 'patient-only',
     label: 'One Patient resource',
     contentType: SHL_CONTENT_TYPES.fhir,
-    blurb: 'The smallest useful payload: a single resource rather than a Bundle. Legal, and rarely tested.',
+    blurb:
+      'The smallest useful payload: a single resource rather than a Bundle. Legal, and rarely tested.',
     content: {
       resourceType: 'Patient',
       name: [{ family: 'Argonaut', given: ['Jessica'] }],
@@ -417,7 +423,11 @@ function keyBytes(key: string): Uint8Array {
   return bytes;
 }
 
-function canned(status: number, body: string, headers: Record<string, string> = {}): TransportResponse {
+function canned(
+  status: number,
+  body: string,
+  headers: Record<string, string> = {},
+): TransportResponse {
   return {
     ok: status >= 200 && status < 300,
     status,
@@ -438,7 +448,10 @@ function link(payload: ShlPayload): { shlink: string; payload: ShlPayload } {
 }
 
 /** One embedded file, conformant, so a preset's own fault is the only fault. */
-async function goodManifest(key: string, contentType = SHL_CONTENT_TYPES.fhir): Promise<MintedManifest> {
+async function goodManifest(
+  key: string,
+  contentType = SHL_CONTENT_TYPES.fhir,
+): Promise<MintedManifest> {
   const kid = await octThumbprint(key);
   const jwe = await forgeJwe({
     plaintext: utf8Encode(SAMPLE_JSON),
@@ -532,7 +545,8 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
   {
     id: 'url-http',
     title: 'Manifest URL over plain http',
-    wrong: 'The url scheme is http, so the manifest and every file it names cross the network readable.',
+    wrong:
+      'The url scheme is http, so the manifest and every file it names cross the network readable.',
     receiverShould:
       'Refuse. Note that Loupe stops at the payload check (SHL-PAYLOAD-INVALID) rather than reaching its own http rule, because shlink.ts treats a non-https url as making the payload unusable, so the URL rules never run.',
     expect: {
@@ -707,7 +721,8 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
   {
     id: 'flag-u-and-p',
     title: 'U and P together',
-    wrong: 'The flag is "PU". A direct GET has no manifest request, so there is nowhere to put a passcode.',
+    wrong:
+      'The flag is "PU". A direct GET has no manifest request, so there is nowhere to put a passcode.',
     receiverShould:
       'Say the two flags contradict each other and name which one it is going to honour, rather than sending a passcode into a query string.',
     expect: {
@@ -789,7 +804,8 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
   {
     id: 'manifest-file-neither',
     title: 'File entry with neither embedded nor location',
-    wrong: 'files[0] declares a contentType and gives no content and no URL, so there is nothing to fetch.',
+    wrong:
+      'files[0] declares a contentType and gives no content and no URL, so there is nothing to fetch.',
     receiverShould:
       'Account for the entry explicitly as unusable. Silently skipping it turns a server bug into an apparently empty share.',
     expect: {
@@ -812,7 +828,8 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
   {
     id: 'manifest-content-type-lies',
     title: 'Manifest declares a health card and carries FHIR',
-    wrong: 'files[0].contentType says application/smart-health-card; the plaintext is a FHIR resource.',
+    wrong:
+      'files[0].contentType says application/smart-health-card; the plaintext is a FHIR resource.',
     receiverShould:
       'Go by the content, since that is what a renderer has to work with, and report the disagreement. A receiver that filters on the declared type skips this file entirely.',
     expect: {
@@ -868,7 +885,8 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
   {
     id: 'jwe-iv-16-bytes',
     title: 'JWE with a 16-byte IV',
-    wrong: 'The initialisation vector is 16 bytes. AES-GCM uses 12, and python-jose historically emitted 16.',
+    wrong:
+      'The initialisation vector is 16 bytes. AES-GCM uses 12, and python-jose historically emitted 16.',
     receiverShould:
       'Refuse, and name the byte count and the library signature. The file round-trips in the tool that wrote it and nowhere else, which is why the sender believes it is fine.',
     expect: {
@@ -900,7 +918,8 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
   {
     id: 'jwe-alg-rsa-oaep',
     title: 'JWE with alg RSA-OAEP',
-    wrong: 'The protected header claims key wrapping, so the link key is not the content encryption key.',
+    wrong:
+      'The protected header claims key wrapping, so the link key is not the content encryption key.',
     receiverShould:
       "Refuse on the header alone and say the link's key is not the content key. SMART Health Links pin alg to dir; there is no negotiation to get wrong.",
     expect: {
@@ -963,7 +982,8 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
   {
     id: 'zip-zlib-framed',
     title: 'zip DEF carrying zlib-framed DEFLATE',
-    wrong: 'The header says zip DEF, which means raw DEFLATE, and the plaintext carries a zlib header.',
+    wrong:
+      'The header says zip DEF, which means raw DEFLATE, and the plaintext carries a zlib header.',
     receiverShould:
       'Name the framing. A strict inflater fails here in a way indistinguishable from a wrong key, which sends the reader looking at their encryption.',
     expect: {

@@ -28,14 +28,19 @@ import { bytesToBase64url, toArrayBuffer, utf8Encode } from './bytes';
 import { deflateRawBytes } from './compress';
 import { jwkThumbprint } from './jose';
 import { OfflineTransport } from './net/browser';
-import { NetworkFailure, type Transport, type TransportRequest, type TransportResponse } from './net/transport';
+import {
+  NetworkFailure,
+  type Transport,
+  type TransportRequest,
+  type TransportResponse,
+} from './net/transport';
 
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
 const ISS = 'https://issuer.example.org/fhir/r4';
-const NOW = Date.UTC(2026, 7, 20) ;
+const NOW = Date.UTC(2026, 7, 20);
 
 interface Signer {
   privateKey: CryptoKey;
@@ -384,7 +389,9 @@ describe('inspectJws', () => {
 
   it('recognises milliseconds instead of reporting a card from the year 55000', async () => {
     const signer = await makeSigner();
-    const inspection = inspectJws(await signCard(signer, { claims: claimsFor({ nbf: 1687450764656 }) }));
+    const inspection = inspectJws(
+      await signCard(signer, { claims: claimsFor({ nbf: 1687450764656 }) }),
+    );
     expect(inspection.ok && inspection.card.nbf?.unit).toBe('milliseconds');
     expect(ruleIds(inspection.findings)).toContain('SHC-CLAIM-NBF-MILLISECONDS');
   });
@@ -440,7 +447,9 @@ describe('inspectJws', () => {
   it('reports an unminified payload as conformance, not corruption', async () => {
     const signer = await makeSigner();
     const spaced = `{"iss":"${ISS}", "nbf":1, "vc":{"type":["https://smarthealth.cards#health-card"],"credentialSubject":{"fhirVersion":"4.0.1","fhirBundle":{"resourceType":"Bundle","entry":[]}}}}`;
-    const header = bytesToBase64url(utf8Encode(JSON.stringify({ zip: 'DEF', alg: 'ES256', kid: signer.kid })));
+    const header = bytesToBase64url(
+      utf8Encode(JSON.stringify({ zip: 'DEF', alg: 'ES256', kid: signer.kid })),
+    );
     const payload = bytesToBase64url(deflateRawBytes(utf8Encode(spaced)));
     const inspection = inspectJws(`${header}.${payload}.AAAA`);
     const found = inspection.findings.find((f) => f.ruleId === 'SHC-JWS-PAYLOAD-NOT-MINIFIED');
@@ -520,7 +529,12 @@ describe('verifyHealthCard', () => {
       name: 'refusing',
       send: (request: TransportRequest) =>
         Promise.reject(
-          new NetworkFailure(`nothing answered ${request.url}`, 'blocked-by-browser', 12, 'Failed to fetch'),
+          new NetworkFailure(
+            `nothing answered ${request.url}`,
+            'blocked-by-browser',
+            12,
+            'Failed to fetch',
+          ),
         ),
     };
     const result = await verifyHealthCard(card, { transport: refusing, now: () => NOW });
@@ -640,7 +654,13 @@ describe('verifyHealthCard', () => {
     const card = await signCard(signer);
     const result = await verifyHealthCard(card, {
       transport: serving({
-        [JWKS_URL]: jwks({ kty: 'EC', crv: 'P-256', x: signer.jwk.x, y: signer.jwk.y, kid: signer.kid }),
+        [JWKS_URL]: jwks({
+          kty: 'EC',
+          crv: 'P-256',
+          x: signer.jwk.x,
+          y: signer.jwk.y,
+          kid: signer.kid,
+        }),
       }),
       now: () => NOW,
     });
@@ -777,7 +797,10 @@ describe('verifyHealthCard', () => {
     const before = await verifyHealthCard(card, {
       transport: serving({
         [JWKS_URL]: jwks({ ...signer.jwk, crlVersion: 1 }),
-        [issuerCrlUrl(ISS, signer.kid)]: JSON.stringify({ ctr: 1, rids: ['MKyCxh7p6uQ.1687450765'] }),
+        [issuerCrlUrl(ISS, signer.kid)]: JSON.stringify({
+          ctr: 1,
+          rids: ['MKyCxh7p6uQ.1687450765'],
+        }),
       }),
       now: () => NOW,
     });
@@ -787,7 +810,10 @@ describe('verifyHealthCard', () => {
       transport: serving({
         [JWKS_URL]: jwks({ ...signer.jwk, crlVersion: 1 }),
         // The same rid, revoked only for cards issued before an earlier moment.
-        [issuerCrlUrl(ISS, signer.kid)]: JSON.stringify({ ctr: 1, rids: ['MKyCxh7p6uQ.1600000000'] }),
+        [issuerCrlUrl(ISS, signer.kid)]: JSON.stringify({
+          ctr: 1,
+          rids: ['MKyCxh7p6uQ.1600000000'],
+        }),
       }),
       now: () => NOW,
     });
@@ -841,7 +867,9 @@ describe('verifyHealthCard', () => {
   it('reads an issuer name only from a directory that published one', async () => {
     const signer = await makeSigner();
     const card = await signCard(signer);
-    const directory = { ...(KNOWN_TRUST_DIRECTORIES[0] as (typeof KNOWN_TRUST_DIRECTORIES)[number]) };
+    const directory = {
+      ...(KNOWN_TRUST_DIRECTORIES[0] as (typeof KNOWN_TRUST_DIRECTORIES)[number]),
+    };
     const result = await verifyHealthCard(card, {
       transport: serving({
         [JWKS_URL]: jwks(signer.jwk),
@@ -852,7 +880,11 @@ describe('verifyHealthCard', () => {
       trustedDirectories: [directory],
       now: () => NOW,
     });
-    expect(result.trust).toMatchObject({ state: 'listed', matchedOn: 'iss', name: 'Example Health Service' });
+    expect(result.trust).toMatchObject({
+      state: 'listed',
+      matchedOn: 'iss',
+      name: 'Example Health Service',
+    });
     expect(result.issuer?.name).toBe('Example Health Service');
     expect(state(result.checks, 'trust-directory')).toBe('pass');
   });
@@ -865,7 +897,9 @@ describe('verifyHealthCard', () => {
       transport: serving({
         [JWKS_URL]: jwks(signer.jwk),
         [directory.url]: JSON.stringify({
-          participating_issuers: [{ iss: 'https://other.example.org', canonical_iss: ISS, name: 'Group' }],
+          participating_issuers: [
+            { iss: 'https://other.example.org', canonical_iss: ISS, name: 'Group' },
+          ],
         }),
       }),
       trustedDirectories: [directory],
@@ -881,7 +915,9 @@ describe('verifyHealthCard', () => {
     const result = await verifyHealthCard(card, {
       transport: serving({
         [JWKS_URL]: jwks(signer.jwk),
-        [directory.url]: JSON.stringify({ participating_issuers: [{ iss: 'https://elsewhere.example' }] }),
+        [directory.url]: JSON.stringify({
+          participating_issuers: [{ iss: 'https://elsewhere.example' }],
+        }),
       }),
       trustedDirectories: [directory],
       now: () => NOW,
@@ -934,18 +970,25 @@ describe('verifyHealthCard', () => {
     const strict = await verifyHealthCard(card, { transport, now: () => NOW });
     expect(state(strict.checks, 'key-thumbprint')).toBe('fail');
 
-    const permissive = await verifyHealthCard(card, { transport, permissive: true, now: () => NOW });
+    const permissive = await verifyHealthCard(card, {
+      transport,
+      permissive: true,
+      now: () => NOW,
+    });
     expect(state(permissive.checks, 'key-thumbprint')).toBe('warn');
     expect(permissive.downgraded).toContain('key-thumbprint');
     expect(ruleIds(permissive.findings)).toContain('SHC-PERMISSIVE-MODE');
 
     // The same switch must not launder a broken signature.
     const parts = card.split('.') as [string, string, string];
-    const broken = await verifyHealthCard(`${parts[0]}.${parts[1]}.${bytesToBase64url(new Uint8Array(64))}`, {
-      transport,
-      permissive: true,
-      now: () => NOW,
-    });
+    const broken = await verifyHealthCard(
+      `${parts[0]}.${parts[1]}.${bytesToBase64url(new Uint8Array(64))}`,
+      {
+        transport,
+        permissive: true,
+        now: () => NOW,
+      },
+    );
     expect(state(broken.checks, 'signature')).toBe('fail');
     expect(broken.downgraded).not.toContain('signature');
     expect(broken.posture).toBe('invalid');
@@ -1044,7 +1087,9 @@ describe('minificationFindings', () => {
           fullUrl: 'resource:0',
           resource: {
             resourceType: 'Patient',
-            meta: { security: [{ system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'R' }] },
+            meta: {
+              security: [{ system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'R' }],
+            },
           },
         },
       ],

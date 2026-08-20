@@ -293,7 +293,8 @@ export function SettingsSheet({ onClose }: { onClose: () => void }): ReactNode {
 
         <Callout tone="info" title="What is stored">
           Only the settings on this page, in this browser. No link, key, passcode or payload is ever
-          written to storage, and none of them leaves the tab except in the requests the trace lists.
+          written to storage, and none of them leaves the tab except in the requests the trace
+          lists.
         </Callout>
       </div>
     </Overlay>

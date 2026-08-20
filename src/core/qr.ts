@@ -65,7 +65,11 @@ export interface QrCapacityVerdict {
  * module count, and a symbol past Version 22 needs either a bigger projection
  * or a better camera than the room has.
  */
-export function describeQrCapacity(characters: number, version: number, modules: number): QrCapacityVerdict {
+export function describeQrCapacity(
+  characters: number,
+  version: number,
+  modules: number,
+): QrCapacityVerdict {
   if (version > SHL_QR_VERSION_TARGET) {
     return {
       characters,
@@ -238,9 +242,12 @@ export function shcNumericEncode(jws: string): string {
 }
 
 export function shcNumericDecode(digits: string): string {
-  if (!/^\d*$/.test(digits)) throw new Error('The numeric segment contains something other than digits.');
+  if (!/^\d*$/.test(digits))
+    throw new Error('The numeric segment contains something other than digits.');
   if (digits.length % 2 !== 0) {
-    throw new Error('The numeric segment has an odd number of digits, so the scan lost a character.');
+    throw new Error(
+      'The numeric segment has an odd number of digits, so the scan lost a character.',
+    );
   }
   let jws = '';
   for (let index = 0; index < digits.length; index += 2) {
@@ -372,11 +379,15 @@ export function parseShcQr(scan: string): ParsedShcChunk {
     total = Number(ordinal[2]);
     body = body.slice(ordinal[0].length);
     if (index < 1 || index > total) {
-      throw new Error(`The ordinal says chunk ${index} of ${total}, which cannot be right. Chunks are numbered from 1.`);
+      throw new Error(
+        `The ordinal says chunk ${index} of ${total}, which cannot be right. Chunks are numbered from 1.`,
+      );
     }
   }
   if (!/^\d+$/.test(body)) {
-    throw new Error('The part after "shc:/" is not all digits, so this is not the numeric encoding.');
+    throw new Error(
+      'The part after "shc:/" is not all digits, so this is not the numeric encoding.',
+    );
   }
   return { index, total, digits: body };
 }
@@ -408,7 +419,9 @@ export function classifyScan(text: string): ScanClassification {
   const shlink = /shlink:\/{1,2}[A-Za-z0-9_-]+/.exec(trimmed);
   if (shlink) {
     const matched = shlink[0];
-    const surrounding = (trimmed.slice(0, shlink.index) + trimmed.slice(shlink.index + matched.length))
+    const surrounding = (
+      trimmed.slice(0, shlink.index) + trimmed.slice(shlink.index + matched.length)
+    )
       .replace(/^https?:\/\/\S*#$/, '')
       .trim();
     const isBare = trimmed === matched || /^https?:\/\/\S*#$/.test(trimmed.slice(0, shlink.index));

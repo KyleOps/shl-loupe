@@ -54,7 +54,8 @@ export const GLOSSARY: readonly GlossaryEntry[] = [
   },
   {
     term: 'Payload',
-    short: 'The JSON object inside a link, base64url encoded: url, key, and up to four more members.',
+    short:
+      'The JSON object inside a link, base64url encoded: url, key, and up to four more members.',
     detail:
       'It is not encrypted and not signed. Everything in it, the decryption key included, is readable by anybody who has the link.',
     confusedWith: ['Manifest', 'JWE'],
@@ -139,8 +140,7 @@ export const GLOSSARY: readonly GlossaryEntry[] = [
   {
     term: 'Preflight',
     aka: ['OPTIONS request'],
-    short:
-      'An OPTIONS request a browser sends first, to ask whether the real request is allowed.',
+    short: 'An OPTIONS request a browser sends first, to ask whether the real request is allowed.',
     detail:
       'A manifest POST always triggers one, because a JSON content type is not on the Fetch safelist. Servers routinely route POST and leave OPTIONS to fall through to a 404, which fails the request before the POST is ever sent.',
     confusedWith: ['CORS'],
@@ -154,7 +154,8 @@ export const GLOSSARY: readonly GlossaryEntry[] = [
   },
   {
     term: 'Mixed content',
-    short: 'A browser refusing an http request made by an https page, before it reaches the network.',
+    short:
+      'A browser refusing an http request made by an https page, before it reaches the network.',
     detail:
       'Loopback is the exception: http://localhost counts as potentially trustworthy and is allowed. So two visually similar links, one on localhost and one on a private address, fail for entirely different reasons.',
   },
