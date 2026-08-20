@@ -481,7 +481,7 @@ export interface KeyResolution {
 export function resolveKeyField(value: string): KeyResolution {
   const trimmed = value.trim();
   if (trimmed.length === 0) return {};
-  const detected = detectInput(trimmed);
+  const detected = detectInput(trimmed, 'offline');
   if (detected.link === undefined) return { key: trimmed };
   if (detected.link.key !== undefined) {
     return { key: detected.link.key, note: 'Taken out of the link you pasted.' };
@@ -578,7 +578,7 @@ export function OfflineScreen(): ReactNode {
   // already carries its own outcome is two sources of truth for one fact.
   const running = ownRun?.outcome === 'running';
 
-  const detected = useMemo(() => detectInput(text), [text]);
+  const detected = useMemo(() => detectInput(text, 'offline'), [text]);
   const keyResolution = useMemo(() => resolveKeyField(keyField), [keyField]);
   const needs = needsFor(detected.kind, detected.variant === 'empty');
   const ready = detected.content.trim().length > 0;

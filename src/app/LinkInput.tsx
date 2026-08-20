@@ -332,10 +332,18 @@ function DetectionPreview({ detected }: { detected: DetectedInput | undefined })
   if (detected === undefined) {
     return (
       <div className="detect" id="link-field-verdict" aria-live="polite" data-state="idle">
+        {/*
+          One short line, not three sentences.
+          
+          What this field accepts is already in the placeholder, and the screen
+          below already explains the whole path, so spelling it out a third time
+          in the masthead pushed the tab strip down the page for no gain. What is
+          left is the one fact neither of those carries and that a first-time
+          reader wants before typing: nothing is sent until they ask.
+        */}
         <p className="detect-idle">
-          Paste a SMART Health Link, a payload, an <code>shc:/</code> string or JSON. A{' '}
-          <code>.txt</code> or <code>.json</code> file can be dropped here, and a QR code can be
-          scanned with the camera. Nothing is requested until you press Open.
+          Nothing is requested until you press Open. A file can be dropped here, and the icon scans
+          a QR code.
         </p>
       </div>
     );

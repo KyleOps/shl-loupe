@@ -148,9 +148,7 @@
 
 .nav-tab {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--space-1);
+  align-items: center;
   padding: var(--space-5) var(--space-6);
   /* The rail is on every tab, transparent until it is the current one, so the
      labels do not shift by its width when the section changes. It is
@@ -181,39 +179,42 @@
 }
 
 /*
- * Hidden by default, and NOT hidden per tab in the markup: rendering only the
- * current tab's blurb would change the strip's height every time you moved
- * between sections. Shown from the width at which the widest blurb plus five
- * labels still fits; below that the tooltip and the palette's Go actions carry
- * the same sentence.
+ * Never shown in the strip, and hidden with `display: none` rather than moved
+ * off screen.
+ *
+ * It used to appear on the current tab only, which made that tab a different
+ * component from its five neighbours: a tall raised card in a row of plain
+ * labels, drawing the eye to the section you are already looking at. The screen
+ * itself says the same thing in its heading, which is where a reader needs it,
+ * and the `title` carries it on hover.
+ *
+ * The first attempt at hiding it used the visually-hidden recipe (absolute, 1px,
+ * clipped). That broke narrow reflow on every screen: `.nav-tab` is not a
+ * positioned ancestor, so the absolute box resolved against the initial
+ * containing block and contributed 83px of page overflow at 320px. The blurb is
+ * not needed in the accessibility tree (the label names the tab and the title
+ * describes it), so `display: none` is both simpler and correct here.
  */
 .nav-tab-blurb {
   display: none;
-  font-size: 0.75em; /* 12px at the 16px base. */
-  font-weight: 400;
-  color: var(--fg-subtle);
 }
 
 /*
- * The current section is carried by four things at once, none of them colour
- * alone: the accent rail, a raised surface, heavier and brighter type, and the
- * blurb appearing. `aria-current` is what a screen reader gets, and it is on the
- * link rather than on a wrapper so it lands on the thing that is activated.
+ * The current section is carried by three things at once, none of them colour
+ * alone: the accent rail, heavier type, and brighter text. `aria-current` is what
+ * a screen reader gets, and it is on the link rather than on a wrapper so it lands
+ * on the thing that is activated.
+ *
+ * No raised surface. With the rail and the weight already saying it, the surface
+ * turned one tab into a card and left the other five looking like plain text.
  */
 .nav-tab[aria-current='page'] {
-  background: var(--bg-raised);
   border-bottom-color: var(--accent);
   color: var(--fg-default);
 }
 
 .nav-tab[aria-current='page'] .nav-tab-label {
   font-weight: 650;
-}
-
-@media (min-width: 1080px) {
-  .nav-tab[aria-current='page'] .nav-tab-blurb {
-    display: block;
-  }
 }
 
 /* --------------------------------------------------------------------------

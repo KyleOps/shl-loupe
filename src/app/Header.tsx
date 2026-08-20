@@ -176,11 +176,11 @@ export function Header({
               key={entry.name}
               className="nav-tab"
               href={`#${entry.path}`}
-              // No hover title on the current tab: its blurb is already on
-              // screen, and a tooltip repeating it is announced twice.
-              {...(current
-                ? { 'aria-current': 'page' as const, ref: currentTab }
-                : { title: entry.blurb })}
+              // Every tab carries its description on hover, the current one
+              // included: no blurb is shown in the strip any more, so there is
+              // nothing for the tooltip to repeat.
+              title={entry.blurb}
+              {...(current ? { 'aria-current': 'page' as const, ref: currentTab } : {})}
             >
               <span className="nav-tab-label">{entry.label}</span>
               <span className="nav-tab-blurb">{entry.blurb}</span>

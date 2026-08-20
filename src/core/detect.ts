@@ -74,11 +74,27 @@ export interface DetectedInput {
 const COMPACT_PART = /^[A-Za-z0-9_-]+$/;
 const BARE_BASE64URL = /^[A-Za-z0-9_-]{16,}$/;
 
-export function detectInput(text: string): DetectedInput {
-  return detect(text, false);
+/**
+ * Where the detected input is about to be used.
+ *
+ * The same paste means different things on the two screens that accept one, and
+ * the sentence has to match what will actually happen. The Open screen requests
+ * the manifest; Offline mode opens one the user supplies and requests nothing.
+ * Saying "the manifest you paste below" in the header of the Open screen, which
+ * is what this did before the mode was a parameter, describes a screen the reader
+ * is not looking at.
+ */
+export type DetectContext = 'online' | 'offline';
+
+export function detectInput(text: string, context: DetectContext = 'online'): DetectedInput {
+  return detect(text, false, context);
 }
 
-function detect(text: string, insideWrapper: boolean): DetectedInput {
+function detect(
+  text: string,
+  insideWrapper: boolean,
+  context: DetectContext = 'online',
+): DetectedInput {
   const trimmed = text.trim();
   if (trimmed.length === 0) {
     return {
@@ -104,7 +120,7 @@ function detect(text: string, insideWrapper: boolean): DetectedInput {
   if (looksLikeJson(trimmed)) return detectJson(trimmed);
 
   const shlink = extractShlink(trimmed);
-  if (shlink !== undefined) return describeShlink(trimmed, shlink);
+  if (shlink !== undefined) return describeShlink(trimmed, shlink, context);
 
   const compact = trimmed.replace(/\s+/g, '');
   const parts = compact.split('.');
@@ -219,7 +235,11 @@ function parseHeaderBlock(block: string): DetectedHttpResponse {
 // Links
 // ---------------------------------------------------------------------------
 
-function describeShlink(original: string, found: ShlinkExtraction): DetectedInput {
+function describeShlink(
+  original: string,
+  found: ShlinkExtraction,
+  context: DetectContext,
+): DetectedInput {
   const payload = decodePayloadQuietly(found.encodedPayload);
   const url = typeof payload?.url === 'string' ? payload.url : undefined;
   const key = typeof payload?.key === 'string' ? payload.key : undefined;
@@ -235,10 +255,19 @@ function describeShlink(original: string, found: ShlinkExtraction): DetectedInpu
     ...(flag === undefined ? [] : [`flags ${flag}`]),
   ];
 
+  // What happens next depends on the flag as well as the screen: a U link has no
+  // manifest at all, so promising to request one would be wrong even online.
+  const direct = flag !== undefined && flag.toUpperCase().includes('U');
+  const next =
+    context === 'offline'
+      ? 'then open the manifest you supply below, requesting nothing'
+      : direct
+        ? 'then fetch its single file directly with a GET, since the U flag means there is no manifest'
+        : 'then request the manifest and open each file it names';
   const sentence =
     payload === undefined
       ? 'A SMART Health Link, whose payload does not decode. Loupe will open it and show exactly where the decoding stops.'
-      : `A SMART Health Link${where === undefined ? '' : ` pointing at ${where}`}. Loupe will check every member of the payload, then open the manifest you paste below rather than requesting it.`;
+      : `A SMART Health Link${where === undefined ? '' : ` pointing at ${where}`}. Loupe will check every member of the payload, ${next}.`;
 
   return {
     kind: 'shlink',

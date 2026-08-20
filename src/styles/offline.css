@@ -104,10 +104,15 @@
  * The track is capped rather than `1fr` so a two-step ladder stays two cards
  * wide instead of stretching each one across half the display, which read as a
  * banner rather than as a step.
+ *
+ * The cap is 300px, not 360px. At 360 the four-step ladder needed 1476px of track
+ * and the shell gives it slightly less, so it wrapped three-then-one and left the
+ * last step orphaned on its own row, which reads as a separate thing rather than
+ * as the end of a sequence. Four 300px tracks need 1236px and fit with room over.
  */
 .offline-guide {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 360px));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 300px));
   gap: var(--space-5);
   margin: 0;
   padding: 0;
