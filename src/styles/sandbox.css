@@ -14,12 +14,24 @@
 
 /* Narrowed and centred for the same reason as the landing screen: see .idle. */
 .sandbox {
-  max-width: var(--figure-max);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-7);
   min-width: 0;
+}
+
+/*
+ * Bare prose on the page ground takes the measure, and takes it on the BLOCK so
+ * the text fills it exactly.
+ *
+ * This is the other half of the rule, and the two halves are easy to confuse.
+ * Text inside a visibly bounded card must FILL the card, because a paragraph
+ * stopping short of a border the reader can see looks cut off. Text on the open
+ * page has no such edge to disagree with, so a column is just a column and the
+ * whitespace beside it reads as layout.
+ */
+.sandbox-lede {
+  max-width: var(--measure);
 }
 
 .sandbox-lede h1 {
@@ -58,6 +70,7 @@
 }
 
 .mint-field {
+  max-width: var(--card-max);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -258,6 +271,11 @@ fieldset.mint-field > * + * {
   font-size: 15px;
 }
 
+/* The caveat body holds prose, so it is the measure and its paragraphs fill it. */
+.mint-caveat-body {
+  max-width: var(--measure);
+}
+
 .mint-caveat-body p {
   margin: 0 0 var(--space-4);
   font-size: 14px;
@@ -412,6 +430,18 @@ fieldset.mint-field > * + * {
  * up.
  */
 .catalogue-thesis {
+  /*
+   * Bare prose on the page ground takes the measure, and takes it on the BLOCK so
+   * the text fills it exactly.
+   *
+   * This is the other half of the rule, and the two halves are easy to confuse.
+   * Text inside a visibly bounded card must FILL the card, because a paragraph
+   * stopping short of a border the reader can see looks cut off. Text on the open
+   * page has no such edge to disagree with, so a column is just a column and the
+   * whitespace beside it reads as layout. Capping the block rather than the
+   * paragraph is what keeps both true at once.
+   */
+  max-width: var(--measure);
   display: flex;
   flex-direction: column;
   gap: var(--space-5);

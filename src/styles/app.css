@@ -252,7 +252,15 @@
   white-space: nowrap;
 }
 
+/*
+ * A callout is prose in a bordered box, which makes it the exact case both halves
+ * of the measure rule have to agree on: the box has a visible edge, so its text
+ * must reach it, and the text is prose, so the line cannot run the width of the
+ * page. Both are satisfied by sizing the BOX from the measure. A callout stretched
+ * across a wide screen was running to about 200 characters a line.
+ */
 .callout {
+  max-width: calc(var(--measure) + var(--space-11));
   display: flex;
   gap: var(--space-5);
   padding: var(--space-5) var(--space-6);

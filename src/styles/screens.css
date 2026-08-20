@@ -67,16 +67,18 @@
 }
 
 /*
- * A screen that is only text is narrowed and centred rather than left to sprawl.
- * The leftover width then sits on both sides as layout, instead of trailing off
- * to the right of every paragraph, which is the reading the review reported. Learn
- * is the exception below: it has figures and a contents rail, so it keeps a wider
- * column and its own centring.
+ * A screen that is only text keeps its reading width, but as a LEFT-ALIGNED block
+ * rather than a centred column.
+ *
+ * Centring each screen individually read well one screen at a time and badly as a
+ * set: the content's left edge sat at 136px on Learn, 420px on most screens and
+ * 492px here, so changing tabs shifted the whole page sideways underneath a tab
+ * strip that had not moved. One left edge everywhere is worth more than a
+ * perfectly balanced column on any single screen.
  */
 .rules,
 .about {
   max-width: var(--card-max);
-  margin-inline: auto;
 }
 
 /*
@@ -135,7 +137,6 @@
 .learn-body {
   width: 100%;
   max-width: calc(var(--toc-width) + var(--space-9) + var(--figure-max));
-  margin-inline: auto;
 }
 
 .learn-body {
@@ -289,7 +290,13 @@
 }
 
 /* A step away from the fact list above it, so it reads as a sentence about the
-   example rather than as another row of the list that lost its label. */
+   example rather than as another row of the list that lost its label.
+
+   It fills its figure rather than taking the measure. A figure is bordered, so a
+   caption stopping short of that border looks cut off, and these are
+   single-sentence captions where the line length matters far less than it would
+   in a paragraph. Filling costs one exception fewer in the rule, which is worth
+   more than the few characters it buys back. */
 .learn-note {
   margin: var(--space-5) 0 0;
   line-height: 1.5;
@@ -1635,12 +1642,25 @@
  * column, which reads as a column rather than as a truncation.
  */
 .idle {
-  max-width: var(--figure-max);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-9);
   min-width: 0;
+}
+
+/*
+ * Bare prose on the page ground takes the measure, and takes it on the BLOCK so
+ * the text fills it exactly.
+ *
+ * This is the other half of the rule, and the two halves are easy to confuse.
+ * Text inside a visibly bounded card must FILL the card, because a paragraph
+ * stopping short of a border the reader can see looks cut off. Text on the open
+ * page has no such edge to disagree with, so a column is just a column and the
+ * whitespace beside it reads as layout.
+ */
+.idle-lede,
+.idle-samples-lede {
+  max-width: var(--measure);
 }
 
 .idle-lede h1 {
@@ -1817,8 +1837,18 @@
   counter-reset: claim;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  /*
+   * Three across, so each card is about a third of the page and its paragraph
+   * lands near the measure without anything being capped. Letting the layout set
+   * the line length is the cleanest form of this rule: no container fights its
+   * own text, because the container is already the right size.
+   */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Wrap points stated, because a fixed track count does not collapse on its own:
+     at 320px the three tracks stayed put and squeezed each card to 57px against
+     125px of content, so the page scrolled sideways. Every fixed-count grid needs
+     this, and today I wrote two that did not have it. */
   gap: var(--space-5);
   min-width: 0;
 }
@@ -1868,6 +1898,8 @@
 }
 
 .idle-offline {
+  /* The block holds prose, so it is the measure and its text fills it. */
+  max-width: var(--measure);
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
@@ -1902,4 +1934,20 @@
 .sample-ending.tone {
   background: var(--tone-bg);
   color: var(--tone-fg);
+}
+
+/* --------------------------------------------------------------------------
+   The claim cards' wrap points
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .claims {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .claims {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

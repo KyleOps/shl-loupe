@@ -22,8 +22,6 @@
 
 /* Narrowed and centred for the same reason as the landing screen: see .idle. */
 .offline {
-  max-width: var(--figure-max);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-7);
@@ -37,6 +35,18 @@
  * max-width inside a much wider panel makes the wrap look accidental.
  */
 .offline-lede {
+  /*
+   * Bare prose on the page ground takes the measure, and takes it on the BLOCK so
+   * the text fills it exactly.
+   *
+   * This is the other half of the rule, and the two halves are easy to confuse.
+   * Text inside a visibly bounded card must FILL the card, because a paragraph
+   * stopping short of a border the reader can see looks cut off. Text on the open
+   * page has no such edge to disagree with, so a column is just a column and the
+   * whitespace beside it reads as layout. Capping the block rather than the
+   * paragraph is what keeps both true at once.
+   */
+  max-width: var(--measure);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -115,7 +125,15 @@
  */
 .offline-guide {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 300px));
+  /*
+   * Explicit counts, not auto-fit. auto-fit fits as many tracks as the width
+   * allows, which for a four-step ladder means three-then-one whenever the fourth
+   * does not quite fit, and an orphaned last step reads as a separate thing rather
+   * than as the end of a sequence. This has now happened twice, once when the
+   * track cap was too generous and again when the page was narrowed underneath it,
+   * so the wrap points are stated rather than derived.
+   */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-5);
   margin: 0;
   padding: 0;
@@ -739,4 +757,31 @@
   border-radius: var(--radius-chip);
   background: var(--bg-surface);
   font-size: 11.5px;
+}
+
+/* --------------------------------------------------------------------------
+   The step ladder's wrap points, stated rather than derived
+   -------------------------------------------------------------------------- */
+
+/*
+ * Two by two, never three-then-one. An orphaned last step reads as a separate
+ * thing rather than as the end of a sequence, and auto-fit produced exactly that
+ * twice: once when the track cap was too generous, and again when the page was
+ * narrowed underneath it.
+ */
+@media (max-width: 1180px) {
+  .offline-guide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/*
+ * One column. Without this the four fixed tracks stayed put and squeezed each
+ * card to 63px against 116px of content, which the page then had to scroll
+ * sideways to show.
+ */
+@media (max-width: 620px) {
+  .offline-guide {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

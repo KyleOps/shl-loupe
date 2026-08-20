@@ -16,8 +16,6 @@
  * card so a paragraph ends exactly at its inner edge.
  */
 .settings {
-  max-width: var(--card-max);
-  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
@@ -25,6 +23,18 @@
 }
 
 .settings-head {
+  /*
+   * Bare prose on the page ground takes the measure, and takes it on the BLOCK so
+   * the text fills it exactly.
+   *
+   * This is the other half of the rule, and the two halves are easy to confuse.
+   * Text inside a visibly bounded card must FILL the card, because a paragraph
+   * stopping short of a border the reader can see looks cut off. Text on the open
+   * page has no such edge to disagree with, so a column is just a column and the
+   * whitespace beside it reads as layout. Capping the block rather than the
+   * paragraph is what keeps both true at once.
+   */
+  max-width: var(--measure);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -70,6 +80,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  /* The block holding the explanation is the measure, so the explanation fills it
+     and reads at a sane line length rather than running the width of the page. */
+  max-width: var(--card-max);
   min-width: 0;
 }
 
@@ -153,6 +166,7 @@
  * thing it switches when the note runs to four lines.
  */
 .setting-toggle {
+  max-width: var(--card-max);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
