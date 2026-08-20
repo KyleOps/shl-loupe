@@ -9,6 +9,10 @@ import {
   highlightPartForRule,
   highlightUrlPart,
   isCrossOriginResponse,
+  leadingFinding,
+  linkExpiryFromRun,
+  manifestUrlFromRun,
+  failingStepId,
   outcomeHeadline,
   outcomeTone,
   relativeTime,
@@ -342,5 +346,93 @@ describe('stepToText', () => {
     });
     expect(text).not.toContain('sekritsekritsekrit');
     expect(text).toContain('[link key redacted]');
+  });
+});
+
+describe('reading the link back out of the run', () => {
+  const decode = step({
+    id: 'd',
+    kind: 'shlink.decode',
+    evidence: [
+      {
+        type: 'json',
+        label: 'Decoded payload',
+        value: { url: 'https://localhost:5173/api/shl-manifest?bid=1', key: 'k', exp: 1_800_000_000 },
+      },
+    ],
+  });
+  const base: TraceRun = {
+    id: 'run-2',
+    startedAt: 0,
+    outcome: 'blocked',
+    input: { kind: 'shlink', source: 'shlink:/x' },
+    networkUsed: false,
+    findings: [],
+    steps: [decode],
+  };
+
+  it('finds the manifest URL with no request having been made', () => {
+    expect(manifestUrlFromRun(base)).toBe('https://localhost:5173/api/shl-manifest?bid=1');
+    expect(linkExpiryFromRun(base)).toBe(1_800_000_000);
+  });
+
+  it('falls back to the first request when there was no decoded payload', () => {
+    const pasted: TraceRun = {
+      ...base,
+      steps: [
+        step({
+          id: 'r',
+          evidence: [
+            { type: 'request', request: { method: 'GET', url: 'https://files/x', headers: {} } },
+          ],
+        }),
+      ],
+    };
+    expect(manifestUrlFromRun(pasted)).toBe('https://files/x');
+    expect(linkExpiryFromRun(pasted)).toBeUndefined();
+  });
+});
+
+describe('leadingFinding and failingStepId', () => {
+  const findings: Finding[] = [
+    { id: 'f1', ruleId: 'GOOD', severity: 'good', audience: 'nobody', title: 'g', detail: 'd' },
+    { id: 'f2', ruleId: 'NOTE', severity: 'info', audience: 'nobody', title: 'i', detail: 'd' },
+  ];
+
+  it('does not lead with a finding that says nothing is wrong', () => {
+    expect(leadingFinding(findings)).toBeUndefined();
+  });
+
+  it('leads with a warning, an error or a fatal', () => {
+    const warned: Finding[] = [
+      ...findings,
+      { id: 'f3', ruleId: 'W', severity: 'warning', audience: 'you', title: 'w', detail: 'd' },
+    ];
+    expect(leadingFinding(warned)?.ruleId).toBe('W');
+  });
+
+  it('jumps to the step that raised the leading finding', () => {
+    const run: TraceRun = {
+      id: 'r',
+      startedAt: 0,
+      outcome: 'failed',
+      input: { kind: 'shlink', source: 'x' },
+      networkUsed: false,
+      steps: [step({ id: 's1' }), step({ id: 's2', status: 'fail' })],
+      findings: [
+        {
+          id: 'f',
+          ruleId: 'SHL-URL-LOOPBACK',
+          severity: 'fatal',
+          audience: 'sender',
+          title: 't',
+          detail: 'd',
+          stepId: 's1',
+        },
+      ],
+    };
+    expect(failingStepId(run)).toBe('s1');
+    expect(failingStepId({ ...run, findings: [] })).toBe('s2');
+    expect(failingStepId({ ...run, findings: [], steps: [step({ id: 'a' })] })).toBeUndefined();
   });
 });

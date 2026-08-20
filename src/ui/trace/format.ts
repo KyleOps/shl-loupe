@@ -556,3 +556,71 @@ function indent(text: string): string {
     .map((line) => `  ${line}`)
     .join('\n');
 }
+
+// ---------------------------------------------------------------------------
+// Reading the link back out of the run
+// ---------------------------------------------------------------------------
+
+/**
+ * The decoded payload, as the run recorded it.
+ *
+ * Read back out of the trace rather than passed alongside it, so the verdict
+ * banner can point at the real manifest URL for a link that was stopped before
+ * any request was made. That case is the whole product thesis, and it is exactly
+ * the case where there is no response to read the URL from.
+ */
+function decodedPayload(run: TraceRun): Record<string, unknown> | undefined {
+  for (const step of run.steps) {
+    if (step.kind !== 'shlink.decode') continue;
+    for (const evidence of step.evidence) {
+      if (evidence.type !== 'json') continue;
+      const value = evidence.value;
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        return value as Record<string, unknown>;
+      }
+    }
+  }
+  return undefined;
+}
+
+export function manifestUrlFromRun(run: TraceRun): string | undefined {
+  const url = decodedPayload(run)?.['url'];
+  if (typeof url === 'string' && url.length > 0) return url;
+  // No decoded payload: a pasted manifest or a bare JWE. The first request made
+  // is then the closest thing to an address this run has.
+  for (const step of run.steps) {
+    for (const evidence of step.evidence) {
+      if (evidence.type === 'request') return evidence.request.url;
+    }
+  }
+  return undefined;
+}
+
+/** The link's `exp`, in epoch seconds, when it carried one. */
+export function linkExpiryFromRun(run: TraceRun): number | undefined {
+  const exp = decodedPayload(run)?.['exp'];
+  return typeof exp === 'number' && Number.isFinite(exp) ? exp : undefined;
+}
+
+/**
+ * The finding the verdict banner leads with: only one that says something is
+ * wrong. A run whose worst finding is an informational note leads with its
+ * outcome instead, because "Opened" is the headline there.
+ */
+export function leadingFinding(findings: readonly Finding[]): Finding | undefined {
+  const worst = worstFinding(findings);
+  if (!worst) return undefined;
+  return worst.severity === 'fatal' || worst.severity === 'error' || worst.severity === 'warning'
+    ? worst
+    : undefined;
+}
+
+/** The step the banner's jump lands on. */
+export function failingStepId(run: TraceRun): string | undefined {
+  const leading = leadingFinding(run.findings);
+  if (leading?.stepId !== undefined) return leading.stepId;
+  const stopped = run.steps.find(
+    (step) => step.status === 'fail' || step.status === 'blocked',
+  );
+  return stopped?.id ?? run.steps.find((step) => step.status === 'warn')?.id;
+}
