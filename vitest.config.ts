@@ -10,5 +10,7 @@ export default defineConfig({
     // globalThis.crypto. Screen tests get their own environment when they land.
     environment: 'node',
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test/**/*.test.ts'],
+    // test/browser/* is Playwright's, run by `pnpm test:browser`.
+    exclude: ['test/browser/**', 'node_modules/**', 'dist/**'],
   },
 });
