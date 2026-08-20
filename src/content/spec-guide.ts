@@ -1428,7 +1428,8 @@ export const RULE_GUIDE: readonly RuleGuideEntry[] = [
     severityVaries:
       'Fatal when this page is served over https and the link is http, because the browser refuses the request as mixed content before it reaches the network. Nothing the server does can fix that from here.',
     audience: 'sender',
-    fires: 'The scheme is not https.',
+    fires:
+      'The manifest URL scheme is anything other than https. Worth knowing that the specification never actually states the scheme: it is implied only by the examples, so http is not a conformance failure, it is a confidentiality one. These payloads are health data, and over http the manifest and every encrypted file it names cross the network readable by anything on the path.',
     tryPreset: 'SHL-URL-NOT-HTTPS',
   },
   {
@@ -1447,6 +1448,32 @@ export const RULE_GUIDE: readonly RuleGuideEntry[] = [
     audience: 'sender',
     fires:
       'The host is a public IP address rather than a name. A publicly trusted certificate for a bare IP is rare, so the handshake usually fails on a name mismatch, and a browser reports that as an ordinary connection failure.',
+  },
+  {
+    ruleId: 'SHL-URL-TOO-LONG',
+    group: 'hygiene',
+    severity: 'warning',
+    audience: 'sender',
+    fires:
+      'The url member is longer than 128 characters. The cap applies to that member alone, not to the whole link, and it exists so a link stays inside a QR code that scans comfortably from across a table. Nothing refuses a link over it.',
+    tryPreset: 'SHL-URL-TOO-LONG',
+  },
+  {
+    ruleId: 'SHL-URL-LOW-ENTROPY',
+    group: 'hygiene',
+    severity: 'error',
+    audience: 'sender',
+    fires:
+      'No component of the manifest URL is long enough to carry the 256 bits of entropy the specification requires. This is the most consequential check in the tool and the least obvious: the manifest endpoint has no authentication of any kind, so the unguessability of the URL IS the access control. A sequential database id in a query parameter therefore exposes every other link that server has issued, and it is a common shape because it is the natural thing to write.',
+    tryPreset: 'SHL-URL-LOW-ENTROPY',
+  },
+  {
+    ruleId: 'SHL-VERSION-UNSUPPORTED',
+    group: 'hygiene',
+    severity: 'error',
+    audience: 'you',
+    fires:
+      'The payload declares a protocol version above 1. The specification tells a receiver meeting a version it does not know to say so and stop, rather than make a manifest request and guess at the response, so Loupe shows what it can read statically and proceeds no further.',
   },
   {
     ruleId: 'SHL-URL-USERINFO',

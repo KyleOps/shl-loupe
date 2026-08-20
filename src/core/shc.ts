@@ -674,6 +674,12 @@ export function assembleShcQrChunks(scans: readonly string[]): ShcQrAssembly {
   const findings: RuleOutput[] = [];
   const parts = new Map<number, string>();
   const totals = new Set<number>();
+  // A conflict poisons the whole set, not just the chunk it was found on. The
+  // finding raised below says reassembling two cards produces something that
+  // verifies against nothing, so returning a jws anyway would contradict it, and
+  // a caller that trusted the jws over the findings would then verify a card
+  // nobody issued.
+  let conflicted = false;
 
   for (const scan of scans) {
     const decoded = decodeShcQr(scan);
@@ -692,9 +698,14 @@ export function assembleShcQrChunks(scans: readonly string[]): ShcQrAssembly {
           { remedy: 'Clear the scanned set and rescan one card at a time.' },
         ),
       );
+      conflicted = true;
       continue;
     }
     parts.set(decoded.chunkIndex, decoded.chunk);
+  }
+
+  if (conflicted) {
+    return { present: [...parts.keys()].sort((a, b) => a - b), missing: [], findings };
   }
 
   if (totals.size > 1) {
