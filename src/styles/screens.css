@@ -1805,20 +1805,6 @@
  * already does on its own.
  */
 @media (min-width: 1180px) {
-  .idle-hero {
-    display: grid;
-    grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
-    gap: var(--space-9) var(--space-11);
-    align-items: start;
-  }
-
-  /* Two across in the right-hand column, which is what fits at one card each.
-     One per row stretched a card to 820px and left its blurb short of its own
-     border; three across in half a row would be too narrow to say what each
-     one ends in. */
-  .idle-hero .sample-grid {
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-  }
 }
 
 /*
@@ -1831,23 +1817,73 @@
  * page has no such edge to disagree with, so a column is just a column and the
  * whitespace beside it reads as layout.
  */
-.idle-lede,
-.idle-samples-lede {
-  max-width: var(--measure);
+/*
+ * The landing hero.
+ *
+ * Larger than body type on purpose: this is the one block on the page whose job
+ * is to be read first, and at 28px over a 15px paragraph it read as a section
+ * heading rather than as the top of a page. A hero with room around it looks
+ * deliberate when the type has weight; the same room around small type looks like
+ * a layout that failed.
+ *
+ * The paragraph takes a wider measure than body text because it is set larger:
+ * 40rem at 18px is 85 characters, the same reading length the 16px column has at
+ * 35rem. The measure is about characters, not pixels, so a bigger size gets a
+ * bigger box.
+ */
+/* One box for the headline and the paragraph, so the hero has a single right
+   edge. A headline wider than its own paragraph is a legitimate editorial choice
+   and it is not this one: at 40px it wraps to three lines here, which is what a
+   hero wants anyway. */
+.idle-lede {
+  max-width: 33rem;
 }
 
 .idle-lede h1 {
-  margin: 0 0 var(--space-5);
-  font-size: 28px;
-  line-height: 36px;
-  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-6);
+  font-size: clamp(30px, 3.2vw, 38px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  max-width: none;
 }
 
+/* 33rem at 18px is 80 characters: the box scales with the size, because the
+   measure is a character count and not a pixel width. */
 .idle-lede p {
   margin: 0;
+  max-width: 33rem;
   color: var(--fg-muted);
-  font-size: 15px;
-  line-height: 24px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/*
+ * The band above the cards: the heading on the left, one sentence about all three
+ * on the right.
+ *
+ * Stacked, the sentence was a narrow column of text under a full-width rule with
+ * nothing beside it, which is the shape this whole design keeps being told off
+ * for. Side by side, both halves are the width of the text in them.
+ *
+ * The media query comes AFTER the base rule on purpose. It has the same
+ * specificity, so source order decides, and writing it above was why the row
+ * stayed one column and the sentence ran to 221 characters.
+ */
+.idle-samples-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 1180px) {
+  .idle-samples-head {
+    display: grid;
+    grid-template-columns: minmax(0, max-content) minmax(0, 40rem);
+    justify-content: space-between;
+    gap: var(--space-11);
+    align-items: baseline;
+  }
 }
 
 .idle-samples,
@@ -1858,21 +1894,45 @@
   min-width: 0;
 }
 
-/* Same shape as the section headings on Checks and About, so the screens read as
-   one tool. */
-.idle-samples > h2,
+/*
+ * Same shape as the section headings on Checks and About, so the screens read as
+ * one tool: a heading with a rule under it, spanning the content it introduces.
+ * `max-width: none` overrides the shared heading cap from tokens.css, which is
+ * the escape that rule's `:where()` exists to leave open, and without it the rule
+ * stopped at 825px above a row of cards 1468px wide.
+ */
+.idle-samples-head h2,
 .idle-claims > h2 {
   margin: 0;
+  max-width: none;
   padding-bottom: var(--space-4);
   border-bottom: var(--hairline-width) solid var(--border-hairline);
   font-size: 19px;
 }
 
+/* In the two-column band the rule belongs under the whole band, not under the
+   heading alone: a rule under half a row reads as a mistake. */
+@media (min-width: 1180px) {
+  .idle-samples-head h2 {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .idle-samples-head {
+    padding-bottom: var(--space-4);
+    border-bottom: var(--hairline-width) solid var(--border-hairline);
+  }
+}
+
+/* One sentence beside the heading, at 16px in a box sized for 16px: this had a
+   second rule 34 lines further down setting 14px, and the later one won, which is
+   how it came out at 93 characters. */
 .idle-samples-lede {
   margin: 0;
+  max-width: 36rem;
   color: var(--fg-muted);
-  font-size: 14px;
-  line-height: 23px;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 /*
@@ -1882,14 +1942,31 @@
  * is what stops the track being wider than the viewport at 320px, which is the
  * classic way an auto-fit grid causes sideways scrolling.
  */
+/* Three across on a wide page, one per card: `auto-fill` with a 260px minimum
+   gave five tracks in 1468px and left two of them empty, so the count is stated
+   instead of derived. The narrow rules below fold it to two and then one. */
 .sample-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
-  gap: var(--space-5);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6);
   margin: 0;
   padding: 0;
   list-style: none;
   min-width: 0;
+}
+
+/* Three across only where the band above them is also two columns, so the whole
+   section changes shape at one width rather than at two. */
+@media (max-width: 1180px) {
+  .sample-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .sample-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .sample-grid > li {

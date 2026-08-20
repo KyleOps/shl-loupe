@@ -85,9 +85,16 @@
   margin: 0 auto;
 }
 
+/*
+ * More room above the content than beside it.
+ *
+ * The tab strip is a horizontal band, and 16px between it and a 38px headline
+ * read as the page starting before it had finished. The side padding stays at
+ * 16px, because on a narrow screen every pixel of it is content width.
+ */
 .main {
   flex: 1;
-  padding: var(--space-6);
+  padding: var(--space-9) var(--space-6) var(--space-11);
   display: flex;
   flex-direction: column;
   gap: var(--space-6);

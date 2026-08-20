@@ -749,66 +749,77 @@ const ENDING_ICON = {
 function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
   return (
     <div className="idle">
-      {/* The pitch and the samples are one row on a wide display: see the
-          `.idle-hero` rule in screens.css for why they belong side by side. */}
-      <div className="idle-hero">
-        <section className="idle-lede">
-          <h1>Open a SMART Health Link and see every step of it.</h1>
-          <p className="prose">
-            Paste a link, a payload, a scanned code or a file into the field above and SHLoupe walks
-            the whole path: decode, judge the payload against the specification, inspect the URL,
-            request the manifest, fetch each file, decrypt, parse and render. Everything runs in
-            this tab, so the only requests made are the ones the trace lists.
-          </p>
-        </section>
+      {/*
+        The hero is one block, full width, with the samples in a row of their own
+        below it.
+        
+        It was a two-column row, pitch beside samples, and that was worse in two
+        ways at once: the pitch is four lines, so the left half of the row was
+        empty from there to the bottom of the third card, and three cards in half
+        a row came out two-and-one with a hole beside the odd one. A headline, a
+        paragraph and then a row of three is the shape a landing page has for a
+        reason.
+      */}
+      <section className="idle-lede">
+        <h1>Open a SMART Health Link and see every step of it.</h1>
+        <p className="prose">
+          Paste a link, a payload, a scanned code or a file into the field above and SHLoupe walks
+          the whole path: decode, judge the payload against the specification, inspect the URL,
+          request the manifest, fetch each file, decrypt, parse and render. Everything runs in this
+          tab, so the only requests made are the ones the trace lists.
+        </p>
+      </section>
 
-        <section className="idle-samples" aria-labelledby="idle-samples-title">
+      <section className="idle-samples" aria-labelledby="idle-samples-title">
+        {/*
+          The heading and its explanation sit side by side, which is what stops
+          the explanation being a narrow column of text under a full-width rule
+          with nothing beside it. Both halves are the same size, so the row reads
+          as one band introducing the cards under it.
+        */}
+        <div className="idle-samples-head">
           <h2 id="idle-samples-title">Start with one of these</h2>
           {/* The review's question, and it was fair: why start with one of these,
-            and what is the difference? Both answers belong above the cards, not
-            in the cards, because the reason to press any of them is the same. */}
+              and what is the difference? Both answers belong above the cards, not
+              in the cards, because the reason to press any of them is the same. */}
           <p className="idle-samples-lede prose">
-            Because they cost nothing and they prove the tool rather than describing it. The first
-            two are the implementation guide’s own examples: they really resolve, over the real
-            network, and they carry the key the specification publishes, so there is nothing
-            confidential behind either. The third is synthesised and cannot work at all. Each one
-            ends somewhere different, which is the whole reason there are three.
+            They cost nothing, the keys in them are the ones the specification publishes, and each
+            one ends somewhere different: that is the whole reason there are three.
           </p>
-          <ul className="sample-grid">
-            {SAMPLES.map((sample) => {
-              const Icon = ENDING_ICON[sample.ending];
-              return (
-                <li key={sample.id}>
-                  <button type="button" className="sample" onClick={() => void onRun(sample.input)}>
-                    <span className="sample-head">
-                      <Icon size={15} aria-hidden className="sample-icon" />
-                      <span className="sample-name">{sample.name}</span>
-                      <ArrowRight size={14} aria-hidden className="sample-go" />
-                    </span>
-                    <span className="sample-blurb">{sample.blurb}</span>
-                    {/* The one card that ends in a diagnosis is tinted as well as
+        </div>
+        <ul className="sample-grid">
+          {SAMPLES.map((sample) => {
+            const Icon = ENDING_ICON[sample.ending];
+            return (
+              <li key={sample.id}>
+                <button type="button" className="sample" onClick={() => void onRun(sample.input)}>
+                  <span className="sample-head">
+                    <Icon size={15} aria-hidden className="sample-icon" />
+                    <span className="sample-name">{sample.name}</span>
+                    <ArrowRight size={14} aria-hidden className="sample-go" />
+                  </span>
+                  <span className="sample-blurb">{sample.blurb}</span>
+                  {/* The one card that ends in a diagnosis is tinted as well as
                       iconed: tone-* keeps the colour and its surface together,
                       and the words say it too, so nothing here rests on colour. */}
-                    <span
-                      className={clsx(
-                        'sample-ending',
-                        sample.ending === 'diagnosis' && 'tone tone-warn',
-                      )}
-                    >
-                      {sample.endingWord}
-                    </span>
-                    <span className="sample-teaches">
-                      <GraduationCap size={13} aria-hidden />
-                      <span>{sample.teaches}</span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      </div>
-
+                  <span
+                    className={clsx(
+                      'sample-ending',
+                      sample.ending === 'diagnosis' && 'tone tone-warn',
+                    )}
+                  >
+                    {sample.endingWord}
+                  </span>
+                  <span className="sample-teaches">
+                    <GraduationCap size={13} aria-hidden />
+                    <span>{sample.teaches}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
       <section className="idle-claims" aria-label="What this does differently">
         <h2>Three things this does that the usual viewer does not</h2>
         <ol className="claims">
