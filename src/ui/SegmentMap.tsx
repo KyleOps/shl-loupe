@@ -16,7 +16,7 @@
  *    which is the failure mode of every hand-drawn diagram of a wire format.
  * 2. **A tint never carries the mapping on its own.** Each part has a marker (a
  *    number in the link, a letter in the payload), a word, and a tint, in that
- *    order of importance. A projector that washes every tint to the same grey
+ *    order of importance. A washed-out display that flattens every tint to grey
  *    loses nothing. The tints are mixed down from the accent, exception and warn
  *    hues rather than taken from the status palette at full strength, and nothing
  *    tinted here carries an icon-and-word verdict, so a tint cannot be misread as

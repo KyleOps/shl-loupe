@@ -95,15 +95,14 @@ function useMasking(): Masking {
 function MaskNotice({ masked }: { masked: boolean }): ReactNode {
   const revealed = useSettings((state) => state.revealSecrets);
   const setRevealSecrets = useSettings((state) => state.setRevealSecrets);
-  const projector = useSettings((state) => state.projector);
   const [confirming, setConfirming] = useState(false);
 
   if (!masked && !revealed) return null;
 
-  // Projector Mode asks twice on the way to revealing: the audience is looking
-  // at a decryption key, and the person driving is usually not the person who
-  // owns it. Hiding again is one press, always.
-  const needsConfirm = projector && !revealed && !confirming;
+  // Revealing always asks twice. This is a decryption key, the person driving is
+  // often not the person it belongs to, and at a shared table a shoulder is as
+  // good as a projector. Hiding again is one press.
+  const needsConfirm = !revealed && !confirming;
 
   return (
     <p className="mask-note">

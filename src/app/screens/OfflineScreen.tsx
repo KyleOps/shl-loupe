@@ -619,17 +619,16 @@ function Verdict({ detected }: { detected: DetectedInput }): ReactNode {
 /**
  * The key field, shown only when the detected content cannot open without one.
  *
- * Masked by default under Projector Mode and visible otherwise. A key on a
- * projector is a key in the room, and this is the one field where somebody is
- * pasting the secret rather than reading it back, so the default follows the
- * room rather than the user's earlier preference.
+ * Masked by default, unless the user has asked globally for secrets to be
+ * visible. This is the one field where somebody is typing the secret in rather
+ * than reading it back, so it is also the field most likely to be looked at by
+ * whoever is standing behind them.
  */
 function KeyPanel({ resolution }: { resolution: KeyResolution }): ReactNode {
-  const projector = useSettings((state) => state.projector);
   const revealDefault = useSettings((state) => state.revealSecrets);
   const value = useOfflineDraft((state) => state.key);
   const setKey = useOfflineDraft((state) => state.setKey);
-  const [revealed, setRevealed] = useState(revealDefault || !projector);
+  const [revealed, setRevealed] = useState(revealDefault);
 
   return (
     <Panel title="The key">

@@ -1,10 +1,12 @@
 /*
  * Design tokens.
  *
- * Dark first, with a light counterpart, and a third mode that is the point of
- * the whole exercise: Projector. Conference projectors crush blacks, wash
- * mid-greys and lose one-pixel lines, so the tool this is built for needs a
- * token override set rather than a bigger font size.
+ * Dark first, with a light counterpart, and one type-scale preference on top.
+ *
+ * There used to be a third mode, "Projector", which swapped colours, widths and
+ * type size together for showing the app on a conference projector. Its colour
+ * and width choices turned out to be better on a laptop as well, so they are the
+ * default here, and what is left is a preference that scales type.
  *
  * Base hues come from GitHub Primer's dark and light scales, which are already
  * tuned for code UI in both modes. Every contrast ratio in the comments is
@@ -31,11 +33,12 @@
   --border-meaningful: #656d76;
   --hairline-width: 1px;
 
-  /* Text. fg-subtle is 3.52:1 on --bg-raised, so it is banned there: inside an
-     expanded step body metadata steps up to fg-muted. */
+  /* Text. The muted and subtle tiers are the brighter values the retired mode
+     used to supply: #9198A1 was 6.50:1 on the canvas and technically passing,
+     and it still read as washed out on anything but a good laptop panel. */
   --fg-default: #e6edf3;
-  --fg-muted: #9198a1;
-  --fg-subtle: #6e7681;
+  --fg-muted: #b0b8c1;
+  --fg-subtle: #8b949e;
   --fg-on-accent: #ffffff;
 
   /* Accent and status */
@@ -57,7 +60,10 @@
   /* Type */
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
-  --font-size-base: 15px;
+  /* 16px, not 15px. The tighter value bought one more column of mono density
+     and cost prose legibility everywhere else, which is the wrong trade for a
+     tool people read over each other's shoulders. */
+  --font-size-base: 16px;
 
   /* Space, on a 4px grid. An off-scale value is the visual signature of a tool
      nobody cared about. */
@@ -87,8 +93,25 @@
   --motion-disclosure: 180ms;
   --motion-ease: cubic-bezier(0.2, 0, 0, 1);
 
-  --rail-width: 3px;
-  --content-max: none;
+  --rail-width: 4px;
+
+  /*
+   * A bounded measure, always.
+   *
+   * These used to be mode overrides, on the theory that only a conference
+   * projector needed the treatment. That was the wrong shape: a
+   * capped content width and legible mid-greys are better on a laptop too, and
+   * full-bleed prose on a wide display is simply bad typography rather than a
+   * mode. So the good parts are the default and the mode is gone.
+   *
+   * --content-max bounds the app shell. --measure bounds a column of PROSE,
+   * which needs to be much narrower: past about 75 characters the eye loses the
+   * line it is returning to. Panels are as wide as their content needs; the
+   * paragraphs inside them are not.
+   */
+  --content-max: 1560px;
+  --measure: 74ch;
+  --measure-tight: 62ch;
   --micro-tracking: 0.06em;
 }
 
@@ -121,25 +144,22 @@
 }
 
 /*
- * Projector mode. Composes with either theme: it only overrides the tokens a
- * projector destroys, so the light and dark identities survive underneath.
+ * Larger text: a preference, not a mode.
+ *
+ * This is what is left of "projector mode" once the parts that were simply
+ * better were made the default. It scales type and the things that have to scale
+ * with it, and nothing else, so there is one axis to reason about rather than a
+ * second visual identity to keep in step with the first.
  */
-:root[data-projector='on'] {
-  --font-size-base: 17px;
-  --bg-canvas: #161b22;
-  --fg-muted: #c9d1d9;
-  --fg-subtle: #c9d1d9; /* the tier is retired rather than dimmed */
-  --border-hairline: #484f58;
-  --hairline-width: 2px;
+:root[data-text-size='large'] {
+  --font-size-base: 19px;
   --rail-width: 5px;
+  --hairline-width: 2px;
+  --border-hairline: #484f58;
   --micro-tracking: 0.08em;
-  --content-max: 1600px;
 }
 
-:root[data-theme='light'][data-projector='on'] {
-  --bg-canvas: #ffffff;
-  --fg-muted: #424a53;
-  --fg-subtle: #424a53;
+:root[data-theme='light'][data-text-size='large'] {
   --border-hairline: #afb8c1;
 }
 
@@ -235,6 +255,26 @@ a {
 ::selection {
   background: var(--accent);
   color: var(--fg-on-accent);
+}
+
+/*
+ * One measure for prose, applied by class.
+ *
+ * Screens were each choosing their own max-width, which is why a paragraph
+ * wrapped at an arbitrary point inside a much wider panel and read as a hard
+ * line limit rather than as a column. `.prose` is the single answer, and
+ * `.prose-tight` is for a narrow column beside something else.
+ */
+.prose,
+.prose > p,
+.prose > ul,
+.prose > ol {
+  max-width: var(--measure);
+}
+
+.prose-tight,
+.prose-tight > p {
+  max-width: var(--measure-tight);
 }
 
 /* Wide content scrolls inside its own container. The page never scrolls

@@ -30,7 +30,7 @@ import {
   Eraser,
   Keyboard,
   Moon,
-  Projector,
+  ALargeSmall,
   Search,
   Send,
   Sparkles,
@@ -162,8 +162,8 @@ export function CommandPalette({
 
   const theme = useSettings((state) => state.theme);
   const setTheme = useSettings((state) => state.setTheme);
-  const projector = useSettings((state) => state.projector);
-  const toggleProjector = useSettings((state) => state.toggleProjector);
+  const largeText = useSettings((state) => state.largeText);
+  const toggleLargeText = useSettings((state) => state.toggleLargeText);
 
   const run = useSession((state) => state.run);
   const redactor = useSession((state) => state.redactor);
@@ -265,13 +265,13 @@ export function CommandPalette({
       },
 
       {
-        id: 'view-projector',
+        id: 'view-large-text',
         group: 'View',
-        label: projector ? 'Turn Projector Mode off' : 'Turn Projector Mode on',
+        label: largeText ? 'Use the normal text size' : 'Use larger text',
         hint: 'Bigger type, stronger hairlines, no dim tier and no step opens itself, for a room reading over your shoulder.',
         keywords: 'presentation demo room audience',
-        icon: <Projector size={14} aria-hidden />,
-        perform: toggleProjector,
+        icon: <ALargeSmall size={14} aria-hidden />,
+        perform: toggleLargeText,
       },
       {
         id: 'view-theme',
@@ -321,7 +321,7 @@ export function CommandPalette({
     ];
   }, [
     onRun,
-    projector,
+    largeText,
     redactor,
     resetDraft,
     resetSession,
@@ -330,7 +330,7 @@ export function CommandPalette({
     showKeys,
     stageOffline,
     theme,
-    toggleProjector,
+    toggleLargeText,
   ]);
 
   const filtered = useMemo(() => filterActions(actions, query), [actions, query]);

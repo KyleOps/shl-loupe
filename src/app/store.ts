@@ -23,8 +23,14 @@ export type ThemeChoice = 'dark' | 'light';
 
 export interface Settings {
   theme: ThemeChoice;
-  /** The token override set for a conference projector. See tokens.css. */
-  projector: boolean;
+  /**
+   * Scales type for reading at a distance, in a room, over a shoulder.
+   *
+   * This replaced a "projector mode" that also swapped colours and widths. Those
+   * turned out to be improvements rather than accommodations, so they are the
+   * default now and this is the one axis left. See tokens.css.
+   */
+  largeText: boolean;
   /**
    * Sent as the manifest request's `recipient`. Editable because a server
    * operator reading their log should be able to tell which engineer called,
@@ -44,7 +50,7 @@ export interface Settings {
   /** Reveal registered secrets in the UI instead of masking them. */
   revealSecrets: boolean;
   setTheme(theme: ThemeChoice): void;
-  toggleProjector(): void;
+  toggleLargeText(): void;
   setRecipient(recipient: string): void;
   setEmbeddedLengthMax(value: number): void;
   setProbe(which: 'dns' | 'reachability', enabled: boolean): void;
@@ -57,14 +63,14 @@ export const useSettings = create<Settings>()(
   persist(
     (set) => ({
       theme: 'dark',
-      projector: false,
+      largeText: false,
       recipient: DEFAULT_RECIPIENT,
       embeddedLengthMax: 4 * 1024 * 1024,
       dnsProbe: false,
       reachabilityProbe: false,
       revealSecrets: false,
       setTheme: (theme) => set({ theme }),
-      toggleProjector: () => set((state) => ({ projector: !state.projector })),
+      toggleLargeText: () => set((state) => ({ largeText: !state.largeText })),
       setRecipient: (recipient) => set({ recipient }),
       setEmbeddedLengthMax: (embeddedLengthMax) => set({ embeddedLengthMax }),
       setProbe: (which, enabled) =>
@@ -76,7 +82,7 @@ export const useSettings = create<Settings>()(
       // Only preferences. Never a link, a key, a passcode or a payload.
       partialize: (state) => ({
         theme: state.theme,
-        projector: state.projector,
+        largeText: state.largeText,
         recipient: state.recipient,
         embeddedLengthMax: state.embeddedLengthMax,
         dnsProbe: state.dnsProbe,

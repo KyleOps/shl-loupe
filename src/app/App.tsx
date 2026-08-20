@@ -25,7 +25,7 @@ import { InsecureContextNotice, readSecureContext } from './InsecureContextNotic
 export function App(): React.ReactNode {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
   const theme = useSettings((s) => s.theme);
-  const projector = useSettings((s) => s.projector);
+  const largeText = useSettings((s) => s.largeText);
   const [paletteOpen, setPaletteOpen] = useState(false);
   // Read once: an origin does not change without a navigation, and a navigation
   // remounts the app.
@@ -39,9 +39,9 @@ export function App(): React.ReactNode {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    if (projector) document.documentElement.dataset.projector = 'on';
-    else delete document.documentElement.dataset.projector;
-  }, [theme, projector]);
+    if (largeText) document.documentElement.dataset.textSize = 'large';
+    else delete document.documentElement.dataset.textSize;
+  }, [theme, largeText]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {

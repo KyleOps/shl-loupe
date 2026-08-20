@@ -461,14 +461,18 @@ function LinkPane({ run }: { run: TraceRun }): ReactNode {
 }
 
 /**
- * The decryption key: the user's own, on the user's own screen, so it is shown
- * rather than hidden. Masked by default all the same, and in projector mode a
- * reveal takes a second press, because the audience is looking at the same
- * screen and a key on a projector is a key in the room.
+ * The decryption key: the user's own, on the user's own screen, so it is
+ * available rather than hidden. Masked by default, and revealing always takes a
+ * second press.
+ *
+ * The confirm used to be conditional on a "projector mode" setting, on the
+ * theory that only an audience made it matter. That was the wrong test: this
+ * tool is used on borrowed laptops at shared tables, and the person driving is
+ * usually not the person the record belongs to. A shoulder is as good as a
+ * projector, and the cost of always asking is one press.
  */
 function KeyRow({ value }: { value: string }): ReactNode {
   const revealDefault = useSettings((settings) => settings.revealSecrets);
-  const projector = useSettings((settings) => settings.projector);
   const [revealed, setRevealed] = useState(revealDefault);
   const [confirming, setConfirming] = useState(false);
 
@@ -480,7 +484,7 @@ function KeyRow({ value }: { value: string }): ReactNode {
         label="the decryption key"
         revealed={revealed}
         onReveal={(next) => {
-          if (next && projector && !revealed) {
+          if (next && !revealed) {
             setConfirming(true);
             return;
           }
@@ -489,8 +493,8 @@ function KeyRow({ value }: { value: string }): ReactNode {
         }}
       />
       {confirming ? (
-        <Callout tone="warn" title="Projector mode is on.">
-          This is the key that decrypts the shared record. Anyone reading the screen can copy it.
+        <Callout tone="warn" title="This puts the decryption key on screen.">
+          Anyone who can read the screen can copy it, and it opens the whole shared record.
           <div className="key-row-confirm">
             <Button
               variant="danger"

@@ -139,27 +139,63 @@ test.describe('the trace', () => {
 });
 
 test.describe('modes', () => {
-  test('projector mode overrides the tokens a projector destroys', async ({ page }) => {
+  test('larger text scales type, and only type', async ({ page }) => {
+    /*
+     * This replaced a "projector mode" that swapped colours, widths and type at
+     * once. Its colour and width choices were improvements rather than
+     * accommodations, so they are the default now and the assertion here is
+     * deliberately narrow: what is left must touch the type scale and the things
+     * that have to move with it, and nothing else. A second visual identity is
+     * the thing this is not.
+     */
     await page.goto('/');
+    const before = await page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      return {
+        max: style.getPropertyValue('--content-max').trim(),
+        muted: style.getPropertyValue('--fg-muted').trim(),
+        canvas: style.getPropertyValue('--bg-canvas').trim(),
+      };
+    });
+
     await page.evaluate(() =>
       localStorage.setItem(
         'loupe.settings',
-        JSON.stringify({ state: { theme: 'dark', projector: true }, version: 0 }),
+        JSON.stringify({ state: { theme: 'dark', largeText: true }, version: 0 }),
       ),
     );
     await page.reload();
-    const tokens = await page.evaluate(() => {
+
+    const after = await page.evaluate(() => {
       const style = getComputedStyle(document.documentElement);
       return {
-        projector: document.documentElement.dataset.projector,
+        attr: document.documentElement.dataset.textSize,
         base: style.getPropertyValue('--font-size-base').trim(),
         rail: style.getPropertyValue('--rail-width').trim(),
         hairline: style.getPropertyValue('--hairline-width').trim(),
+        max: style.getPropertyValue('--content-max').trim(),
+        muted: style.getPropertyValue('--fg-muted').trim(),
+        canvas: style.getPropertyValue('--bg-canvas').trim(),
       };
     });
-    // Not "bigger fonts": a one-pixel hairline vanishes under projection and a
-    // crushed black loses the surfaces above it.
-    expect(tokens).toEqual({ projector: 'on', base: '17px', rail: '5px', hairline: '2px' });
+
+    expect(after.attr).toBe('large');
+    expect(after.base).toBe('19px');
+    expect(after.rail).toBe('5px');
+    expect(after.hairline).toBe('2px');
+    // Unchanged, which is the point.
+    expect(after.max).toBe(before.max);
+    expect(after.muted).toBe(before.muted);
+    expect(after.canvas).toBe(before.canvas);
+  });
+
+  test('bounds the content width so prose never runs edge to edge', async ({ page }) => {
+    // The review's words: "the text going all the way to the sides of the screen
+    // is kind of ugly". The cap used to apply only in projector mode.
+    await page.setViewportSize({ width: 2200, height: 1000 });
+    await page.goto('/');
+    const shell = await page.locator('.shell').boundingBox();
+    expect(shell!.width).toBeLessThanOrEqual(1561);
   });
 
   test('the light theme paints an explicit background', async ({ page }) => {

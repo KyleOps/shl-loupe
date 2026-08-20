@@ -9,7 +9,7 @@
  * centre-weighted, then a tool cluster.
  */
 import { useState, type ReactNode } from 'react';
-import { Command, Moon, Projector, Settings, Sun } from 'lucide-react';
+import { ALargeSmall, Command, Moon, Settings, Sun } from 'lucide-react';
 import { SCREENS, type ScreenName } from './router';
 import { useSettings } from './store';
 import { LinkInput } from './LinkInput';
@@ -36,8 +36,8 @@ export function Header({
 }): ReactNode {
   const theme = useSettings((state) => state.theme);
   const setTheme = useSettings((state) => state.setTheme);
-  const projector = useSettings((state) => state.projector);
-  const toggleProjector = useSettings((state) => state.toggleProjector);
+  const largeText = useSettings((state) => state.largeText);
+  const toggleLargeText = useSettings((state) => state.toggleLargeText);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -79,14 +79,15 @@ export function Header({
 
         <button
           type="button"
-          className={clsxProjector(projector)}
-          aria-pressed={projector}
-          onClick={toggleProjector}
+          className={largeTextClass(largeText)}
+          aria-pressed={largeText}
+          onClick={toggleLargeText}
+          title="Scale the type up for reading at a distance"
         >
-          <Projector size={15} aria-hidden />
-          <span className="tool-word">Projector</span>
+          <ALargeSmall size={16} aria-hidden />
+          <span className="tool-word">Larger text</span>
           <span className="visually-hidden">
-            {projector ? 'Turn projector mode off' : 'Turn projector mode on'}
+            {largeText ? 'Use the normal text size' : 'Use larger text'}
           </span>
         </button>
 
@@ -118,7 +119,15 @@ export function Header({
   );
 }
 
-/** Projector mode is a state worth seeing at a glance, so the button holds it. */
-function clsxProjector(on: boolean): string {
-  return on ? 'btn btn-sm projector-toggle is-on' : 'btn btn-ghost btn-sm projector-toggle';
+/**
+ * The one control left of what used to be "projector mode".
+ *
+ * That mode swapped colours, widths and type together. The colours and widths
+ * turned out to be improvements rather than accommodations, so they are the
+ * default now, and this scales type and nothing else. It stays in the header
+ * rather than moving to settings because the moment you want it is the moment
+ * somebody leans in to look, and hunting through a sheet then is the wrong shape.
+ */
+function largeTextClass(on: boolean): string {
+  return on ? 'btn btn-sm text-size-toggle is-on' : 'btn btn-ghost btn-sm text-size-toggle';
 }

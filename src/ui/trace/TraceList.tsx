@@ -13,7 +13,7 @@
  * the same single tab stop with semantics that already work.
  *
  * WHAT EXPANDS ITSELF. A step that did not pass opens as soon as it settles, so
- * the failing step is open and its neighbours are not. Projector Mode suppresses
+ * the failing step is open and its neighbours are not. Nothing suppresses
  * that: on a projector the trace stays a list of titles and the presenter walks
  * it one step at a time with `j`/`k` and the arrow keys.
  */
@@ -27,7 +27,7 @@ import {
   type ReactNode,
 } from 'react';
 import { ListTree } from 'lucide-react';
-import { useSession, useSettings } from '../../app/store';
+import { useSession } from '../../app/store';
 import type { TraceRun } from '../../core/trace';
 import { Button, CopyButton, EmptyState } from '../primitives';
 import { FindingCard } from './FindingCard';
@@ -44,7 +44,6 @@ import {
 const COPY_NOTICE_MS = 1600;
 
 export function TraceList({ run }: { run: TraceRun }): ReactNode {
-  const projector = useSettings((state) => state.projector);
   const redactor = useSession((state) => state.redactor);
   const selected = useSession((state) => state.expandedStep);
   const expandStep = useSession((state) => state.expandStep);
@@ -85,12 +84,10 @@ export function TraceList({ run }: { run: TraceRun }): ReactNode {
   /**
    * The steps worth opening on their own: anything that did not simply pass.
    *
-   * Projector mode opens nothing, because there the trace is walked one step at a
-   * time in front of an audience. A step still in flight is left closed rather
-   * than judged on an interim status.
+   * A step still in flight is left closed rather than judged on an interim
+   * status.
    */
   const autoExpanded = useMemo(() => {
-    if (projector) return new Set<string>();
     return new Set(
       run.steps
         .filter(
@@ -102,7 +99,7 @@ export function TraceList({ run }: { run: TraceRun }): ReactNode {
         )
         .map((step) => step.id),
     );
-  }, [run.steps, projector]);
+  }, [run.steps]);
 
   const isExpanded = useCallback(
     (id: string): boolean => overrides.get(id) ?? autoExpanded.has(id),

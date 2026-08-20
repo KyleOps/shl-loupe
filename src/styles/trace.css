@@ -66,7 +66,7 @@
 }
 
 /* The one display-size line on the screen. Its own scale rather than a
-   multiple of --font-size-base, so Projector Mode can lift it further without
+   multiple of --font-size-base, so the larger-text preference lifts it without
    dragging every label up with it. */
 .verdict-headline {
   margin: 0;
@@ -79,7 +79,7 @@
   overflow-wrap: break-word;
 }
 
-:root[data-projector='on'] .verdict-headline {
+:root[data-text-size='large'] .verdict-headline {
   font-size: clamp(28px, 3.4vw, 44px);
 }
 
@@ -266,7 +266,7 @@ ol.trace {
 
 /* Children indent under their parent, and the connector is decoration: the
    indent is what carries the nesting, so the hairline may be invisible on a bad
-   projector without anything being lost. */
+   distance without anything being lost. */
 ol.trace-children {
   margin: var(--space-2) 0 var(--space-3) var(--space-7);
   padding-left: var(--space-5);
@@ -389,11 +389,11 @@ ol.trace-children {
   opacity: 0.55;
 }
 
-:root[data-projector='on'] .step-bar {
+:root[data-text-size='large'] .step-bar {
   height: 8px;
 }
 
-:root[data-projector='on'] .step-bar-wait {
+:root[data-text-size='large'] .step-bar-wait {
   opacity: 0.72;
 }
 

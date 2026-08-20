@@ -276,16 +276,17 @@ export function SettingsSheet({ onClose }: { onClose: () => void }): ReactNode {
           <label className="setting-toggle">
             <input
               type="checkbox"
-              checked={settings.projector}
-              onChange={() => settings.toggleProjector()}
+              checked={settings.largeText}
+              onChange={() => settings.toggleLargeText()}
             />
             <span>
-              <span className="setting-toggle-title">Projector mode</span>
+              <span className="setting-toggle-title">Larger text</span>
               <span className="setting-note">
-                Larger text, thicker separators, lighter mid-greys and a capped line length, because
-                a conference projector crushes blacks and loses one-pixel lines. It also requires a
-                second confirmation before a masked key is revealed, since the audience is looking
-                at the same screen.
+                Scales the type up, with thicker separators to match, for reading at a distance or
+                over somebody&rsquo;s shoulder. There is a quick toggle for it in the header too.
+                This used to be part of a wider &ldquo;projector mode&rdquo;; the rest of that mode
+                (a capped line length and lighter mid-greys) turned out to be better everywhere and
+                is simply how the app looks now.
               </span>
             </span>
           </label>
