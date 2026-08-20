@@ -380,6 +380,38 @@ a {
 }
 
 /*
+ * USING THE WIDTH: the four moves, and when each one is right.
+ *
+ * This is written down because the same defect was reported four times in
+ * different clothes: a panel spanning the content width with everything inside it
+ * stacked in a 600px column at the left. The instinct each time was to widen the
+ * text, and that is wrong, because a line past about 90 characters costs the
+ * reader the start of the next one. What fills a wide row is more content per row.
+ *
+ * 1. FILL. A list of cards becomes a grid across the container. `auto-fit` when a
+ *    short list should spread (a chooser of three), `auto-fill` when a lone item
+ *    should stay one card wide (a check group with one check in it). The two words
+ *    look interchangeable and are opposites; say which you mean and why.
+ *
+ * 2. BAND. A label, heading or standfirst and the sentence explaining it sit on
+ *    one row, at opposite ends. Used for the landing page's samples, the Checks
+ *    intro and its caveat, and the payload editor's label and note.
+ *
+ * 3. SPLIT THE PROSE. A callout too wide for one column of text becomes two
+ *    columns, EACH capped at a measure, one paragraph per column so there is no
+ *    reading-order jump inside a paragraph. Used for the Sandbox caveat.
+ *
+ * 4. ACTIONS TO THE RIGHT. A banner puts what happened on the left and what to do
+ *    about it on the right, which is where a reader looks for buttons anyway.
+ *    Used for the verdict banner.
+ *
+ * And the one thing that is NOT a move: stretching a paragraph. If none of the
+ * four applies, the block keeps its measure and the space beside it is margin.
+ * `pnpm measure` reports both failures, the long line and the unused row, so the
+ * trade is visible rather than argued about.
+ */
+
+/*
  * A heading belongs to the column its prose is in.
  *
  * Unbounded headings were the most visible third of the "narrow text on a wide

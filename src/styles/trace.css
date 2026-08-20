@@ -52,6 +52,50 @@
   min-width: 0;
 }
 
+/*
+ * On a wide banner the verdict and its actions share the top row.
+ *
+ * The banner spans the content width, and its three stacked rows used 606px,
+ * 746px and 489px of 1415px: a headline with a third of a row of nothing beside
+ * it, then two more. Putting what happened on the left and what to do about it on
+ * the right fills the row and puts the buttons where a banner's buttons go. The
+ * URL box still spans both, because it is a URL and wants the room.
+ */
+@media (min-width: 1180px) {
+  .verdict {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
+    grid-template-areas:
+      'lead actions'
+      'url url';
+    align-items: start;
+    column-gap: var(--space-9);
+  }
+
+  .verdict-lead {
+    grid-area: lead;
+  }
+
+  .verdict-url {
+    grid-area: url;
+  }
+
+  /* The chips and the buttons stack in the right-hand cell, right-aligned so the
+     column reads as one block rather than two ragged rows. */
+  .verdict-side {
+    grid-area: actions;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-5);
+  }
+
+  .verdict-facts,
+  .verdict-actions {
+    justify-content: flex-end;
+  }
+}
+
 .verdict-icon {
   flex: none;
   /* Optical alignment with the cap height of a display-size line. */

@@ -202,73 +202,80 @@ export function VerdictBanner({ run, redactor, onJumpToStep }: VerdictBannerProp
         </div>
       )}
 
-      <ul className="verdict-facts">
-        <li>
-          <Chip tone={outcome}>
-            <StatusIcon tone={outcome} size={12} />
-            {OUTCOME_WORD[run.outcome]}
-          </Chip>
-        </li>
-        <li>
-          <Chip
-            tone="info"
-            title={
-              run.networkUsed
-                ? 'Every request is listed in the trace below.'
-                : 'Nothing was sent anywhere. This verdict came from the link itself.'
-            }
-          >
-            {run.networkUsed
-              ? `${requests} request${requests === 1 ? '' : 's'} made`
-              : 'No request was made'}
-          </Chip>
-        </li>
-        {severityCounts.length === 0 ? (
+      {/* The chips and the buttons are one block: on a wide banner they share the
+          cell to the right of the verdict, which is where a banner's actions
+          belong and what stops the row being two thirds empty. */}
+      <div className="verdict-side">
+        <ul className="verdict-facts">
           <li>
-            <Chip tone="info">Nothing flagged</Chip>
+            <Chip tone={outcome}>
+              <StatusIcon tone={outcome} size={12} />
+              {OUTCOME_WORD[run.outcome]}
+            </Chip>
           </li>
-        ) : (
-          severityCounts.map((entry) => (
-            <li key={entry.severity}>
-              <Chip tone={toneForSeverity(entry.severity)}>
-                <StatusIcon tone={toneForSeverity(entry.severity)} size={12} />
-                {severityCount(entry.severity, entry.count)}
+          <li>
+            <Chip
+              tone="info"
+              title={
+                run.networkUsed
+                  ? 'Every request is listed in the trace below.'
+                  : 'Nothing was sent anywhere. This verdict came from the link itself.'
+              }
+            >
+              {run.networkUsed
+                ? `${requests} request${requests === 1 ? '' : 's'} made`
+                : 'No request was made'}
+            </Chip>
+          </li>
+          {severityCounts.length === 0 ? (
+            <li>
+              <Chip tone="info">Nothing flagged</Chip>
+            </li>
+          ) : (
+            severityCounts.map((entry) => (
+              <li key={entry.severity}>
+                <Chip tone={toneForSeverity(entry.severity)}>
+                  <StatusIcon tone={toneForSeverity(entry.severity)} size={12} />
+                  {severityCount(entry.severity, entry.count)}
+                </Chip>
+              </li>
+            ))
+          )}
+          {leading !== undefined && (
+            <li>
+              <Chip tone={toneForSeverity(leading.severity)}>
+                {AUDIENCE_LABEL[leading.audience]}
               </Chip>
             </li>
-          ))
-        )}
-        {leading !== undefined && (
-          <li>
-            <Chip tone={toneForSeverity(leading.severity)}>{AUDIENCE_LABEL[leading.audience]}</Chip>
-          </li>
-        )}
-        {/* Plain rather than a chip, and last: the elapsed time is the least
+          )}
+          {/* Plain rather than a chip, and last: the elapsed time is the least
             load-bearing fact here, and a skip-toned chip carrying 11px text is
             3.96:1 in the light theme, under the floor for text that size. */}
-        <li className="verdict-fact-plain">
-          {elapsedMs === undefined ? (
-            'Still running'
-          ) : (
-            <>
-              Took <Duration ms={elapsedMs} />
-            </>
-          )}
-        </li>
-      </ul>
+          <li className="verdict-fact-plain">
+            {elapsedMs === undefined ? (
+              'Still running'
+            ) : (
+              <>
+                Took <Duration ms={elapsedMs} />
+              </>
+            )}
+          </li>
+        </ul>
 
-      <div className="verdict-actions">
-        <CopyButton value={diagnosis} label="Copy diagnosis" className="verdict-action-key" />
-        <CopyButton value={explanation} label="Explain to the sender" />
-        {failing !== undefined && (
-          <Button onClick={() => jump(failing)}>
-            <CornerDownRight size={13} aria-hidden />
-            <span>
-              {failingNumber === undefined
-                ? 'Jump to the failing step'
-                : `Jump to step ${failingNumber}`}
-            </span>
-          </Button>
-        )}
+        <div className="verdict-actions">
+          <CopyButton value={diagnosis} label="Copy diagnosis" className="verdict-action-key" />
+          <CopyButton value={explanation} label="Explain to the sender" />
+          {failing !== undefined && (
+            <Button onClick={() => jump(failing)}>
+              <CornerDownRight size={13} aria-hidden />
+              <span>
+                {failingNumber === undefined
+                  ? 'Jump to the failing step'
+                  : `Jump to step ${failingNumber}`}
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
     </section>
   );

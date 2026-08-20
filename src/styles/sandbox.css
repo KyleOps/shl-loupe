@@ -93,8 +93,18 @@ fieldset.mint-field > * + * {
   margin-top: var(--space-4);
 }
 
+/*
+ * A field that spans every column is not a card.
+ *
+ * `.mint-field` caps at --card-max, which is right for a label and a short value
+ * and wrong for the two things declared full width: the JSON editor and the
+ * artefact chooser. They stopped at 592px inside a 1434px panel, which is the
+ * whole "everything hugs the left" shape this page was reported for. Spanning the
+ * columns and then refusing the width is a contradiction; the span wins.
+ */
 .mint-field-wide {
   grid-column: 1 / -1;
+  max-width: none;
 }
 
 .mint-actions {
@@ -171,11 +181,22 @@ fieldset.mint-field > * + * {
   white-space: pre;
 }
 
+/*
+ * `auto-fit` here, and `auto-fill` on the reading pages: the difference is what a
+ * short list should do with a wide row.
+ *
+ * This is a chooser of three, and three cards spread across the row is right,
+ * which is auto-fit collapsing the empty tracks. A list of check cards is the
+ * other case: when one group holds a single check, that card should stay one
+ * card wide rather than stretch to 1200px, which is auto-fill keeping the track.
+ * Same syntax, opposite intent, so the choice is stated wherever it is made.
+ */
 .mint-samples {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-5);
+  align-items: start;
 }
 
 .mint-sample {
@@ -278,6 +299,32 @@ fieldset.mint-field > * + * {
   font-size: 15px;
 }
 
+/*
+ * The caveat spans the panel and reads in two columns.
+ *
+ * It is prose, so the alternative to a 648px box alone at the top-left of a
+ * 1434px panel is not a 190-character line: it is two columns of comfortable
+ * lines. Each paragraph is its own column, so there is no reading-order jump
+ * inside a paragraph, which is the thing that makes multi-column body text hard
+ * to read.
+ */
+/* A label and its note on one row, when there is a row to use. */
+.mint-field-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 1180px) {
+  .mint-field-head {
+    display: grid;
+    grid-template-columns: minmax(0, max-content) minmax(0, 36rem);
+    justify-content: space-between;
+    gap: var(--space-9);
+    align-items: baseline;
+  }
+}
+
 /* The caveat body holds prose, so it is the measure and its paragraphs fill it. */
 .mint-caveat-body {
   max-width: var(--measure);
@@ -291,6 +338,32 @@ fieldset.mint-field > * + * {
 
 .mint-caveat-body p:last-child {
   margin-bottom: 0;
+}
+
+@media (min-width: 1180px) {
+  .mint-caveat {
+    max-width: none;
+  }
+
+  .mint-caveat-body {
+    /* The cap below has to go with it: `display: grid` on a block still capped at
+       one measure gives two columns inside 592px, which is worse than one. */
+    max-width: none;
+    display: grid;
+    /* Each column is a measure of its own, pushed to the edges of the box: `1fr`
+       tracks in a 1400px box are 669px each, which is 101 characters, and the
+       point of the second column was to avoid a long line rather than to have
+       two of them. */
+    grid-template-columns: repeat(2, minmax(0, 36rem));
+    justify-content: space-between;
+    gap: var(--space-5) var(--space-9);
+    align-items: start;
+  }
+
+  /* The headline sits above both columns. */
+  .mint-caveat-body > strong {
+    grid-column: 1 / -1;
+  }
 }
 
 .mint-passcode-row {

@@ -174,6 +174,51 @@ function measureInPage() {
     }
   }
 
+  /*
+   * The third failure: a container that leaves a lot of its own width unused.
+   *
+   * This is the "everything hugs the left" defect, and it is the one the eye
+   * notices first on a large display. Reported rather than asserted, because
+   * plenty of rows are legitimately short (a title bar, a row of buttons, a
+   * centred empty state), and a hard threshold would be argued with rather than
+   * acted on. What it is good for is a work list.
+   */
+  const unused = [];
+  for (const el of document.querySelectorAll('main *')) {
+    if (el.children.length === 0) continue;
+    const rect = el.getBoundingClientRect();
+    // A row shorter than about three lines is chrome, not content: a title bar, a
+    // row of chips, a row of buttons. Those are short because what they hold is
+    // short, and reporting them buries the rows that matter.
+    if (rect.width < 700 || rect.height < 64) continue;
+    const style = getComputedStyle(el);
+    const inner = rect.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const left = rect.left + parseFloat(style.paddingLeft);
+    let reach = 0;
+    for (const child of el.children) {
+      const box = child.getBoundingClientRect();
+      if (box.width > 0 && box.height > 0) reach = Math.max(reach, box.right - left);
+    }
+    const spare = Math.round(inner - reach);
+    if (spare > 400 && reach > 0) {
+      unused.push({
+        what: (el.className || el.tagName).toString().split(' ')[0],
+        reach: Math.round(reach),
+        inner: Math.round(inner),
+        spare,
+      });
+    }
+  }
+  const seen = new Set();
+  const worstUnused = unused
+    .filter((entry) => {
+      if (seen.has(entry.what)) return false;
+      seen.add(entry.what);
+      return true;
+    })
+    .sort((a, b) => b.spare - a.spare)
+    .slice(0, 4);
+
   lines.sort((a, b) => b.chars - a.chars);
 
   /*
@@ -232,7 +277,7 @@ function measureInPage() {
           narrowest: describe(column[rights.indexOf(Math.min(...rights))]),
         };
 
-  return { lines: lines.slice(0, 5), short, edges };
+  return { lines: lines.slice(0, 5), short, edges, unused: worstUnused };
 }
 
 const browser = await chromium.launch();
@@ -254,7 +299,7 @@ for (const [label, path] of SCREENS) {
   }
   await page.evaluate(() => document.fonts.ready);
 
-  const { lines, short, edges } = await page.evaluate(measureInPage);
+  const { lines, short, edges, unused } = await page.evaluate(measureInPage);
   const longest = lines[0]?.chars ?? 0;
   worst = Math.max(worst, longest);
   offenders += short.length;
@@ -269,6 +314,11 @@ for (const [label, path] of SCREENS) {
   }
   for (const cut of short) {
     console.log(`    CUT SHORT  ${cut.what}: ${cut.own}px of ${cut.available}px in .${cut.parent}`);
+  }
+  for (const entry of unused) {
+    console.log(
+      `    UNUSED     ${entry.what}: children reach ${entry.reach} of ${entry.inner}px, ${entry.spare} spare`,
+    );
   }
   if (edges.spread > COLUMN_SPREAD) {
     misaligned += 1;

@@ -431,13 +431,18 @@ function MintSection(): ReactNode {
               </button>
             ))}
           </div>
-          <label className="mint-label" htmlFor="mint-json">
-            Payload JSON
-          </label>
-          <p className="mint-note">
-            Edit one of the samples above, or paste your own over the top. It is minified before
-            encryption, so the indentation here is only for reading.
-          </p>
+          {/* The label and its note share a row: a one-line note under a label,
+              above an editor that spans the panel, is 560px of text with 870px of
+              nothing beside it. */}
+          <div className="mint-field-head">
+            <label className="mint-label" htmlFor="mint-json">
+              Payload JSON
+            </label>
+            <p className="mint-note">
+              Edit one of the samples above, or paste your own over the top. It is minified before
+              encryption, so the indentation here is only for reading.
+            </p>
+          </div>
           <textarea
             id="mint-json"
             className="mint-json mono scroll-x"
