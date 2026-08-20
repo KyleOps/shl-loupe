@@ -157,6 +157,10 @@
 .verdict-facts li {
   display: flex;
   min-width: 0;
+  /* A flex container discards the whitespace between its items, so the space in
+     "Took <Duration/>" vanished and the row read "TOOK15 MS". A gap restores it
+     without putting a presentational span into the markup. */
+  gap: var(--space-3);
 }
 
 /* The one fact that is not a chip. Muted, and sized with the chips beside it so

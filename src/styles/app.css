@@ -5,6 +5,7 @@
  * people (or agents) can work on different areas without meeting in one
  * stylesheet. Each imported file styles only its own area's classes.
  */
+@import './chrome.css';
 @import './trace.css';
 @import './payload.css';
 @import './shc.css';

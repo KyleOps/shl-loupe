@@ -1,0 +1,302 @@
+/*
+ * The masthead, the link field and the footer.
+ *
+ * These fell through a seam: the header and the link input were written by one
+ * author and the per-screen styles by another, and each expected the other to
+ * own this file. The symptom was the whole chrome rendering as unstyled inline
+ * text, with the skip link permanently visible, the navigation running together
+ * as "OpenOfflineSandboxLearnChecksAbout", and the detection verdict
+ * concatenated into one unreadable line. Worth naming, because a missing
+ * stylesheet fails silently: nothing errors, nothing is red, and it only shows
+ * up if somebody looks at the page.
+ *
+ * The layout rule the masthead follows: the link field is the only thing in the
+ * header with any visual weight. Everything else is a quiet affordance, because
+ * the field is the reason anybody opened the page.
+ */
+
+/* --------------------------------------------------------------------------
+   Masthead
+   -------------------------------------------------------------------------- */
+
+.masthead {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    'brand field tools'
+    'nav   nav   nav';
+  align-items: center;
+  gap: var(--space-4) var(--space-6);
+  padding: var(--space-5) var(--space-6) 0;
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+}
+
+/*
+ * Visible only when focused. A permanently visible skip link is the classic
+ * accessibility feature that reads as a bug, and it was doing exactly that.
+ */
+.skip-link {
+  position: absolute;
+  left: var(--space-6);
+  top: var(--space-2);
+  z-index: 10;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-control);
+  background: var(--bg-raised);
+  border: var(--hairline-width) solid var(--accent);
+  color: var(--fg-default);
+  font-size: 13px;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform var(--motion-state) var(--motion-ease);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.wordmark {
+  grid-area: brand;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--fg-default);
+  text-decoration: none;
+}
+
+.wordmark:hover {
+  color: var(--accent);
+}
+
+.wordmark svg {
+  color: var(--accent);
+  flex: none;
+}
+
+.wordmark-text {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.masthead-input {
+  grid-area: field;
+  min-width: 0;
+  /* Centre-weighted rather than full width: a field stretched across a 4K panel
+     looks like a search engine, not a tool. */
+  max-width: 760px;
+  justify-self: center;
+  width: 100%;
+}
+
+.masthead-tools {
+  grid-area: tools;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: end;
+}
+
+.palette-hint .mono {
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+
+.tool-word {
+  font-size: 12px;
+}
+
+.masthead-tools .btn[aria-pressed='true'] {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.masthead-nav {
+  grid-area: nav;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.masthead-nav a {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 2px solid transparent;
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.masthead-nav a:hover {
+  color: var(--fg-default);
+}
+
+/* The current screen is marked by an underline AND a colour change, never by
+   colour alone. */
+.masthead-nav a[aria-current='page'] {
+  color: var(--fg-default);
+  border-bottom-color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   The link field
+   -------------------------------------------------------------------------- */
+
+.link-input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.link-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-5);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-meaningful);
+  border-radius: var(--radius-control);
+  min-width: 0;
+}
+
+.link-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.link-input.is-dragging .link-field {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.link-field-input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-3) 0;
+  background: none;
+  border: 0;
+  color: var(--fg-default);
+  font-size: 13.5px;
+}
+
+.link-field-input:focus {
+  outline: none;
+}
+
+.link-field-input::placeholder {
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   The detection verdict under the field
+   -------------------------------------------------------------------------- */
+
+.link-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  padding-inline: var(--space-2);
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--fg-muted);
+  min-width: 0;
+}
+
+.link-verdict-idle {
+  color: var(--fg-muted);
+}
+
+/* The kind, which is the one part worth reading at a glance. */
+.link-verdict-label {
+  color: var(--fg-default);
+  font-weight: 600;
+}
+
+.link-verdict-detail {
+  flex: 1 1 24ch;
+  min-width: 0;
+}
+
+/*
+ * The facts line: several short values separated by a middle dot. The separator
+ * is generated rather than written into the markup, so a fact can be added or
+ * dropped without leaving a stray dot behind.
+ */
+.link-verdict-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--fg-muted);
+}
+
+.link-verdict-facts > * + *::before {
+  content: '·';
+  margin-right: var(--space-4);
+  color: var(--border-meaningful);
+}
+
+.link-verdict-elsewhere {
+  color: var(--status-warn);
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.footer span {
+  max-width: 92ch;
+}
+
+.footer nav a {
+  color: var(--fg-muted);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.footer nav a:hover {
+  color: var(--fg-default);
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Narrow
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .masthead {
+    grid-template-columns: auto auto;
+    grid-template-areas:
+      'brand tools'
+      'field field'
+      'nav   nav';
+    padding-inline: var(--space-5);
+  }
+
+  .masthead-input {
+    max-width: none;
+  }
+
+  /* The word is the first thing to go: the icon carries it. */
+  .tool-word {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .wordmark-text {
+    display: none;
+  }
+
+  .palette-hint {
+    display: none;
+  }
+}

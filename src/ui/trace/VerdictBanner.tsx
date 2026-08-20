@@ -108,8 +108,21 @@ export function VerdictBanner({ run, redactor, onJumpToStep }: VerdictBannerProp
   const activeRedactor = redactor ?? sessionRedactor;
   const jump = onJumpToStep ?? expandStep;
 
-  const tone = outcomeTone(run.outcome);
+  /**
+   * Two tones, because the banner states two different things.
+   *
+   * `outcomeTone` describes what LOUPE did, and for a blocked run that is a good
+   * outcome: it worked the answer out from the link and troubled no server. So
+   * the outcome chip is informational there, on purpose.
+   *
+   * The headline describes what is wrong with the LINK, and it takes the leading
+   * finding's severity. Without the split, a fatal verdict rendered a calm blue
+   * information icon beside the sentence "nobody else can open it", which is a
+   * mixed signal at exactly the moment the reader most needs a clear one.
+   */
+  const outcome = outcomeTone(run.outcome);
   const leading = leadingFinding(run.findings);
+  const tone = leading === undefined ? outcome : toneForSeverity(leading.severity);
   const headline = leading?.title ?? outcomeHeadline(run.outcome);
   const requests = countRequests(run);
   const elapsedMs = run.finishedAt === undefined ? undefined : run.finishedAt - run.startedAt;
@@ -191,8 +204,8 @@ export function VerdictBanner({ run, redactor, onJumpToStep }: VerdictBannerProp
 
       <ul className="verdict-facts">
         <li>
-          <Chip tone={tone}>
-            <StatusIcon tone={tone} size={12} />
+          <Chip tone={outcome}>
+            <StatusIcon tone={outcome} size={12} />
             {OUTCOME_WORD[run.outcome]}
           </Chip>
         </li>

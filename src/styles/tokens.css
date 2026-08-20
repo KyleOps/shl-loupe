@@ -154,6 +154,23 @@
    Reset and base
    -------------------------------------------------------------------------- */
 
+/*
+ * The `hidden` attribute has to win.
+ *
+ * A user agent implements `hidden` as `display: none` at the lowest specificity,
+ * so any component that sets its own `display` silently defeats it. That is
+ * exactly what happened here: `.step-body { display: flex }` left an empty
+ * raised panel under every collapsed trace step, and nothing errored, because
+ * the markup and the React state were both correct.
+ *
+ * Fixed once, in the reset, rather than per component, since every disclosure in
+ * this app hides a region this way. `until-found` is excluded so a browser can
+ * still reveal content for find-in-page.
+ */
+[hidden]:not([hidden='until-found']) {
+  display: none !important;
+}
+
 *,
 *::before,
 *::after {
