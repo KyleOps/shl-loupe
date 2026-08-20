@@ -56,15 +56,28 @@ export interface JweParts {
   header: JweHeader;
 }
 
+/**
+ * A JWE protected header, as it actually arrives: attacker-controlled JSON.
+ *
+ * Every member is `unknown` on purpose. Declaring `zip?: string` would be a
+ * comfortable lie, because the value comes from `JSON.parse` on bytes a stranger
+ * produced, and nothing checks it before the header reaches a caller. With the
+ * honest type, the runtime guards a reader needs (`typeof x === 'string'`,
+ * `String(x)` before interpolating into a message) are required by the compiler
+ * rather than remembered, and a linter stops calling them redundant.
+ *
+ * The comparisons against literals still narrow correctly, so
+ * `header.alg !== 'dir'` reads exactly as before.
+ */
 export interface JweHeader {
-  alg?: string;
-  enc?: string;
-  zip?: string;
-  cty?: string;
-  kid?: string;
+  alg?: unknown;
+  enc?: unknown;
+  zip?: unknown;
+  cty?: unknown;
+  kid?: unknown;
   epk?: unknown;
-  apu?: string;
-  apv?: string;
+  apu?: unknown;
+  apv?: unknown;
   [key: string]: unknown;
 }
 
@@ -99,6 +112,25 @@ export function parseJweCompact(compact: string): JweParts {
     );
   }
   return { protectedHeaderB64, encryptedKeyB64, ivB64, ciphertextB64, tagB64, header };
+}
+
+
+/**
+ * Render an untrusted header value for display.
+ *
+ * Every member of a JWE or JWS header is whatever JSON a stranger produced, so a
+ * plain `String(value)` turns an object into "[object Object]" and shows the
+ * reader nothing. In a tool whose job is to say what actually arrived, that is
+ * the wrong failure: a header carrying `"zip": {"alg": "x"}` is a real defect
+ * worth seeing in full.
+ */
+export function headerValueText(value: unknown): string {
+  if (value === undefined) return '(absent)';
+  if (typeof value === 'string') return value;
+  // No fallback needed: JSON.stringify returns undefined only for undefined, a
+  // function or a symbol, and undefined is handled above while the other two
+  // cannot survive a JSON.parse.
+  return JSON.stringify(value);
 }
 
 export interface JweDecryptResult {
@@ -304,7 +336,7 @@ export interface EcJwk {
 export async function verifyEs256(jws: JwsParts, jwk: EcJwk): Promise<void> {
   if (jwk.kty !== 'EC' || (jwk.crv !== undefined && jwk.crv !== 'P-256')) {
     throw new JoseError(
-      `The key is not a P-256 EC key (kty=${String(jwk.kty)}, crv=${String(jwk.crv)}).`,
+      `The key is not a P-256 EC key (kty=${headerValueText(jwk.kty)}, crv=${headerValueText(jwk.crv)}).`,
       'jwk-unusable',
     );
   }

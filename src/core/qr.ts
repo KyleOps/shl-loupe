@@ -37,7 +37,7 @@ export const V22_DATA_BITS = { L: 8048, M: 6256, Q: 4544, H: 3536 } as const;
  * Correction Level M").
  */
 export const SHL_QR_VERSION_TARGET = 22;
-export const SHL_QR_ECC: 'M' = 'M';
+export const SHL_QR_ECC = 'M' as const;
 
 /**
  * Byte-mode capacity of a V22 symbol at ECC M.

@@ -46,7 +46,7 @@ describe('JWE dir A256GCM', () => {
   });
 
   it('rejects a JWS where a JWE was required, and says so in the hint', () => {
-    expect(() => parseJweCompact('a.b.c')).toThrowError(/5 dot-separated parts; this has 3/);
+    expect(() => parseJweCompact('a.b.c')).toThrow(/5 dot-separated parts; this has 3/);
     try {
       parseJweCompact('a.b.c');
     } catch (error) {

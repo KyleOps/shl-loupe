@@ -35,6 +35,7 @@ import { inflateForgiving, type CompressionFraming } from './compress';
 import { classifyHost, reachIsUnreachableByOthers } from './diagnose/host';
 import type { RuleOutput } from './diagnose/rules';
 import {
+  headerValueText,
   canonicaliseP256Coordinate,
   JoseError,
   jwkThumbprint,
@@ -775,7 +776,14 @@ export function assembleShcQrChunks(scans: readonly string[]): ShcQrAssembly {
  */
 export function encodeShcQr(jws: string, options: { chunks?: number } = {}): string[] {
   const digits = (text: string): string =>
-    [...text].map((c) => String(c.charCodeAt(0) - SHC_ORD_OFFSET).padStart(2, '0')).join('');
+    // Indexed with charCodeAt rather than spread. The SHC numeric encoding is
+    // defined over the characters of a base64url string, which are UTF-16 code
+    // units, and spreading a string iterates code POINTS instead. A JWS is ASCII
+    // so the two agree in practice, but following the encoding as written costs
+    // nothing and does not quietly depend on that.
+    Array.from({ length: text.length }, (_, index) =>
+      String(text.charCodeAt(index) - SHC_ORD_OFFSET).padStart(2, '0'),
+    ).join('');
   const chunks = options.chunks ?? 1;
   if (chunks <= 1) return [`${SHC_PREFIX}${digits(jws)}`];
   const size = Math.ceil(jws.length / chunks);
@@ -2015,7 +2023,7 @@ function checkKeyShape(
           : "The issuer has published its PRIVATE key.",
         key.d === undefined
           ? `Health cards are signed with a P-256 EC key and nothing else, but ${listOut(problems)}. There is no key here to verify against.`
-          : `The published key set contains d, the private key parameter, so anyone who fetched ${'that URL'} can sign cards as this issuer. Every card this key ever signed should be treated as unverified until the key is replaced and the old one removed from the set.`,
+          : `The published key set contains d, the private key parameter, so anyone who fetched that URL can sign cards as this issuer. Every card this key ever signed should be treated as unverified until the key is replaced and the old one removed from the set.`,
         {
           ...(key.d === undefined
             ? {}
@@ -2191,7 +2199,7 @@ async function checkRevocation(input: RevocationInput): Promise<RevocationState>
         'error',
         'server',
         'The issuer advertises a revocation list and the list could not be fetched.',
-        `${attempt.reason} The key carries crlVersion ${String(crlVersion)}, so a verifier is required to download ${url} and check this card against it. Because that could not be done, this card's revocation status is unknown, and an unknown status is not a pass.`,
+        `${attempt.reason} The key carries crlVersion ${headerValueText(crlVersion)}, so a verifier is required to download ${url} and check this card against it. Because that could not be done, this card's revocation status is unknown, and an unknown status is not a pass.`,
         { citation: SHC_CITATIONS.revocation },
       ),
     );
@@ -2202,7 +2210,7 @@ async function checkRevocation(input: RevocationInput): Promise<RevocationState>
   try {
     const parsed: unknown = JSON.parse(attempt.body);
     if (typeof parsed !== 'object' || parsed === null) throw new Error('not an object');
-    list = parsed as { ctr?: unknown; rids?: unknown };
+    list = parsed;
   } catch {
     ladder.set('revocation', 'fail', 'The revocation list is not JSON.');
     findings.push(

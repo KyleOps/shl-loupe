@@ -11,7 +11,8 @@
 import type { ShlLink } from '../shlink';
 
 export interface ViewerOrigin {
-  protocol: 'http:' | 'https:' | string;
+  /** `location.protocol`, so it carries the trailing colon: "https:". */
+  protocol: string;
   hostname: string;
   port: string;
   /** True when the browser treats this page as a secure context (WebCrypto works). */

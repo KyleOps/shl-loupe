@@ -39,6 +39,7 @@ import { runStaticRules } from './diagnose/rules';
 import {
   decryptDirA256Gcm,
   describeIvLength,
+  headerValueText,
   jwkThumbprint,
   JoseError,
   matchKeyToJweKid,
@@ -653,7 +654,7 @@ async function openJweFile(
           },
           {
             key: 'zip',
-            value: parts.header.zip === undefined ? '(none)' : String(parts.header.zip),
+            value: parts.header.zip === undefined ? '(none)' : headerValueText(parts.header.zip),
             status: parts.header.zip === undefined || parts.header.zip === 'DEF' ? 'ok' : 'warn',
           },
           {
@@ -1019,13 +1020,13 @@ async function openCard(
           },
           {
             key: 'zip',
-            value: parts.header.zip === undefined ? '(none)' : String(parts.header.zip),
+            value: parts.header.zip === undefined ? '(none)' : headerValueText(parts.header.zip),
             status: parts.header.zip === 'DEF' ? 'ok' : 'warn',
             ...(parts.header.zip === 'DEF'
               ? {}
               : { note: 'A health card payload is required to be raw DEFLATE compressed.' }),
           },
-          { key: 'kid', value: parts.header.kid === undefined ? '(absent)' : String(parts.header.kid) },
+          { key: 'kid', value: headerValueText(parts.header.kid) },
         ]);
         step.cite(CITATIONS.shcJws);
 

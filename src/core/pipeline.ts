@@ -25,6 +25,7 @@ import { isBlocking, runStaticRules } from './diagnose/rules';
 import {
   decryptDirA256Gcm,
   describeIvLength,
+  headerValueText,
   JoseError,
   matchKeyToJweKid,
   parseJweCompact,
@@ -64,7 +65,7 @@ import {
 } from './shlink';
 import {
   Recorder,
-  Redactor,
+  type Redactor,
   StepFailure,
   type RunOutcome,
   type StepHandle,
@@ -1116,12 +1117,12 @@ async function openFile(
           },
           {
             key: 'zip',
-            value: parts.header.zip === undefined ? '(none)' : String(parts.header.zip),
+            value: parts.header.zip === undefined ? '(none)' : headerValueText(parts.header.zip),
             status: parts.header.zip === undefined || parts.header.zip === 'DEF' ? 'ok' : 'warn',
           },
           {
             key: 'cty',
-            value: parts.header.cty === undefined ? '(absent)' : String(parts.header.cty),
+            value: headerValueText(parts.header.cty),
             status: 'ok',
             ...(parts.header.cty === undefined
               ? {
@@ -1296,7 +1297,7 @@ async function openFile(
       const kind = classifyContent(parsed, entry?.contentType, header.cty);
       step.kv([
         { key: 'declared by manifest', value: entry?.contentType ?? '(none)' },
-        { key: 'declared by cty', value: header.cty === undefined ? '(none)' : String(header.cty) },
+        { key: 'declared by cty', value: header.cty === undefined ? '(none)' : headerValueText(header.cty) },
         { key: 'identified as', value: kind, status: kind === 'unknown' ? 'warn' : 'ok' },
         { key: 'size', value: formatBytes(plainBytes.byteLength) },
       ]);
