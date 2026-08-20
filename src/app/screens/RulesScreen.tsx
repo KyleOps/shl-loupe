@@ -156,32 +156,37 @@ export function RulesScreen(): ReactNode {
         <PageNav items={NAV_ITEMS} label="Sections of this page" />
 
         <div className="page-column">
-          <header className="rules-head">
-            <h1>Every check, and the one nobody can make</h1>
-            <p className="rules-lede">
-              {STATIC_RULES.length} checks run against a link before any request goes out, so a link
-              that cannot work is diagnosed without spending a request to prove it. Each one carries
-              an id, because an id is what a report quotes and what a conversation can refer to
-              without re-litigating the wording.
-            </p>
-            <p className="rules-lede">
-              These are checks against the base specification. A downstream profile adds
-              requirements of its own, and failing one of those is a different statement from being
-              invalid: those are reported per link, beside the payload, against the profile that
-              adds them.
-            </p>
-          </header>
+          {/* The intro and the caveat share the top row: otherwise the page opens
+              with a 560px column of prose and 650px of empty reading area beside
+              it, which sets the reader's expectation for everything below. */}
+          <div className="rules-intro">
+            <header className="rules-head">
+              <h1>Every check, and the one nobody can make</h1>
+              <p className="rules-lede">
+                {STATIC_RULES.length} checks run against a link before any request goes out, so a
+                link that cannot work is diagnosed without spending a request to prove it. Each one
+                carries an id, because an id is what a report quotes and what a conversation can
+                refer to without re-litigating the wording.
+              </p>
+              <p className="rules-lede">
+                These are checks against the base specification. A downstream profile adds
+                requirements of its own, and failing one of those is a different statement from
+                being invalid: those are reported per link, beside the payload, against the profile
+                that adds them.
+              </p>
+            </header>
 
-          <Callout tone="info" title="What a browser will not tell this page, and why">
-            When a cross-origin request fails, the browser hands JavaScript a bare TypeError. It
-            knows whether the name failed to resolve, the connection was refused, the certificate
-            was rejected, or the response arrived without the header that would let this page read
-            it, and it withholds all four on purpose: a page that could tell those apart would be a
-            port scanner, usable from any site you visited to map the machine and the network you
-            are sitting on. So no client-side tool can name the cause, this one included. What it
-            can do is list the candidates, rank them by everything else it knows, and give each one
-            a test that settles it from a shell, where CORS does not exist.
-          </Callout>
+            <Callout tone="info" title="What a browser will not tell this page, and why">
+              When a cross-origin request fails, the browser hands JavaScript a bare TypeError. It
+              knows whether the name failed to resolve, the connection was refused, the certificate
+              was rejected, or the response arrived without the header that would let this page read
+              it, and it withholds all four on purpose: a page that could tell those apart would be
+              a port scanner, usable from any site you visited to map the machine and the network
+              you are sitting on. So no client-side tool can name the cause, this one included. What
+              it can do is list the candidates, rank them by everything else it knows, and give each
+              one a test that settles it from a shell, where CORS does not exist.
+            </Callout>
+          </div>
 
           <section className="rules-section" aria-labelledby="rules-static" tabIndex={-1}>
             <h2 id="rules-static">

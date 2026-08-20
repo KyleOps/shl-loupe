@@ -112,14 +112,19 @@
   /*
    * 1180px, down from 1560.
    *
-   * A tool is not a poster. At 1560 the app filled a large display edge to edge,
-   * which put a reading column at the far left of a very wide page with several
-   * hundred pixels of nothing beside it: the "text trapped in a box" this was
-   * reported as. Narrower is what makes it read as a page, and every layout in
-   * the app still fits inside it (a rail plus a reading column, a two-column
-   * hero, the link and trace side by side above the payload).
+   * Sized from the content rather than picked: a rail, a gap, and TWO reading
+   * cards side by side, which is what --reading-max below is.
+   *
+   * The history is worth keeping because both wrong answers looked defensible.
+   * At 1560 the app filled a large display and put a 560px column at the far left
+   * with 950px of nothing beside it. Narrowing to 1180 made the page a page and
+   * left the same shape one size down: on a 1700px window the reading screens
+   * reached x=1120 and Settings x=892, so half the window was empty and the
+   * content read as boxed in. Narrower was not the answer; MORE CONTENT PER ROW
+   * was. Cards go two across, every card is one measure wide, and the page fills
+   * the width without a single line of text getting longer.
    */
-  --content-max: 1180px;
+  --content-max: 1500px;
 
   /*
    * 35rem, and the unit is the whole point. Twice.
@@ -178,6 +183,23 @@
    * goes below 14px, which is where that trade stops being worth it.
    */
   --card-max: calc(var(--measure) + var(--space-6) * 2);
+  /*
+   * The reading area on a page with a rail: two cards and the gap between them.
+   * A grid of card-wide cards fills it exactly, so nothing has to be stretched
+   * past the measure to use the width.
+   */
+  --reading-max: calc(var(--card-max) * 2 + var(--space-8));
+  /*
+   * The on-page rail beside a reading column.
+   *
+   * At :root, not on the screens that happen to use it. It was scoped to
+   * `.learn, .rules, .about`, and when Settings grew a rail the grid declaration
+   * referencing it became invalid at computed-value time inside that subtree, so
+   * `grid-template-columns` fell back to `none` and the rail rendered ABOVE the
+   * page instead of beside it. A layout token used by a shared component belongs
+   * where every subtree can see it.
+   */
+  --toc-width: 220px;
   --figure-max: calc(var(--card-max) + var(--space-12) * 3);
   /* A centred caption under an icon, in an empty state or a camera overlay. A
      short line is right there: the eye is not reading a column, it is reading a

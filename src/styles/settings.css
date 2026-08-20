@@ -65,24 +65,41 @@
   line-height: 23px;
 }
 
+/*
+ * Two settings across, for the same reason the checks list is two across: each
+ * card is one measure wide, so a single column used 892px of a 1700px window and
+ * the page read as a form squeezed into a corner. Two columns of the same cards
+ * fill the reading area, and every explanation still reads at its own measure.
+ *
+ * `align-items: start` so a short setting does not stretch to match a tall one
+ * beside it, and `auto-fit` so there is one rule for wide and narrow.
+ */
 .settings-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-9);
+  display: grid;
+  /* A 560px minimum, so this is two columns rather than three: a setting is a
+     label, an explanation and a control, and three of those across a wide window
+     reads as a form scattered over the page. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr));
+  gap: var(--space-9) var(--space-8);
+  align-items: start;
   min-width: 0;
+}
+
+/* The closing note is about the page, not about one setting beside it. */
+.settings-body > .callout {
+  grid-column: 1 / -1;
 }
 
 /* --------------------------------------------------------------------------
    One setting
    -------------------------------------------------------------------------- */
 
+/* No cap of its own: the grid track is one card wide, and two caps arguing about
+   the same width is how a note ends up short of an edge. */
 .setting {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  /* The block holding the explanation is the measure, so the explanation fills it
-     and reads at a sane line length rather than running the width of the page. */
-  max-width: var(--card-max);
   min-width: 0;
 }
 

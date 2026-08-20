@@ -213,7 +213,11 @@ function measureInPage() {
       onPageGround(el) &&
       // Body prose only. A 12.5px annotation inside a diagram is not what
       // sets the column, and nothing that is a sentence is set below 14px.
-      parseFloat(getComputedStyle(el).fontSize) >= 14,
+      parseFloat(getComputedStyle(el).fontSize) >= 14 &&
+      // A heading with a rule under it is a divider as well as a heading, so it
+      // spans the content it introduces on purpose. Everything else in the
+      // column still has to agree.
+      getComputedStyle(el).borderBottomWidth === '0px',
   );
   const lefts = inColumn.map((el) => Math.round(el.getBoundingClientRect().left));
   const pageLeft = Math.min(...lefts);

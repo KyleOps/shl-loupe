@@ -254,7 +254,11 @@ fieldset.mint-field > * + * {
  * than a hairline, because a hairline is 1.55:1 on the canvas and cannot be the
  * sole carrier of anything.
  */
+/* A tinted box holding nothing but prose, so the BOX carries the width: at panel
+   width its paragraphs stopped 810px short of their own border, which is the
+   defect this codebase has a guard for. */
 .mint-caveat {
+  max-width: calc(var(--measure) + var(--space-11) + var(--space-6) * 2);
   display: flex;
   /* The icon sits beside the opening line, not floating halfway down three
      paragraphs, which is where a stretched flex item's centred icon lands. */

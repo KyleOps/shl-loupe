@@ -34,29 +34,8 @@
 
 .learn,
 .rules,
-.about {
-  /*
-   * The two container widths, both derived from --measure so there is still one
-   * number in the design rather than three.
-   *
-   * --card-max is the measure plus a card's own horizontal padding, so a
-   * paragraph ends exactly at the card's inner edge. Anything more generous
-   * reproduces the reported bug in miniature: a paragraph adrift in a box, with
-   * nothing on the row agreeing about where the line stops.
-   *
-   * --figure-max is the widest a table, a code block or an anatomy map gets, and
-   * it is deliberately wider than a card so a figure reads as an interruption of
-   * the column rather than as one more card in it.
-   *
-   * The trap in both: --measure is in `ch`, so it resolves against the font size
-   * of the element that USES it. A card sized from it therefore only fits text
-   * set at the base size, which is why the main sentence of every card on these
-   * screens is base size and only genuinely secondary text (notes, blurbs,
-   * captions, fact lists) goes smaller. A 14px paragraph in a card sized for 16px
-   * stops 100px short of the border, which is the same defect one scale down.
-   */
-  --toc-width: 220px;
-
+.about,
+.settings {
   display: flex;
   flex-direction: column;
   /* Sections are separated by more than anything inside one, so the page reads
@@ -76,6 +55,20 @@
  * strip that had not moved. One left edge everywhere is worth more than a
  * perfectly balanced column on any single screen.
  */
+/*
+ * The intro row: the page's opening prose and its one caveat, side by side.
+ *
+ * The alternative is what was there: a 560px column of prose with 650px of empty
+ * reading area beside it, at the top of the page, which sets the reader's
+ * expectation for everything below. Two blocks of one card each fill the row.
+ */
+.rules-intro {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-8);
+  align-items: start;
+}
+
 /*
  * These two are no longer capped at a card. They carry a rail and a column now
  * (`.page-body`), which is where their width comes from: capping the SCREEN as
@@ -163,13 +156,13 @@
 .page-head,
 .page-body {
   width: 100%;
-  max-width: calc(var(--toc-width) + var(--space-9) + var(--card-max));
+  max-width: calc(var(--toc-width) + var(--space-9) + var(--reading-max));
 }
 
 .learn-body,
 .page-body {
   display: grid;
-  grid-template-columns: minmax(160px, var(--toc-width)) minmax(0, var(--card-max));
+  grid-template-columns: minmax(160px, var(--toc-width)) minmax(0, var(--reading-max));
   gap: var(--space-9);
   align-items: start;
   min-width: 0;
@@ -272,6 +265,9 @@
 
 .learn-section > h2 {
   margin: 0;
+  /* Spans the section it divides, like the section headings on the other reading
+     screens. */
+  max-width: none;
   font-size: 1.3125em;
   line-height: 1.35;
   padding-bottom: var(--space-4);
@@ -284,6 +280,7 @@
    different places is the whole complaint this file is answering. */
 .learn-section-lede {
   margin: 0;
+  max-width: var(--measure);
   color: var(--fg-muted);
   line-height: 1.55;
 }
@@ -448,14 +445,37 @@
    Learn: payload members, wire members, flags, checklists
    ========================================================================== */
 
-.learn-members,
-.learn-wire,
-.learn-flags,
-.learn-glossary {
+/* The wire dump is one block, not a list of cards. */
+.learn-wire {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
   min-width: 0;
+}
+
+/*
+ * The card lists inside a guide section go two across, for the same reason the
+ * checks do: each card is one measure wide, and a single column of them uses half
+ * the reading area. The cards keep their own width; only the list changes.
+ */
+.learn-members,
+.learn-wire-members,
+.learn-flags,
+.learn-glossary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-6);
+  align-items: start;
+  min-width: 0;
+}
+
+/* In a grid track the card fills the track, and the track is one card wide, so a
+   second cap here would be a third opinion about the same number. */
+.learn-members > .learn-member,
+.learn-wire-members > .learn-wire-member,
+.learn-flags > .learn-flag,
+.learn-glossary > .learn-term {
+  max-width: none;
 }
 
 /* Every reading card is one width, and that width comes from the measure of the
@@ -610,7 +630,11 @@
 .learn-generated {
   margin: 0;
   min-width: 0;
-  max-width: var(--figure-max);
+  /* The reading area, not --figure-max: on this page the area is two cards wide,
+     and a figure stopping at 808px of 1208px is the dead space this design has
+     been chased around three times. A table and a code sample both get better
+     with the room. */
+  max-width: var(--reading-max);
 }
 
 /*
@@ -688,7 +712,7 @@
   flex-direction: column;
   gap: var(--space-5);
   min-width: 0;
-  max-width: var(--figure-max);
+  max-width: var(--reading-max);
   scroll-margin-top: var(--space-9);
 }
 
@@ -698,13 +722,16 @@
   line-height: 1.4;
 }
 
+/* The parts of an artefact, two across like every other card list: one column
+   left 616px of the figure empty. */
 .anatomy-parts {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
   gap: var(--space-4);
+  align-items: start;
   counter-reset: anatomy;
 }
 
@@ -1192,12 +1219,22 @@
   min-width: 0;
 }
 
+/*
+ * A section heading with a rule under it is doing two jobs: naming the section
+ * and dividing it from the last one. The rule therefore spans the content it
+ * introduces rather than stopping at the measure, or a page of two-column card
+ * grids gets a divider that covers the left half and stops.
+ *
+ * `max-width: none` overrides the shared heading cap from tokens.css, which is
+ * exactly the escape that rule's `:where()` was written to leave open.
+ */
 .rules-section > h2,
 .about-section > h2 {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   margin: 0;
+  max-width: none;
   padding-bottom: var(--space-4);
   border-bottom: var(--hairline-width) solid var(--border-hairline);
   font-size: 1.1875em;
@@ -1242,15 +1279,32 @@
   color: var(--fg-muted);
 }
 
+/*
+ * TWO ACROSS, and the reason is the width of the page rather than a taste for
+ * grids.
+ *
+ * A card is one measure wide, so a single column of them used half of a large
+ * display and left the rest empty, which read as content boxed into a corner.
+ * Two columns of the SAME cards fill the reading area exactly (--reading-max is
+ * two cards and a gap), and not one line of text gets longer for it.
+ *
+ * `auto-fill`, NOT `auto-fit`, with a card-sized minimum rather than a fixed 2:
+ * one rule then handles a wide page and a narrow one. The difference between the
+ * two words is the whole bug it replaced: `auto-fit` collapses empty tracks, so a
+ * group with one check in it stretched that single card across the full 1208px
+ * and its facts ran to 145 characters. `auto-fill` keeps the track, so one card
+ * is card-wide and sits where the first of two would.
+ */
 .rules-list {
   list-style: none;
   /* The list is the answer to the blurb above it, so it sits a step away from it
      rather than in the same rhythm as the rows inside it. */
   margin: var(--space-2) 0 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-4);
+  align-items: start;
   min-width: 0;
 }
 
@@ -1347,20 +1401,36 @@
   min-width: 0;
 }
 
-.about-list,
+/*
+ * Two lists, two minimum track widths, because they hold different things.
+ *
+ * `.about-list` items are paragraphs, so their track is a card: four across at
+ * 293px gave 41 characters a line, which is below the floor for reading and looks
+ * cramped next to everything else on the page. `.about-links` items are one link
+ * each, so a narrower track is right and four across is fine.
+ */
+.about-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-6);
+  align-items: start;
+}
+
 .about-links {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: var(--space-5);
 }
 
 /* A rail rather than a bullet, and base size: this list is prose, and it is the
    answer to "who is this for", not a caption on it. */
 .about-list li {
-  max-width: var(--measure);
   padding-left: var(--space-6);
   border-left: var(--rail-width) solid var(--border-hairline);
   line-height: 1.55;
@@ -1379,14 +1449,16 @@
   gap: var(--space-2);
 }
 
+/* Two across, like every other card list on a reading page. */
 .about-claims {
   list-style: none;
   counter-reset: claim;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
   gap: var(--space-5);
+  align-items: start;
 }
 
 .about-claims li {
@@ -1442,10 +1514,17 @@
   padding-top: 2px;
 }
 
+/*
+ * Two across as well, and the hairline separator goes with it: a rule between
+ * items only reads as "next one" in a single column. In a grid the cards are
+ * separated by the gap, which says the same thing without a fifth kind of
+ * container.
+ */
 .about-limits {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-8);
+  align-items: start;
   margin: 0;
 }
 
@@ -1454,9 +1533,11 @@
    without adding a fifth kind of container. It is decorative here, in the sense
    tokens.css requires: the heading is what separates one limit from the next, so
    nothing depends on the line being seen. */
-.about-limits > div + div {
-  padding-top: var(--space-6);
-  border-top: var(--hairline-width) solid var(--border-hairline);
+/* A rail beside each limit, which works in a grid where a top rule does not, and
+   keeps the group visibly one set of things. */
+.about-limits > div {
+  padding-left: var(--space-6);
+  border-left: var(--hairline-width) solid var(--border-hairline);
 }
 
 .about-limits dt {
@@ -1731,10 +1812,12 @@
     align-items: start;
   }
 
-  /* One card under another in the right-hand column: three cards side by side in
-     half a row would each be too narrow to say what they end in. */
+  /* Two across in the right-hand column, which is what fits at one card each.
+     One per row stretched a card to 820px and left its blurb short of its own
+     border; three across in half a row would be too narrow to say what each
+     one ends in. */
   .idle-hero .sample-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   }
 }
 
@@ -1801,7 +1884,7 @@
  */
 .sample-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: var(--space-5);
   margin: 0;
   padding: 0;
