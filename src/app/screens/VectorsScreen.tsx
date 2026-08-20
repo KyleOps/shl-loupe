@@ -45,7 +45,8 @@ import {
   type VectorTier,
   type VectorVerdict,
 } from '../../core/vectors';
-import { Button, Callout, Chip, StatusIcon, type Tone } from '../../ui/primitives';
+import { Button, Callout, Chip, Disclosure, StatusIcon, type Tone } from '../../ui/primitives';
+import { QrCode } from '../../ui/QrCode';
 
 const TIERS: Array<{ tier: VectorTier; title: string; blurb: string }> = [
   {
@@ -314,6 +315,30 @@ function VectorCard({ run }: { run: VectorRun }): ReactNode {
       <a className="vector-open" href={`#${vector.input}`}>
         Open this vector in the trace
       </a>
+
+      {/*
+        The suite's own page has a wall of QR images for pointing a real scanner
+        at. This is the same affordance without the images: the code is generated
+        here from the vector's own link, so it is vector art that survives a
+        projector, and it works for testing SOMEBODY ELSE'S app, which is what a
+        QR wall is actually for. Collapsed, because 23 encoders running at once
+        to show 23 codes nobody is scanning is a waste of a laptop.
+      */}
+      <Disclosure summary="Scan this with another app" defaultOpen={false}>
+        <QrCode
+          value={vector.input}
+          size={200}
+          caption={
+            <>
+              <code>{vector.id}</code> as a {vector.inputForm === 'raw' ? 'bare' : vector.inputForm}{' '}
+              link.{' '}
+              {vector.expect.outcome === 'success'
+                ? 'A conformant receiver should open this.'
+                : `A KTC validator should stop at the ${vector.expect.failStage ?? 'payload'} stage.`}
+            </>
+          }
+        />
+      </Disclosure>
     </article>
   );
 }

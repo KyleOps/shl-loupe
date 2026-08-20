@@ -15,13 +15,13 @@ than a hostname.
 
 ## Registry
 
-| Fact | Value | Where it came from |
-| --- | --- | --- |
-| AWS account | `471112546300` | `aws sts get-caller-identity` |
-| Region | `ap-southeast-2` | the image pinned in `sparked-argo` `apps/clinic-demo/values.yaml` |
-| Registry host | `471112546300.dkr.ecr.ap-southeast-2.amazonaws.com` | same |
-| Repository | `sparked/shl-loupe` | `aws ecr describe-repositories`: every workload repo is `sparked/<app>` |
-| Cluster context | `sparkey` | `sparked-argo` `readme.md` |
+| Fact            | Value                                               | Where it came from                                                      |
+| --------------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
+| AWS account     | `471112546300`                                      | `aws sts get-caller-identity`                                           |
+| Region          | `ap-southeast-2`                                    | the image pinned in `sparked-argo` `apps/clinic-demo/values.yaml`       |
+| Registry host   | `471112546300.dkr.ecr.ap-southeast-2.amazonaws.com` | same                                                                    |
+| Repository      | `sparked/shl-loupe`                                 | `aws ecr describe-repositories`: every workload repo is `sparked/<app>` |
+| Cluster context | `sparkey`                                           | `sparked-argo` `readme.md`                                              |
 
 `sparked/shl-loupe` does not exist yet. ECR never auto-creates a repository on
 push, and Crossplane cannot make one here (`crossplane/providers.yaml` installs
@@ -121,9 +121,9 @@ Then, by hand:
    sync, so the symptom is a Sync status of Unknown with no rendered manifests.
 
    ```yaml
-       - namespace: shl-loupe
-         server: https://kubernetes.default.svc
-         name: in-cluster
+   - namespace: shl-loupe
+     server: https://kubernetes.default.svc
+     name: in-cluster
    ```
 
    `sourceRepos` needs no change: both sources are
@@ -178,7 +178,7 @@ while :; do kubectl --context sparkey -n shl-loupe port-forward svc/shl-loupe 80
 
 This decides how the tool gets used in a room, so it is worth stating precisely.
 
-W3C *Secure Contexts*, section 3.1 *Is origin potentially trustworthy?*, returns
+W3C _Secure Contexts_, section 3.1 _Is origin potentially trustworthy?_, returns
 "Potentially Trustworthy" when the host matches `127.0.0.0/8` or `::1/128`, and
 again when the host is `localhost` (or ends in `.localhost`) on a user agent that
 follows the localhost name-resolution rules. The section closes with a note that

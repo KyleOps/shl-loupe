@@ -148,6 +148,13 @@ export function RulesScreen(): ReactNode {
           id, because an id is what a report quotes and what a conversation can refer to without
           re-litigating the wording.
         </p>
+        <p className="rules-lede">
+          These are checks against the base specification. A downstream profile adds requirements of
+          its own, and failing one of those is a different statement from being invalid: those are
+          reported per link, beside the payload, and the published{' '}
+          <a href="#/vectors">KTC conformance vectors</a> can be run against this engine to see
+          where the two disagree.
+        </p>
       </header>
 
       <Callout tone="info" title="What a browser will not tell this page, and why">

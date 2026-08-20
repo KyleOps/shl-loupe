@@ -62,7 +62,7 @@ source at commit `e61c8799`, with file and line references in
 [`research/03-shc-web-reader-teardown.md`](research/03-shc-web-reader-teardown.md).
 Its FHIR rendering work is genuinely good, which is why SHLoupe builds on it.
 
-|                                 | Web Reader                                                                                 | SHLoupe                                                          |
+|                                 | Web Reader                                                                                 | SHLoupe                                                        |
 | ------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
 | Payload checked before fetching | No. `shlPayload.url` is never inspected                                                    | Every static rule, and a fatal one stops the run               |
 | Failure attribution             | One `try`/`catch` over six hops, then `err.toString()`                                     | Per-step status, with the hop named                            |
