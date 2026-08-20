@@ -41,6 +41,13 @@ const REPORT_RECIPIENT = 'Loupe (manual check)';
 
 export interface ReportOptions {
   format?: 'markdown' | 'json';
+  /**
+   * Eight hex characters identifying the input, from {@link inputFingerprint}.
+   * Optional because computing it needs WebCrypto and therefore an await, and
+   * this builder stays synchronous so a component can call it in an event
+   * handler. A report without one simply omits the line.
+   */
+  fingerprint?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -52,15 +59,29 @@ export function buildDiagnosisReport(
   redactor: Redactor | undefined,
   options: ReportOptions = {},
 ): string {
-  const safe = redactor === undefined ? run : redactRun(run, redactor);
+  // The echoed input is dropped from BOTH formats, not just the prose one. The
+  // redactor matches the key's plain text, and `input.source` carries a base64
+  // re-encoding of it, so the key survives redaction there. See
+  // `describeInput` for why no truncation rule fixes this.
+  const withoutRawInput: TraceRun = {
+    ...run,
+    input: { ...run.input, source: `${run.input.kind}, ${run.input.source.trim().length} characters` },
+  };
+  const safe = redactor === undefined ? withoutRawInput : redactRun(withoutRawInput, redactor);
   if (options.format === 'json') {
     return `${JSON.stringify(
-      { tool: 'Loupe', reportVersion: 1, secrets: secretState(redactor), run: safe },
+      {
+        tool: 'Loupe',
+        reportVersion: 1,
+        secrets: secretState(redactor),
+        ...(options.fingerprint === undefined ? {} : { inputFingerprint: options.fingerprint }),
+        run: safe,
+      },
       null,
       2,
     )}\n`;
   }
-  return markdownReport(safe, redactor);
+  return markdownReport(safe, redactor, options);
 }
 
 type SecretState = 'removed' | 'none-registered' | 'unchecked';
@@ -88,7 +109,11 @@ function redactionSentence(state: SecretState): string {
   }
 }
 
-function markdownReport(run: TraceRun, redactor: Redactor | undefined): string {
+function markdownReport(
+  run: TraceRun,
+  redactor: Redactor | undefined,
+  options: ReportOptions,
+): string {
   const payload = decodedPayload(run);
   const url = typeof payload?.url === 'string' ? payload.url : undefined;
   const label = typeof payload?.label === 'string' ? payload.label : undefined;
@@ -99,7 +124,7 @@ function markdownReport(run: TraceRun, redactor: Redactor | undefined): string {
   lines.push(`**Verdict:** ${verdictSentence(run)}`);
   if (label !== undefined) lines.push(`**Link label:** ${label}`);
   if (url !== undefined) lines.push(`**Manifest URL:** \`${url}\``);
-  lines.push(`**Input:** ${describeInput(run)}`);
+  lines.push(`**Input:** ${describeInput(run, options.fingerprint)}`);
   lines.push(`**Requests made:** ${run.networkUsed ? 'yes, listed in the steps below' : 'none'}`);
   lines.push(`**Run at:** ${new Date(run.startedAt).toISOString()}${totalTime(run)}`);
   lines.push('');
@@ -178,10 +203,33 @@ function verdictSentence(run: TraceRun): string {
   }
 }
 
-function describeInput(run: TraceRun): string {
-  const source = run.input.source.replace(/\s+/g, ' ').trim();
-  const shortened = source.length > 120 ? `${source.slice(0, 120)}…` : source;
-  return `${run.input.kind} · \`${shortened}\``;
+/**
+ * Identify the input without quoting it.
+ *
+ * An earlier version echoed the first 120 characters of the raw link, which
+ * reads as harmless and is not: the payload is base64url over JSON, so a prefix
+ * of the encoded form contains a prefix of the `key` member, and where in the
+ * prefix the key starts depends on how long the URL is. The redactor cannot help
+ * there, because it matches the key's plain text and what appears here is a
+ * base64 re-encoding of it. Roughly fifteen of the key's forty-three characters
+ * were reaching a report whose own opening line promises the key was replaced.
+ *
+ * A truncation rule that is safe for every URL length does not exist, so the
+ * quote goes and a fingerprint takes its place. It answers the only question the
+ * echo was really for ("is this the same link you sent me?") and discloses
+ * nothing: two people compare eight hex characters instead of pasting a key into
+ * a group chat.
+ */
+export async function inputFingerprint(source: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));
+  return [...new Uint8Array(digest).slice(0, 4)]
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function describeInput(run: TraceRun, fingerprint: string | undefined): string {
+  const id = fingerprint === undefined ? '' : `, fingerprint \`${fingerprint}\``;
+  return `${run.input.source}${id}`;
 }
 
 function totalTime(run: TraceRun): string {
