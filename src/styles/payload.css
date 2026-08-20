@@ -10,6 +10,13 @@
  * is one of three. So the rule is applied per container rather than per case:
  * anything that can outgrow its column scrolls inside itself, and the page never
  * scrolls sideways.
+ *
+ * Prose is the other half of that rule and it goes the other way. Every note,
+ * subtitle, caption and explainer takes ONE measure, `--measure` from tokens.css,
+ * or `--measure-tight` where it sits indented beside the value it describes. They
+ * each used to carry a width of their own (84ch here, 80ch there, 78ch below),
+ * which is exactly what makes a wrap look like a bug: two paragraphs a few pixels
+ * apart, ending in two different places, for no reason a reader can see.
  */
 
 /* --------------------------------------------------------------------------
@@ -53,7 +60,7 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--fg-muted);
-  max-width: 84ch;
+  max-width: var(--measure);
 }
 
 .payload-reconciliation {
@@ -307,7 +314,7 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--fg-muted);
-  max-width: 80ch;
+  max-width: var(--measure);
 }
 
 .resource-chips {
@@ -372,13 +379,15 @@
    Values
    -------------------------------------------------------------------------- */
 
+/* The tight measure, not the full one: this note sits indented inside an element
+   tree, beside the value it is about, so it is a column within a column. */
 .value-note {
   display: block;
   margin-top: var(--space-2);
   font-size: 12px;
   line-height: 18px;
   color: var(--fg-muted);
-  max-width: 78ch;
+  max-width: var(--measure-tight);
   overflow-wrap: anywhere;
 }
 
@@ -565,7 +574,7 @@ button.ref-chip:hover {
   margin: 0;
   font-size: 13.5px;
   line-height: 21px;
-  max-width: 80ch;
+  max-width: var(--measure);
 }
 
 .stated-absence {
@@ -738,7 +747,7 @@ button.ref-chip:hover {
   font-size: 12px;
   line-height: 18px;
   color: var(--fg-muted);
-  max-width: 84ch;
+  max-width: var(--measure);
 }
 
 .narrative-note {
@@ -746,7 +755,7 @@ button.ref-chip:hover {
   font-size: 12px;
   line-height: 18px;
   color: var(--fg-muted);
-  max-width: 84ch;
+  max-width: var(--measure);
 }
 
 /*
@@ -889,7 +898,7 @@ button.ref-chip:hover {
   margin: 0 0 var(--space-4);
   font-size: 13px;
   line-height: 20px;
-  max-width: 84ch;
+  max-width: var(--measure);
 }
 
 /* --------------------------------------------------------------------------

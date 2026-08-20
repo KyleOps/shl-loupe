@@ -112,6 +112,10 @@
   --content-max: 1560px;
   --measure: 74ch;
   --measure-tight: 62ch;
+  /* A centred caption under an icon, in an empty state or a camera overlay. A
+     short line is right there: the eye is not reading a column, it is reading a
+     label, and 74 characters centred looks like a mistake. */
+  --measure-caption: 46ch;
   --micro-tracking: 0.06em;
 }
 

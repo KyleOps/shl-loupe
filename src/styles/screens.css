@@ -4,13 +4,22 @@
  * The teaching screens: Learn, Checks, About, and the interactive link anatomy
  * they share.
  *
- * Three rules run through the whole file.
+ * Four rules run through the whole file.
  *
  *  - Colour comes from tokens, and a status colour never appears except through
  *    a `tone-*` class, so a tinted surface and its foreground cannot drift apart
- *    between light, dark and projector.
- *  - Prose is capped at about 78 characters. A guide that runs the full width of
- *    a 27-inch monitor is a guide nobody reads a second paragraph of.
+ *    between light and dark.
+ *  - Every paragraph, list item, definition and caption takes ONE measure,
+ *    `--measure` from tokens.css, and every container is sized FROM it. Each block
+ *    used to carry a width of its own, and those widths agreed neither with each
+ *    other nor with the panel around them, so a paragraph stopped two thirds of
+ *    the way across a card and read as a hard line limit rather than as a column.
+ *    Capping the prose and leaving the container at the full width of the page is
+ *    the trap: the wrap looks accidental precisely because nothing else on the row
+ *    agrees with it.
+ *  - A table, a code block and an anatomy map are not prose, are never squeezed to
+ *    the measure, and are wider than the cards around them on purpose. That
+ *    breakout is what gives a long reading page its rhythm.
  *  - Anything that can outgrow its column scrolls inside its own container. The
  *    page never scrolls sideways, at any zoom (WCAG 1.4.10), which for this file
  *    means every table and every mono strip.
@@ -26,38 +35,107 @@
 .learn,
 .rules,
 .about {
+  /*
+   * The two container widths, both derived from --measure so there is still one
+   * number in the design rather than three.
+   *
+   * --card-max is the measure plus a card's own horizontal padding, so a
+   * paragraph ends exactly at the card's inner edge. Anything more generous
+   * reproduces the reported bug in miniature: a paragraph adrift in a box, with
+   * nothing on the row agreeing about where the line stops.
+   *
+   * --figure-max is the widest a table, a code block or an anatomy map gets, and
+   * it is deliberately wider than a card so a figure reads as an interruption of
+   * the column rather than as one more card in it.
+   *
+   * The trap in both: --measure is in `ch`, so it resolves against the font size
+   * of the element that USES it. A card sized from it therefore only fits text
+   * set at the base size, which is why the main sentence of every card on these
+   * screens is base size and only genuinely secondary text (notes, blurbs,
+   * captions, fact lists) goes smaller. A 14px paragraph in a card sized for 16px
+   * stops 100px short of the border, which is the same defect one scale down.
+   */
+  --card-max: calc(var(--measure) + var(--space-6) * 2);
+  --figure-max: calc(var(--card-max) + var(--space-12) * 2);
+  --toc-width: 220px;
+
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  /* Sections are separated by more than anything inside one, so the page reads
+     as parts rather than as a wall: 56 between sections, 16 to 20 within one, 8
+     inside a group. */
+  gap: var(--space-11);
   min-width: 0;
 }
 
+/*
+ * A screen that is only text is narrowed and centred rather than left to sprawl.
+ * The leftover width then sits on both sides as layout, instead of trailing off
+ * to the right of every paragraph, which is the reading the review reported. Learn
+ * is the exception below: it has figures and a contents rail, so it keeps a wider
+ * column and its own centring.
+ */
+.rules,
+.about {
+  max-width: var(--card-max);
+  margin-inline: auto;
+}
+
+/*
+ * The reading scale is in `em`, not px, and that is the point.
+ *
+ * The larger-text preference moves --font-size-base, which only reaches text
+ * that inherits its size. A heading declared in px therefore stays put while the
+ * body around it grows, and at the 19px base a 15px card heading ends up SMALLER
+ * than the paragraph it heads. Every value below is the pixel size it already was
+ * at the 16px base, and now it scales with it.
+ */
 .learn-head h1,
 .rules-head h1,
 .about-head h1 {
-  margin: 0 0 var(--space-4);
-  font-size: 26px;
-  line-height: 32px;
+  margin: 0 0 var(--space-5);
+  font-size: 1.625em;
+  line-height: 1.25;
   letter-spacing: -0.01em;
 }
 
+/*
+ * The lede is the one paragraph set larger than the body, which is what makes an
+ * opening read as an opening. It takes the TIGHT measure for that reason: at
+ * 17px the full measure would come out wider in pixels than the body column
+ * below it, and the widest line on the page arriving first is what makes
+ * everything after it look truncated. Narrower and larger reads as a standfirst.
+ */
 .learn-lede,
 .rules-lede,
 .about-lede {
   margin: 0;
-  max-width: 78ch;
+  max-width: var(--measure-tight);
   color: var(--fg-muted);
-  font-size: 15px;
-  line-height: 24px;
+  font-size: 1.0625em;
+  line-height: 1.6;
 }
 
 /* ==========================================================================
    Learn: table of contents and section flow
    ========================================================================== */
 
+/*
+ * The contents rail plus the reading column are centred as one unit, so the pair
+ * sits in the middle of a wide display with the rail's own whitespace to its left.
+ * Bounding the column alone would leave the whole page hanging off the left edge,
+ * which looks as unintentional as the wrap it was meant to fix.
+ */
+.learn-head,
+.learn-body {
+  width: 100%;
+  max-width: calc(var(--toc-width) + var(--space-9) + var(--figure-max));
+  margin-inline: auto;
+}
+
 .learn-body {
   display: grid;
-  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  grid-template-columns: minmax(160px, var(--toc-width)) minmax(0, 1fr);
   gap: var(--space-9);
   align-items: start;
   min-width: 0;
@@ -143,31 +221,37 @@
 
 .learn-section > h2 {
   margin: 0;
-  font-size: 21px;
-  line-height: 28px;
+  font-size: 1.3125em;
+  line-height: 1.35;
   padding-bottom: var(--space-4);
   border-bottom: var(--hairline-width) solid var(--border-hairline);
 }
 
+/* A section's opening sentence is quieter than its body, not smaller than it. It
+   sits directly above body text, so it takes the same size and therefore the same
+   pixel column; only the colour changes. Two stacked paragraphs ending in two
+   different places is the whole complaint this file is answering. */
 .learn-section-lede {
   margin: 0;
-  max-width: 78ch;
+  max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 14px;
+  line-height: 1.55;
 }
 
 .learn-prose {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  /* One paragraph gap, everywhere. It is larger than the line height's own
+     leading so a paragraph break is visible without a rule or an indent. */
+  gap: var(--space-6);
 }
 
 .learn-prose p,
 .learn-section > p,
 .about-section > p {
   margin: 0;
-  max-width: 78ch;
-  line-height: 25px;
+  max-width: var(--measure);
+  line-height: 1.55;
 }
 
 .learn-caption {
@@ -179,11 +263,34 @@
   color: var(--fg-muted);
 }
 
+/*
+ * Secondary prose: one size for every note, blurb, caption and aside on these
+ * screens, in em so the larger-text preference scales it, and on the same measure
+ * as the body. It comes out a narrower column in pixels than base-size text does,
+ * which is the intent: a note is smaller, quieter AND narrower, so three signals
+ * say "aside" rather than one wrap looking like an accident.
+ *
+ * The trap with em is compounding: nest one of these inside the fact list below,
+ * which is already 0.8125em, and the result is 11px. Nothing here nests today, and
+ * anything that starts to needs an explicit 1em rather than a second fraction.
+ */
+.learn-note,
+.learn-checklist p,
+.anatomy-part p,
+.rules-group-blurb,
+.rules-varies,
+.about-links li,
+.about-claims .about-check,
+.about-disclaimer {
+  font-size: 0.875em;
+}
+
+/* A step away from the fact list above it, so it reads as a sentence about the
+   example rather than as another row of the list that lost its label. */
 .learn-note {
-  margin: var(--space-4) 0 0;
-  max-width: 78ch;
-  font-size: 13px;
-  line-height: 21px;
+  margin: var(--space-5) 0 0;
+  max-width: var(--measure);
+  line-height: 1.5;
   color: var(--fg-muted);
 }
 
@@ -203,13 +310,19 @@
   border-left: var(--rail-width) solid var(--accent);
   border-radius: 0 var(--radius-card) var(--radius-card) 0;
   min-width: 0;
+  /* Sized from the quote inside it, like every other card here. A quotation set
+     in a block twice the width of its own text reads as a layout accident, and a
+     normative sentence is the last thing that should look accidental. */
+  max-width: var(--card-max);
 }
 
+/* Base size, so a quotation fills the card that was sized from the same measure.
+   A normative sentence is the last thing that should look like a stray fragment
+   in a box of its own. */
 .learn-quote blockquote {
   margin: 0 0 var(--space-4);
-  max-width: 74ch;
-  font-size: 14.5px;
-  line-height: 24px;
+  max-width: var(--measure);
+  line-height: 1.55;
 }
 
 .learn-quote-mark {
@@ -223,9 +336,11 @@
   background: transparent;
 }
 
+/* A citation nested inside another card is quieter, and being narrower than that
+   card is correct: it is an aside within the card's own text, not its body. */
 .learn-quote.is-compact blockquote {
-  font-size: 13.5px;
-  line-height: 22px;
+  font-size: 0.875em;
+  line-height: 1.55;
 }
 
 .learn-quote figcaption,
@@ -261,6 +376,7 @@
 .learn-reference {
   padding-left: var(--space-5);
   border-left: var(--rail-width) solid var(--border-meaningful);
+  max-width: var(--card-max);
 }
 
 .learn-reference.is-compact {
@@ -281,6 +397,9 @@
   min-width: 0;
 }
 
+/* Every reading card is one width, and that width comes from the measure of the
+   prose inside it. This is the rule the whole file turns on: a card wider than
+   its own longest line is what made the wrap look like a limit. */
 .learn-member,
 .learn-wire-member,
 .learn-flag,
@@ -290,6 +409,7 @@
   border: var(--hairline-width) solid var(--border-hairline);
   border-radius: var(--radius-card);
   min-width: 0;
+  max-width: var(--card-max);
   scroll-margin-top: var(--space-9);
 }
 
@@ -308,12 +428,13 @@
   align-items: center;
   gap: var(--space-4);
   margin: 0 0 var(--space-4);
-  font-size: 16px;
+  font-size: 1.125em;
+  line-height: 1.35;
 }
 
 .learn-member h3 .mono,
 .learn-wire-member h4 .mono {
-  font-size: 15px;
+  font-size: 0.85em;
   color: var(--accent);
 }
 
@@ -324,14 +445,17 @@
   color: var(--fg-muted);
 }
 
+/* Base size, like every other main sentence on these screens, so it fills the
+   card that was sized from the same measure. */
 .learn-member p,
 .learn-wire-member p,
 .learn-term p {
   margin: 0;
-  max-width: 78ch;
-  line-height: 23px;
+  max-width: var(--measure);
+  line-height: 1.55;
 }
 
+/* Dense meta, one size below secondary prose, also in em. */
 .learn-member-facts,
 .learn-flag-facts,
 .segmap-detail-facts,
@@ -340,7 +464,7 @@
   grid-template-columns: minmax(120px, max-content) minmax(0, 1fr);
   gap: var(--space-3) var(--space-6);
   margin: var(--space-5) 0 0;
-  font-size: 13px;
+  font-size: 0.8125em;
 }
 
 .learn-member-facts dt,
@@ -356,7 +480,7 @@
 .rules-facts dd {
   margin: 0;
   min-width: 0;
-  line-height: 21px;
+  line-height: 1.5;
 }
 
 .learn-flag-letter {
@@ -372,13 +496,18 @@
   font-weight: 600;
 }
 
+.learn-checklist {
+  max-width: var(--card-max);
+  min-width: 0;
+}
+
 .learn-checklist ul {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
 }
 
 .learn-checklist li {
@@ -399,9 +528,8 @@
 
 .learn-checklist p {
   margin: 0;
-  max-width: 78ch;
-  font-size: 13.5px;
-  line-height: 21px;
+  max-width: var(--measure);
+  line-height: 1.5;
   color: var(--fg-muted);
 }
 
@@ -409,11 +537,35 @@
    Learn: tables and code
    ========================================================================== */
 
+/*
+ * The breakout. A conformance table, a curl command and a header checklist are
+ * data, not prose, so they take the figure width rather than the measure: a
+ * four-column table squeezed to 74 characters of prose is unreadable in a
+ * different way. Being wider than the cards around them is also what makes them
+ * read as figures interrupting the column, which is the page's rhythm.
+ */
 .learn-table,
 .learn-code,
 .learn-generated {
   margin: 0;
   min-width: 0;
+  max-width: var(--figure-max);
+}
+
+/*
+ * The scroll container is positioned, and that is load bearing.
+ *
+ * An `overflow-x: auto` box clips its in-flow children but NOT an absolutely
+ * positioned descendant whose containing block is further up, so every
+ * `.visually-hidden` span inside a wide table (each status icon carries one) sat
+ * at its static position out past the viewport and made the PAGE scroll sideways
+ * at 320px, while the table itself scrolled correctly inside its own box. The
+ * element is invisible, the symptom is a horizontal scrollbar on the document,
+ * and nothing connects the two. `position: relative` here makes this box the
+ * containing block, so the clip applies.
+ */
+.learn-table > .scroll-x {
+  position: relative;
 }
 
 .learn-table table {
@@ -466,17 +618,23 @@
    The anatomy strip: the non-interactive anatomies (JWE, JWS, payload)
    ========================================================================== */
 
+/* An anatomy is a figure, not prose: the strips carry real base64 and the map
+   carries a real link, so they take the figure width. The sentence explaining a
+   part still takes the measure, which is what makes it read as an annotation of
+   the artefact beside it rather than as the body text of a card. */
 .learn-anatomy {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
   min-width: 0;
+  max-width: var(--figure-max);
   scroll-margin-top: var(--space-9);
 }
 
 .learn-anatomy > h3 {
   margin: 0;
-  font-size: 17px;
+  font-size: 1.0625em;
+  line-height: 1.4;
 }
 
 .anatomy-parts {
@@ -546,9 +704,8 @@
 
 .anatomy-part p {
   margin: 0;
-  max-width: 78ch;
-  font-size: 13.5px;
-  line-height: 21px;
+  max-width: var(--measure);
+  line-height: 1.5;
   color: var(--fg-muted);
 }
 
@@ -874,9 +1031,13 @@
 }
 
 /* Tier three: what the two required members are used for. */
+/* `min(320px, 100%)`, not a bare 320px: an auto-fit track floor is a MINIMUM, so
+   a bare 320px keeps its width on a 296px column and pushes the page sideways.
+   It fails only below the floor, which is why it survives every desktop check and
+   breaks WCAG 1.4.10 at 400% zoom. */
 .segmap-usage-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   gap: var(--space-6);
   min-width: 0;
 }
@@ -953,10 +1114,17 @@
    Checks
    ========================================================================== */
 
+/*
+ * The vertical ladder for a long list of checks. Everything separating one thing
+ * from another on this screen is one of four steps, so a reader can tell a group
+ * boundary from a row boundary without reading a word: 8px inside a group, 20px
+ * between groups, 16px between the parts of a section, 56px between sections.
+ * A single uniform gap is what made this page read as one undifferentiated list.
+ */
 .rules-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-7);
+  gap: var(--space-6);
   min-width: 0;
 }
 
@@ -968,7 +1136,8 @@
   margin: 0;
   padding-bottom: var(--space-4);
   border-bottom: var(--hairline-width) solid var(--border-hairline);
-  font-size: 19px;
+  font-size: 1.1875em;
+  line-height: 1.35;
 }
 
 .rules-section > h2 > svg,
@@ -984,32 +1153,41 @@
   min-width: 0;
 }
 
+/* Additive with the gap above, rather than a bigger gap everywhere: a heading and
+   its blurb have to stay closer to each other than the group is to the last one,
+   or the heading floats between the two and looks like it belongs to neither. */
+.rules-group + .rules-group {
+  margin-top: var(--space-7);
+}
+
 .rules-group > h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 1.0625em;
+  line-height: 1.4;
 }
 
 .rules-group-blurb {
   margin: 0;
-  max-width: 78ch;
-  font-size: 13.5px;
-  line-height: 21px;
+  max-width: var(--measure);
+  line-height: 1.5;
   color: var(--fg-muted);
 }
 
 .rules-empty {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125em;
   color: var(--fg-muted);
 }
 
 .rules-list {
   list-style: none;
-  margin: 0;
+  /* The list is the answer to the blurb above it, so it sits a step away from it
+     rather than in the same rhythm as the rows inside it. */
+  margin: var(--space-2) 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   min-width: 0;
 }
 
@@ -1040,17 +1218,21 @@
   font-size: 12.5px;
 }
 
+/* The sentence describing a check is the main text of its card, so it is base
+   size and takes the measure. It used to be 14px, which in a card sized from the
+   measure at 16px stopped a hundred pixels short of the border: the reported
+   defect, one scale down. */
 .rules-about,
 .rules-cause p {
   margin: 0;
-  max-width: 78ch;
-  line-height: 23px;
-  font-size: 14px;
+  max-width: var(--measure);
+  line-height: 1.55;
 }
 
 .rules-cause h3 {
   margin: var(--space-4) 0 var(--space-3);
-  font-size: 15px;
+  font-size: 1.0625em;
+  line-height: 1.4;
 }
 
 .rules-varies {
@@ -1059,9 +1241,8 @@
   align-items: baseline;
   gap: var(--space-4);
   margin: var(--space-5) 0 0;
-  max-width: 78ch;
-  font-size: 13px;
-  line-height: 21px;
+  max-width: var(--measure);
+  line-height: 1.5;
   color: var(--fg-muted);
 }
 
@@ -1084,10 +1265,19 @@
   margin: var(--space-6) 0 0;
 }
 
+/*
+ * This is the longest reading on the site, so the vertical structure is doing as
+ * much work as the measure is. Same ladder as Checks: 16px between the parts of a
+ * section, 56px between sections (the shared gap above), and a heading tied to
+ * what follows it by its own rule rather than floating between two paragraphs.
+ * Every list on the page then breaks the column a different way, deliberately: a
+ * rail on "Who it is for", numbered cards on the claims, hairlines between the
+ * limits. Five stacked paragraph blocks is what made it a wall.
+ */
 .about-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
   min-width: 0;
 }
 
@@ -1101,19 +1291,19 @@
   gap: var(--space-5);
 }
 
+/* A rail rather than a bullet, and base size: this list is prose, and it is the
+   answer to "who is this for", not a caption on it. */
 .about-list li {
-  max-width: 78ch;
+  max-width: var(--measure);
   padding-left: var(--space-6);
   border-left: var(--rail-width) solid var(--border-hairline);
-  line-height: 23px;
-  font-size: 14px;
+  line-height: 1.55;
 }
 
 .about-links li {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  font-size: 14px;
 }
 
 .about-links a,
@@ -1146,7 +1336,8 @@
   display: flex;
   gap: var(--space-4);
   margin: 0 0 var(--space-4);
-  font-size: 15px;
+  font-size: 1.0625em;
+  line-height: 1.4;
 }
 
 .about-claims h3::before {
@@ -1159,9 +1350,8 @@
 
 .about-claims p {
   margin: 0;
-  max-width: 78ch;
-  font-size: 14px;
-  line-height: 23px;
+  max-width: var(--measure);
+  line-height: 1.55;
 }
 
 /* The check is the part somebody acts on, so it is set apart with its own
@@ -1174,7 +1364,6 @@
   padding: var(--space-4) var(--space-5);
   background: var(--bg-inset);
   border-radius: var(--radius-control);
-  font-size: 13.5px;
 }
 
 .about-check-label {
@@ -1194,24 +1383,37 @@
   margin: 0;
 }
 
+/* A hairline between limits, not around each one. Four bordered cards in a row
+   below four bordered claim cards is a page of boxes; a rule says "next one"
+   without adding a fifth kind of container. It is decorative here, in the sense
+   tokens.css requires: the heading is what separates one limit from the next, so
+   nothing depends on the line being seen. */
+.about-limits > div + div {
+  padding-top: var(--space-6);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+}
+
 .about-limits dt {
   margin-bottom: var(--space-3);
-  font-size: 15px;
+  font-size: 1.0625em;
+  line-height: 1.4;
   font-weight: 600;
 }
 
 .about-limits dd {
   margin: 0;
-  max-width: 78ch;
-  font-size: 14px;
-  line-height: 23px;
+  max-width: var(--measure);
+  line-height: 1.55;
   color: var(--fg-muted);
 }
 
+/* Set off by a rule, because it is a footnote to the whole page rather than the
+   last sentence of the credits paragraph above it. */
 .about-disclaimer {
-  max-width: 78ch;
-  font-size: 13px;
-  line-height: 21px;
+  max-width: var(--measure);
+  padding-top: var(--space-6);
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  line-height: 1.5;
   color: var(--fg-muted);
 }
 
@@ -1267,4 +1469,422 @@
   .learn-sections {
     gap: var(--space-9);
   }
+}
+
+/* ==========================================================================
+   The detection preview under the link field
+   ==========================================================================
+
+   Ownership note, because this is not where a reader would look for it: the
+   masthead and the link field are styled in chrome.css, and these classes
+   arrived with a rebuild of the preview's markup while that file was another
+   author's for the round. The rules they replace (`.link-verdict*`, in
+   chrome.css) are now dead and should be deleted next time that file is opened.
+
+   What the preview has to do, and why it looks like this: it sits inside the
+   masthead, so its height is a shared resource. Every state has to fit the SAME
+   box or the whole page under it jumps as somebody types. Two rules hold it
+   still, and they are the two below with a comment on them.
+
+   It reads in three tiers instead of one line: the kind as a chip, ONE sentence
+   for what happens next, then the facts as discrete labelled items. Printing the
+   detector's output verbatim put a label, a two-sentence description that
+   repeated it, and a dot-separated run of facts into a single paragraph, all at
+   the same weight. */
+
+.detect {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-inline: var(--space-2);
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--fg-muted);
+  /*
+   * Reserved, not measured: 70px is the measured height of the commonest
+   * detected state, a chip beside two lines of sentence over one row of facts.
+   * The idle hint is shorter and deliberately sits in the same box, so the
+   * masthead does not move as somebody starts typing. Measured in Chromium
+   * while typing a 248-character link one character at a time: the block
+   * changes height exactly once, at the character that completes the payload
+   * and so adds the host, label and flag facts. It is min-height rather than
+   * height because a narrow viewport wraps every row and must be allowed to.
+   */
+  min-height: 70px;
+}
+
+/* The shared `code` rule is a fixed 13.5px, which is larger than this block's
+   own size and lifts the line it lands in. */
+.detect code {
+  font-size: 0.95em;
+}
+
+.detect-idle {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.detect-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-4);
+  min-width: 0;
+}
+
+.detect-head .chip {
+  flex: none;
+}
+
+/* currentColor, so the qualifier's rule is the same colour as the chip it sits
+   in and a tinted surface cannot drift from its foreground. */
+.detect-confidence {
+  padding-left: var(--space-3);
+  margin-left: var(--space-1);
+  border-left: var(--hairline-width) solid currentColor;
+}
+
+.detect-next {
+  flex: 1 1 32ch;
+  min-width: 0;
+  margin: 0;
+  color: var(--fg-default);
+  /*
+   * Two lines, never a third. This is the only part of the block whose length
+   * changes as somebody types, so clamping it is what keeps the masthead still.
+   * Nothing is lost to a screen reader: the whole sentence is still in the DOM,
+   * and the title attribute carries the identity clause the visible text drops.
+   */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.detect-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.detect-fact {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  max-width: 100%;
+  min-width: 0;
+  padding: var(--space-1) var(--space-4);
+  background: var(--bg-raised);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-chip);
+}
+
+.detect-fact-label {
+  flex: none;
+  /* fg-muted, not fg-subtle: on a raised ground fg-subtle is 3.52:1, and this
+     is 11px. See the ratio note in tokens.css. */
+  color: var(--fg-muted);
+  font-size: 11px;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+}
+
+.detect-fact-value {
+  min-width: 0;
+  color: var(--fg-default);
+  /* A host, a key or a base64url run has no break opportunity in it, and this
+     pill sits in a 320px column at 400% zoom. */
+  overflow-wrap: anywhere;
+}
+
+.detect-fact-value.is-token {
+  font-family: var(--font-mono);
+}
+
+.detect-elsewhere {
+  max-width: var(--measure);
+  color: var(--status-warn);
+}
+
+/* ==========================================================================
+   Open: the landing surface
+   ==========================================================================
+
+   What somebody sees before they have pasted anything, and the one way back to
+   it once they have. */
+
+.idle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-9);
+  min-width: 0;
+}
+
+.idle-lede h1 {
+  margin: 0 0 var(--space-5);
+  max-width: var(--measure);
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: -0.015em;
+}
+
+.idle-lede p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.idle-samples,
+.idle-claims {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* Same shape as the section headings on Checks and About, so the screens read as
+   one tool. */
+.idle-samples > h2,
+.idle-claims > h2 {
+  margin: 0;
+  padding-bottom: var(--space-4);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+  font-size: 19px;
+}
+
+.idle-samples-lede {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 14px;
+  line-height: 23px;
+}
+
+/*
+ * auto-fit with a minimum, rather than a column count per breakpoint: three
+ * cards on a laptop, two on a tablet, one on a phone, with no media query to
+ * keep in step with the layout constants in OpenScreen.tsx. `min(100%, 260px)`
+ * is what stops the track being wider than the viewport at 320px, which is the
+ * classic way an auto-fit grid causes sideways scrolling.
+ */
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.sample-grid > li {
+  display: flex;
+  min-width: 0;
+}
+
+/*
+ * The whole card is the button.
+ *
+ * It was a bare `<button>` with no rules at all, which is what the review saw:
+ * three grey blobs with the title running into the description, because a
+ * button's user-agent styles centre their inline children and give them no
+ * layout of their own.
+ */
+.sample {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--motion-state) var(--motion-ease),
+    border-color var(--motion-state) var(--motion-ease);
+}
+
+.sample:hover {
+  background: var(--bg-hover);
+  /* A hairline is decorative, so hover promotes it to the meaningful weight
+     rather than tinting it. */
+  border-color: var(--border-meaningful);
+}
+
+/* The control is the card, so the ring goes round the card. The shared
+   :focus-visible rule would round it to a chip's radius. */
+.sample:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-card);
+}
+
+.sample-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-width: 0;
+}
+
+.sample-icon {
+  flex: none;
+  color: var(--fg-muted);
+}
+
+.sample-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--fg-default);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sample-go {
+  flex: none;
+  color: var(--fg-muted);
+  transition:
+    color var(--motion-state) var(--motion-ease),
+    transform var(--motion-state) var(--motion-ease);
+}
+
+.sample:hover .sample-go {
+  color: var(--accent);
+  transform: translateX(2px);
+}
+
+.sample-blurb {
+  color: var(--fg-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/* What pressing it ends in, which is the difference between the three cards and
+   so belongs on the card rather than only in the paragraph above them. */
+.sample-ending {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--bg-inset);
+  color: var(--fg-default);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+}
+
+.sample-teaches {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--fg-muted);
+  font-size: 12.5px;
+  line-height: 19px;
+}
+
+.sample-teaches > svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.claims {
+  list-style: none;
+  counter-reset: claim;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.claims > li {
+  counter-increment: claim;
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  min-width: 0;
+}
+
+.claims h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-4);
+  font-size: 15px;
+}
+
+.claims h3::before {
+  content: counter(claim);
+  flex: none;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.claims h3 > svg {
+  flex: none;
+  color: var(--fg-muted);
+}
+
+.claims p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 23px;
+}
+
+.idle .callout p {
+  margin: 0 0 var(--space-5);
+}
+
+.idle .callout p:last-child {
+  margin-bottom: 0;
+}
+
+.idle-offline {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: var(--measure);
+}
+
+.idle-offline > svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--fg-muted);
+}
+
+/* The way out of a loaded run, above the verdict rather than after the trace: a
+   way out placed below a long trace is a way out nobody finds. */
+.restart-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 700px) {
+  .idle {
+    gap: var(--space-8);
+  }
+
+  .idle-lede h1 {
+    font-size: 24px;
+    line-height: 31px;
+  }
+}
+
+/* A tinted ending, for the card whose ending is a diagnosis. The tone-* class
+   supplies both halves, so the tint cannot drift from its foreground. */
+.sample-ending.tone {
+  background: var(--tone-bg);
+  color: var(--tone-fg);
 }

@@ -13,9 +13,9 @@
  * the same single tab stop with semantics that already work.
  *
  * WHAT EXPANDS ITSELF. A step that did not pass opens as soon as it settles, so
- * the failing step is open and its neighbours are not. Nothing suppresses
- * that: on a projector the trace stays a list of titles and the presenter walks
- * it one step at a time with `j`/`k` and the arrow keys.
+ * the failing step is open and its neighbours are not. The one thing that
+ * suppresses it is "Walk through", below, which exists for showing the trace to
+ * somebody rather than reading it yourself.
  */
 import {
   useCallback,
@@ -26,7 +26,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import { ListTree } from 'lucide-react';
+import { Check, Footprints, ListTree } from 'lucide-react';
 import { useSession } from '../../app/store';
 import type { TraceRun } from '../../core/trace';
 import { Button, CopyButton, EmptyState } from '../primitives';
@@ -72,6 +72,23 @@ export function TraceList({ run }: { run: TraceRun }): ReactNode {
    * new ids.
    */
   const [overrides, setOverrides] = useState<ReadonlyMap<string, boolean>>(() => new Map());
+
+  /**
+   * Walk-through: nothing opens itself, the presenter opens each step.
+   *
+   * This behaviour used to be a side effect of "projector mode", which meant the
+   * only way to get it was to change the app's colours and type at the same time,
+   * and nothing in the interface said it was happening. It is a presentation
+   * affordance rather than a theme, so it is named and sits on the trace, which
+   * is the thing it changes.
+   *
+   * Local state on purpose, in both directions. Not the settings store, because
+   * persisting it means coming back tomorrow to a trace where a failure quietly
+   * does not open and no obvious reason why. Not the session store either: it
+   * says nothing about the run, and clearing the session should not turn it off
+   * mid-demonstration.
+   */
+  const [walkThrough, setWalkThrough] = useState(false);
   const [notice, setNotice] = useState('');
   const noticeTimer = useRef<number | undefined>(undefined);
   const listRef = useRef<HTMLOListElement | null>(null);
@@ -85,9 +102,12 @@ export function TraceList({ run }: { run: TraceRun }): ReactNode {
    * The steps worth opening on their own: anything that did not simply pass.
    *
    * A step still in flight is left closed rather than judged on an interim
-   * status.
+   * status. In walk-through nothing qualifies, which is the whole of what that
+   * mode does: the overrides map is untouched, so a step somebody deliberately
+   * opened stays open and turning walk-through off restores the derived set.
    */
   const autoExpanded = useMemo(() => {
+    if (walkThrough) return new Set<string>();
     return new Set(
       run.steps
         .filter(
@@ -99,7 +119,7 @@ export function TraceList({ run }: { run: TraceRun }): ReactNode {
         )
         .map((step) => step.id),
     );
-  }, [run.steps]);
+  }, [run.steps, walkThrough]);
 
   const isExpanded = useCallback(
     (id: string): boolean => overrides.get(id) ?? autoExpanded.has(id),
@@ -148,6 +168,22 @@ export function TraceList({ run }: { run: TraceRun }): ReactNode {
   const setOpen = useCallback((id: string, open: boolean) => {
     setOverrides((previous) => new Map(previous).set(id, open));
   }, []);
+
+  /**
+   * Turning it on also puts focus on a step, because the keys that make
+   * walk-through worth having are only live while a step header has focus (see
+   * `onKeyDown`: it deliberately ignores everything outside `.step-head` so `c`
+   * cannot fire a copy while somebody is tabbing through evidence). Without this,
+   * pressing the button and then an arrow key does nothing, which reads as the
+   * feature being broken.
+   */
+  const toggleWalkThrough = useCallback(() => {
+    const next = !walkThrough;
+    setWalkThrough(next);
+    // Outside the state updater, not inside it: an updater has to stay pure or
+    // React's development double-invoke runs the side effect twice.
+    if (next && activeId !== undefined) focusStep(activeId);
+  }, [activeId, focusStep, walkThrough]);
 
   const announce = useCallback((message: string) => {
     setNotice(message);
@@ -290,9 +326,36 @@ export function TraceList({ run }: { run: TraceRun }): ReactNode {
     <div className="trace-wrap">
       <div className="trace-toolbar">
         <p className="trace-hint">
-          <kbd>j</kbd> <kbd>k</kbd> move, <kbd>Enter</kbd> opens, <kbd>c</kbd> copies a step.
+          {walkThrough ? (
+            <>
+              <kbd>↓</kbd> <kbd>↑</kbd> or <kbd>j</kbd> <kbd>k</kbd> step, <kbd>→</kbd> opens,{' '}
+              <kbd>←</kbd> closes. Nothing opens on its own.
+            </>
+          ) : (
+            <>
+              <kbd>j</kbd> <kbd>k</kbd> move, <kbd>Enter</kbd> opens, <kbd>c</kbd> copies a step.
+            </>
+          )}
         </p>
         <div className="trace-toolbar-actions">
+          {/*
+           * The name stays put and `aria-pressed` carries the state, which is the
+           * toggle-button pattern: a label that changes with the state makes a
+           * screen reader announce the action and the state as one string. So the
+           * visible state is the icon silhouette (a tick against a pair of
+           * footprints), the filled surface, and the hint line beside it changing
+           * to say that nothing opens on its own.
+           */}
+          <Button
+            size="sm"
+            variant={walkThrough ? 'primary' : 'default'}
+            aria-pressed={walkThrough}
+            onClick={toggleWalkThrough}
+            title="Stop steps opening themselves, and step through the trace with the arrow keys"
+          >
+            {walkThrough ? <Check size={13} aria-hidden /> : <Footprints size={13} aria-hidden />}
+            Walk through
+          </Button>
           <Button size="sm" onClick={expandAll}>
             Expand all
           </Button>

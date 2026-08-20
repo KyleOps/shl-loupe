@@ -26,6 +26,7 @@ import { zlibSync } from 'fflate';
 import { base64urlToBytes, bytesToBase64url, toArrayBuffer, utf8Encode } from './bytes';
 import { deflateRawBytes } from './compress';
 import { encryptDirA256Gcm, octThumbprint, type JweHeader } from './jose';
+import { manifestBody } from './net/curl';
 import type { TransportResponse } from './net/transport';
 import { encodeShlink, type ShlPayload } from './shlink';
 import type { RunOutcome } from './trace';
@@ -53,6 +54,47 @@ export interface MintedManifest {
 }
 
 /**
+ * The passcode half of a minted link, as artefacts rather than as a flag.
+ *
+ * The trap here is the obvious implementation: write the passcode into the
+ * manifest as a member so the fixture "carries" it. There is no such member. A
+ * passcode is a secret the sharing SERVER holds and compares a request against,
+ * so the manifest is the thing served once it matched, and inventing a member
+ * would teach the mistake to everybody who copied the fixture. What can honestly
+ * be represented is the exchange: the body a receiver has to send, and the
+ * refusal it gets when the passcode is wrong.
+ */
+export interface MintedPasscode {
+  /** The secret itself. It travels out of band; it is never inside the link. */
+  value: string;
+  /**
+   * The manifest POST body a receiver has to send, built by the same
+   * {@link manifestBody} the pipeline posts, so the two cannot drift.
+   *
+   * Absent for a U link, and that absence is the point: a direct GET has no
+   * manifest request, so a P flag beside a U flag leaves the passcode with
+   * nowhere to go.
+   */
+  requestBody?: string;
+}
+
+/**
+ * Stands where a receiver puts its own name, which is the one member of that
+ * body the minting side cannot know.
+ */
+const RECIPIENT_PLACEHOLDER = '<the receiving viewer, in its own words>';
+
+/**
+ * What a sharing server owes on a wrong passcode: 401, and a body naming how
+ * many attempts are left.
+ *
+ * The member name is exact. `attemptsRemaining` and `remaining_attempts` are
+ * read by nothing, and a receiver that cannot see the count cannot warn before
+ * the attempt that permanently disables the link.
+ */
+export const PASSCODE_REJECTION_BODY = JSON.stringify({ remainingAttempts: 2 }, null, 2);
+
+/**
  * Canned wire responses, ready to hand to `OfflineTransport`.
  *
  * Keyed by the pipeline's request `purpose` rather than by URL, because the
@@ -78,6 +120,16 @@ export interface MintOptions {
   exp?: number;
   /** Concatenated flag characters, alphabetical, for example "LU". */
   flags?: string;
+  /**
+   * The passcode the sharing server would demand.
+   *
+   * Required exactly when `flags` carries P, and refused when it does not, both
+   * enforced in {@link mintShl}. A link claiming P without a passcode is
+   * incoherent: it tells a receiver to prompt for a secret that does not exist,
+   * so every attempt against it fails and the attempt limit spends itself. A
+   * passcode without P is the mirror image, and nothing would ever send it.
+   */
+  passcode?: string;
   /** Adds `zip: "DEF"` and raw DEFLATEs the plaintext. */
   compress?: boolean;
   /** A viewer prefix ending in "#", which is where the payload belongs. */
@@ -105,6 +157,8 @@ export interface MintResult {
   file: { contentType: string; jwe: string };
   /** What a sharing server would serve. Absent for a U link, which has none. */
   manifest?: MintedManifest;
+  /** Present exactly when the P flag is set. See {@link MintedPasscode}. */
+  passcode?: MintedPasscode;
   plaintextBytes: number;
   ciphertextBytes: number;
   compressed: boolean;
@@ -118,6 +172,23 @@ export function generateLinkKey(): string {
 }
 
 export async function mintShl(options: MintOptions): Promise<MintResult> {
+  const flags = options.flags ?? '';
+  // An empty string is treated as "none supplied" rather than as a passcode of
+  // zero length: the UI clears the field rather than removing the member, and a
+  // zero-length secret would mint a link nobody could ever satisfy.
+  const passcode =
+    options.passcode === undefined || options.passcode === '' ? undefined : options.passcode;
+  if (flags.includes('P') && passcode === undefined) {
+    throw new Error(
+      'The P flag says the sharing server demands a passcode, so a link claiming P has to be minted with one. Supply a passcode, or drop the P flag.',
+    );
+  }
+  if (!flags.includes('P') && passcode !== undefined) {
+    throw new Error(
+      'A passcode was supplied without the P flag. No receiver would ever send it: the flag is the only thing that tells one to ask.',
+    );
+  }
+
   const key = options.key ?? generateLinkKey();
   const kid = await octThumbprint(key);
   const json = JSON.stringify(options.content);
@@ -134,7 +205,6 @@ export async function mintShl(options: MintOptions): Promise<MintResult> {
   };
   const jwe = await encryptDirA256Gcm(body, keyBytes(key), header);
 
-  const flags = options.flags ?? '';
   const payload: ShlPayload = {
     url: options.url,
     key,
@@ -150,6 +220,10 @@ export async function mintShl(options: MintOptions): Promise<MintResult> {
     files: [{ contentType: options.contentType, embedded: jwe }],
   };
 
+  // The canned response is the 200 a server returns once the passcode MATCHED.
+  // `OfflineTransport` serves what it was given without reading the request
+  // body, so it cannot check one, and a canned 401 would make every run fail
+  // instead. The screen says which of the two it is showing.
   return {
     shlink,
     ...(options.viewerPrefix === undefined
@@ -160,6 +234,22 @@ export async function mintShl(options: MintOptions): Promise<MintResult> {
     kid,
     file: { contentType: options.contentType, jwe },
     ...(direct ? {} : { manifest }),
+    ...(passcode === undefined
+      ? {}
+      : {
+          passcode: {
+            value: passcode,
+            ...(direct
+              ? {}
+              : {
+                  requestBody: manifestBody({
+                    url: options.url,
+                    recipient: RECIPIENT_PLACEHOLDER,
+                    passcode,
+                  }),
+                }),
+          },
+        }),
     plaintextBytes: plaintext.byteLength,
     ciphertextBytes: jwe.length,
     compressed,

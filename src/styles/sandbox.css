@@ -26,9 +26,11 @@
   letter-spacing: -0.01em;
 }
 
+/* The width comes from `.prose` in tokens.css, never from a number chosen here.
+   Every screen picking its own max-width inside a much wider panel is what made
+   the wrap read as an accidental line limit rather than as a column. */
 .sandbox-lede p {
   margin: 0;
-  max-width: 78ch;
   color: var(--fg-muted);
 }
 
@@ -96,6 +98,13 @@ fieldset.mint-field > * + * {
   color: var(--fg-muted);
 }
 
+/* An icon in a label is optional, so the label stays in inline flow and the icon
+   is nudged onto the cap height. Making the label a flex box instead would put
+   every text-only label into a different layout for one caller's sake. */
+.mint-label svg {
+  vertical-align: -0.15em;
+}
+
 /* A legend does not participate in the flex column, so the gap above the first
    control has to be its own margin. */
 .mint-field legend {
@@ -107,7 +116,13 @@ fieldset.mint-field > * + * {
   font-size: 12.5px;
   line-height: 19px;
   color: var(--fg-muted);
-  max-width: 70ch;
+  max-width: var(--measure);
+}
+
+/* The reason an action is unavailable. The sentence itself carries the meaning;
+   the colour is emphasis on top of it, never the only signal. */
+.mint-note-blocked {
+  color: var(--status-warn);
 }
 
 .mint-control {
@@ -211,6 +226,91 @@ fieldset.mint-field > * + * {
   min-width: 0;
 }
 
+/*
+ * The "these are not real links" statement.
+ *
+ * Deliberately not a Callout. There are three callouts further down this form,
+ * and the review's finding was precisely that this fact read as one more of
+ * them. A wider surface, a heavier rail and its own opening sentence make it the
+ * section's premise instead. The rail is a full-strength status colour rather
+ * than a hairline, because a hairline is 1.55:1 on the canvas and cannot be the
+ * sole carrier of anything.
+ */
+.mint-caveat {
+  display: flex;
+  /* The icon sits beside the opening line, not floating halfway down three
+     paragraphs, which is where a stretched flex item's centred icon lands. */
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  min-width: 0;
+  background: var(--tone-bg);
+  border: var(--hairline-width) solid var(--tone-fg);
+  border-left-width: var(--rail-width);
+  border-radius: var(--radius-card);
+}
+
+.mint-caveat-body strong {
+  display: block;
+  margin-bottom: var(--space-4);
+  font-size: 15px;
+}
+
+.mint-caveat-body p {
+  margin: 0 0 var(--space-4);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.mint-caveat-body p:last-child {
+  margin-bottom: 0;
+}
+
+.mint-passcode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* A basis of 220px rather than 0: the row wraps on a narrow panel instead of
+   squeezing the field down to the width of the reveal button beside it. */
+.mint-passcode-row .mint-control {
+  flex: 1 1 220px;
+  width: auto;
+}
+
+/*
+ * A minted artefact and its marker.
+ *
+ * Every artefact carries the caveat, because these travel as cropped
+ * screenshots and pasted code blocks, and a caveat at the top of the section
+ * survives neither.
+ */
+.artefact-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.artefact-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.mint-artefact,
+.preset-artefact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
 /* --------------------------------------------------------------------------
    Minted output
    -------------------------------------------------------------------------- */
@@ -229,10 +329,39 @@ fieldset.mint-field > * + * {
   font-size: 16px;
 }
 
-.mint-output h4 {
-  margin: var(--space-3) 0 0;
-  font-size: 13px;
-  color: var(--fg-muted);
+/*
+ * The passcode block: the one artefact that has no home inside the link, so it
+ * gets an inset surface of its own rather than a row in the field table.
+ */
+.mint-passcode-out {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  min-width: 0;
+  background: var(--bg-inset);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+}
+
+.mint-passcode-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+  min-width: 0;
+  font-size: 15px;
+}
+
+/*
+ * A disclosure head in this area carries a marker chip beside its toggle, and
+ * `.disclosure-head` is `space-between` with no wrap: at 320px that squeezed
+ * "Show the QR code" down to one word per line. Scoped to this area rather than
+ * changed in the primitive, since nowhere else puts a chip there.
+ */
+.mint-output .disclosure-head,
+.preset .disclosure-head {
+  flex-wrap: wrap;
 }
 
 .mint-output-split {
@@ -262,15 +391,6 @@ fieldset.mint-field > * + * {
   gap: var(--space-4);
 }
 
-.mint-output ul {
-  margin: var(--space-3) 0 0;
-  padding-left: var(--space-7);
-}
-
-.mint-output li + li {
-  margin-top: var(--space-3);
-}
-
 /* --------------------------------------------------------------------------
    The broken catalogue
    -------------------------------------------------------------------------- */
@@ -278,8 +398,54 @@ fieldset.mint-field > * + * {
 .catalogue {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-7);
   min-width: 0;
+}
+
+/*
+ * "A red result here is a pass", as the section's premise.
+ *
+ * The accent rail rather than a status colour: this block is not itself a
+ * verdict, and tinting it red would be the exact confusion it exists to clear
+ * up.
+ */
+.catalogue-thesis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-7) var(--space-6);
+  min-width: 0;
+  background: var(--bg-raised);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-left: var(--rail-width) solid var(--accent);
+  border-radius: var(--radius-card);
+}
+
+.catalogue-thesis-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 26px;
+  letter-spacing: -0.01em;
+}
+
+.catalogue-thesis p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.catalogue-steps {
+  margin: 0;
+  padding-left: var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.catalogue-thesis-note {
+  color: var(--fg-muted);
 }
 
 .catalogue-waiting,
@@ -316,9 +482,11 @@ fieldset.mint-field > * + * {
 
 .preset-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-5);
+  min-width: 0;
 }
 
 .preset-head h3 {
@@ -327,13 +495,31 @@ fieldset.mint-field > * + * {
   gap: var(--space-4);
   margin: 0;
   font-size: 15px;
+  min-width: 0;
 }
 
+/* Wraps and shrinks rather than `flex: none`. With the badge below holding a
+   sentence, an unshrinkable verdict beside a title was the one thing on this
+   screen that scrolled the PAGE sideways: 332px of verdict in a card 232px wide
+   at a 320px viewport. */
 .preset-verdict {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
-  flex: none;
+  min-width: 0;
+}
+
+/*
+ * The verdict badge carries a sentence, not a word: "Stopped before any request"
+ * is 208px of nowrap pill. `.chip` is nowrap by default and that is right
+ * everywhere else, where a chip holds one word; here it has to be allowed to
+ * break. Shortening the copy instead would cost the distinction between
+ * stopping before a request and failing during one, which is the whole point of
+ * that outcome.
+ */
+.preset-verdict .chip {
+  white-space: normal;
 }
 
 .preset-verdict-label {
@@ -343,14 +529,33 @@ fieldset.mint-field > * + * {
   color: var(--fg-muted);
 }
 
-.preset-facts {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-2);
+/*
+ * The card's own hierarchy, which the review found dense.
+ *
+ * Three tiers rather than one flat definition list: the fault as a plain
+ * sentence, the behaviour a receiver owes it on its own surface (that is the
+ * sentence somebody compares their viewer against, so it is the card's
+ * subject), and the machine facts as a compact list under both.
+ */
+.preset-wrong {
   margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  max-width: var(--measure);
 }
 
-.preset-facts dt {
+.preset-should {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  min-width: 0;
+  background: var(--bg-surface);
+  border-left: var(--rail-width) solid var(--border-meaningful);
+  border-radius: var(--radius-control);
+}
+
+.preset-should-label {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: var(--micro-tracking);
@@ -358,11 +563,37 @@ fieldset.mint-field > * + * {
   color: var(--fg-muted);
 }
 
-.preset-facts dd {
+.preset-should p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  max-width: var(--measure);
+}
+
+.preset-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.preset-meta dt {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.preset-meta dd {
   margin: 0 0 var(--space-4);
   font-size: 13px;
   line-height: 20px;
-  max-width: 70ch;
+  max-width: var(--measure);
+}
+
+.preset-meta dd:last-child {
+  margin-bottom: 0;
 }
 
 .preset-rules {
@@ -388,7 +619,7 @@ fieldset.mint-field > * + * {
   font-size: 12.5px;
   line-height: 19px;
   color: var(--fg-muted);
-  max-width: 70ch;
+  max-width: var(--measure);
 }
 
 /* --------------------------------------------------------------------------
@@ -565,7 +796,7 @@ fieldset.mint-field > * + * {
 
 .scanner-stage-idle p {
   margin: 0;
-  max-width: 40ch;
+  max-width: var(--measure-caption);
   font-size: 13px;
 }
 
@@ -589,7 +820,7 @@ fieldset.mint-field > * + * {
 
 .scanner-drop p {
   margin: 0;
-  max-width: 52ch;
+  max-width: var(--measure-caption);
   font-size: 13px;
   line-height: 20px;
 }

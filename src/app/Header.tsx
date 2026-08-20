@@ -2,14 +2,20 @@
  * The masthead.
  *
  * One rule shapes it: the input is the product, so nothing else in here is
- * allowed to compete with it. The wordmark is small, the screen links are
- * quiet, and every control on the right is an icon button with an accessible
- * name rather than a labelled button jostling for the same attention. The
- * arrangement is from the wireframe in the design notes: mark, then the field
- * centre-weighted, then a tool cluster.
+ * allowed to compete with it. The wordmark is small, every control on the right
+ * is an icon button with an accessible name rather than a labelled button
+ * jostling for the same attention, and the arrangement is from the wireframe in
+ * the design notes: mark, then the field centre-weighted, then a tool cluster.
+ *
+ * The exception is the section navigation on the second row. It used to be a row
+ * of 13px muted links, which the review read as a set of secondary utilities
+ * rather than as the parts of the app. Six sections is few enough to be
+ * generous, so they are tabs: real type, real padding, and the current one
+ * showing the sentence saying what it is for. That reads as "these are the
+ * places you can be" instead of "here are some more links".
  */
-import { useState, type ReactNode } from 'react';
-import { ALargeSmall, Command, Moon, Settings, Sun } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { AArrowUp, ALargeSmall, Command, Moon, Settings, Sun } from 'lucide-react';
 import { SCREENS, type ScreenName } from './router';
 import { useSettings } from './store';
 import { LinkInput } from './LinkInput';
@@ -39,6 +45,48 @@ export function Header({
   const largeText = useSettings((state) => state.largeText);
   const toggleLargeText = useSettings((state) => state.toggleLargeText);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  /**
+   * The strip scrolls at narrow widths and the browser does not scroll it for us,
+   * so arriving on a section whose tab sits off to the right shows no active tab
+   * at all: the clearest active state in the world is no help off screen.
+   *
+   * `scrollIntoView` is the obvious way to do this and it is the wrong one. Blink
+   * sets the sequential focus navigation starting point to whatever was scrolled
+   * into view, so the first Tab after load went to the tab AFTER the current one
+   * instead of to the skip link. That is the app's first accessibility
+   * affordance, silently lost to a cosmetic scroll. Moving `scrollLeft` by hand
+   * scrolls the same distance and touches nothing to do with focus.
+   */
+  const currentTab = useRef<HTMLAnchorElement | null>(null);
+  useEffect(() => {
+    const show = (): void => {
+      const tab = currentTab.current;
+      const strip = tab?.parentElement;
+      if (!tab || !strip) return;
+      const t = tab.getBoundingClientRect();
+      const s = strip.getBoundingClientRect();
+      if (t.left < s.left) strip.scrollLeft -= s.left - t.left;
+      else if (t.right > s.right) strip.scrollLeft += t.right - s.right;
+    };
+    show();
+    /*
+     * And again once the web font has swapped in. The tabs get wider when it
+     * does, so a scroll worked out against the fallback metrics leaves the tab
+     * hanging off the edge by exactly the difference: on first load at 390px this
+     * stopped 76px short, which reads as the thing not working rather than as a
+     * font-loading race. `fonts.ready` is already resolved on every navigation
+     * after the first, so this is one extra measurement, not a second scroll
+     * anybody sees.
+     */
+    let cancelled = false;
+    void document.fonts.ready.then(() => {
+      if (!cancelled) show();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [screen]);
 
   return (
     <header className="masthead">
@@ -77,18 +125,28 @@ export function Header({
           </span>
         </button>
 
+        {/*
+         * The quick text-size toggle stays in the header, because the moment you
+         * want it is the moment somebody leans in to look, and hunting through a
+         * sheet then is the wrong shape. It is icon-only like everything else in
+         * this cluster: it used to carry a visible "Larger text" word, which made
+         * the one preference in the app louder than the link field.
+         *
+         * The accessible name is fixed and `aria-pressed` carries the state,
+         * which is the toggle-button pattern; a name that changes with the state
+         * makes a screen reader announce the action and the state as if they were
+         * one thing. The icon changes silhouette too, so "on" is not carried by
+         * the tinted background alone.
+         */}
         <button
           type="button"
-          className={largeTextClass(largeText)}
+          className="btn btn-ghost btn-sm"
           aria-pressed={largeText}
           onClick={toggleLargeText}
           title="Scale the type up for reading at a distance"
         >
-          <ALargeSmall size={16} aria-hidden />
-          <span className="tool-word">Larger text</span>
-          <span className="visually-hidden">
-            {largeText ? 'Use the normal text size' : 'Use larger text'}
-          </span>
+          {largeText ? <AArrowUp size={16} aria-hidden /> : <ALargeSmall size={16} aria-hidden />}
+          <span className="visually-hidden">Larger text</span>
         </button>
 
         <button
@@ -101,33 +159,37 @@ export function Header({
         </button>
       </div>
 
-      <nav className="masthead-nav" aria-label="Screens">
-        {SCREENS.map((entry) => (
-          <a
-            key={entry.name}
-            href={`#${entry.path}`}
-            title={entry.blurb}
-            {...(entry.name === screen ? { 'aria-current': 'page' as const } : {})}
-          >
-            {entry.label}
-          </a>
-        ))}
+      {/*
+       * One row that scrolls, never a wrapping set of links: a nav that reflows
+       * to two rows at some widths and one at others stops reading as a fixed set
+       * of places. The blurb is rendered for every tab and shown by CSS for the
+       * current one only, where there is room for it. Six blurbs at once would be
+       * several thousand pixels wide, and hiding five of them in the markup
+       * instead would mean the strip changed height as you moved between
+       * sections.
+       */}
+      <nav className="masthead-nav scroll-x" aria-label="Sections">
+        {SCREENS.map((entry) => {
+          const current = entry.name === screen;
+          return (
+            <a
+              key={entry.name}
+              className="nav-tab"
+              href={`#${entry.path}`}
+              // No hover title on the current tab: its blurb is already on
+              // screen, and a tooltip repeating it is announced twice.
+              {...(current
+                ? { 'aria-current': 'page' as const, ref: currentTab }
+                : { title: entry.blurb })}
+            >
+              <span className="nav-tab-label">{entry.label}</span>
+              <span className="nav-tab-blurb">{entry.blurb}</span>
+            </a>
+          );
+        })}
       </nav>
 
       {settingsOpen ? <SettingsSheet onClose={() => setSettingsOpen(false)} /> : null}
     </header>
   );
-}
-
-/**
- * The one control left of what used to be "projector mode".
- *
- * That mode swapped colours, widths and type together. The colours and widths
- * turned out to be improvements rather than accommodations, so they are the
- * default now, and this scales type and nothing else. It stays in the header
- * rather than moving to settings because the moment you want it is the moment
- * somebody leans in to look, and hunting through a sheet then is the wrong shape.
- */
-function largeTextClass(on: boolean): string {
-  return on ? 'btn btn-sm text-size-toggle is-on' : 'btn btn-ghost btn-sm text-size-toggle';
 }

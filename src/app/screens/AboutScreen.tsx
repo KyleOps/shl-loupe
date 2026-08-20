@@ -57,7 +57,7 @@ const CLAIMS: readonly Claim[] = [
   {
     claim: 'Nothing is persisted except preferences',
     detail:
-      'Local storage holds one key, loupe.settings, carrying the theme, projector mode, the recipient string, the embedded-length maximum and the two probe toggles. No link, key, passcode, manifest or decrypted payload is written to it, and a session ends when the tab does.',
+      'Local storage holds one key, loupe.settings, carrying the theme, the larger-text preference, the recipient string, the embedded-length maximum and the two probe toggles. No link, key, passcode, manifest or decrypted payload is written to it, and a session ends when the tab does.',
     check:
       'Open a link, then read localStorage in the console. Search it for the key from the link, or for a patient name from the payload: neither is there.',
   },

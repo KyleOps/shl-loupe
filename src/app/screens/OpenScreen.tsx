@@ -14,8 +14,18 @@
  * of the finished result, so the pane is populated from the first step onwards
  * instead of staying blank for the fifteen seconds a slow manifest takes.
  */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { FileWarning, Lightbulb, ShieldCheck, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { clsx } from 'clsx';
+import {
+  ArrowRight,
+  FileText,
+  FileWarning,
+  GraduationCap,
+  Lightbulb,
+  OctagonAlert,
+  RotateCcw,
+  ShieldCheck,
+} from 'lucide-react';
 import type { OpenedFile } from '../../core/pipeline';
 import type { KvRow, RunOutcome, TraceRun } from '../../core/trace';
 import { toneForStatus } from '../../ui/primitives';
@@ -36,16 +46,31 @@ import { TraceList, VerdictBanner } from '../../ui/trace';
 import { PayloadView } from '../../ui/fhir';
 import type { Runner } from '../App';
 import { PasscodePrompt } from '../PasscodePrompt';
+import { navigate, parseHash } from '../router';
 import { useSession, useSettings } from '../store';
 
 // ---------------------------------------------------------------------------
 // Samples
 // ---------------------------------------------------------------------------
 
+/**
+ * What opening a sample ends in. Three samples exist because there are three
+ * endings, and the card says which one it is: a reader who cannot tell them
+ * apart has no reason to press one rather than another.
+ */
+export type SampleEnding = 'document' | 'card' | 'diagnosis';
+
 export interface Sample {
   id: string;
   name: string;
+  /** One line: what it is and where it came from. */
   blurb: string;
+  /** One line: why you would reach for this one rather than the other two. */
+  teaches: string;
+  /** Where it ends up, which is the difference between the three. */
+  ending: SampleEnding;
+  /** The words for that ending, on the card. */
+  endingWord: string;
   input: string;
 }
 
@@ -65,21 +90,36 @@ export const SAMPLES: Sample[] = [
   {
     id: 'ips',
     name: 'IPS document',
-    blurb: 'The IG example: a 20-entry patient summary Bundle, fetched with no manifest.',
+    blurb:
+      'The first working example on the implementation guide’s own page, unmodified. Its LU flags mean one file fetched by GET, with no manifest requested.',
+    teaches:
+      'The happy path end to end over a real network, finishing in a 20-entry patient summary.',
+    ending: 'document',
+    endingWord: 'Opens a document',
     input:
       'https://viewer.tcpdev.org/shlink.html#shlink:/eyJ1cmwiOiJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb20vc2Vhbm5vL3NoYy1kZW1vLWRhdGEvbWFpbi9pcHMvSVBTX0lHLWJ1bmRsZS0wMS1lbmMudHh0IiwiZmxhZyI6IkxVIiwia2V5IjoicnhUZ1lsT2FLSlBGdGNFZDBxY2NlTjh3RVU0cDk0U3FBd0lXUWU2dVg3USIsImxhYmVsIjoiRGVtbyBTSEwgZm9yIElQU19JRy1idW5kbGUtMDEifQ',
   },
   {
     id: 'shc',
-    name: 'Health Card',
-    blurb: 'The IG example that carries a signed card, so the JWS and its key set are checked too.',
+    name: 'Signed health card',
+    blurb:
+      'The guide’s second example, a CARIN insurance card. After decryption there is a compact JWS, so its signature is checked against the issuer’s key set.',
+    teaches:
+      'That a link, a card and a signature are three separate things, and which of them a failure belongs to.',
+    ending: 'card',
+    endingWord: 'Opens a card, checks its signature',
     input:
       'shlink:/eyJ1cmwiOiJodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb20vc2Vhbm5vL3NoYy1kZW1vLWRhdGEvbWFpbi9jYXJkcy9jYXJpbi1pbnN1cmFuY2UtZXhhbXBsZS9qd3MudHh0IiwiZmxhZyI6IkxVIiwia2V5IjoicnhUZ1lsT2FLSlBGdGNFZDBxY2NlTjh3RVU0cDk0U3FBd0lXUWU2dVg3USIsImxhYmVsIjoiRGVtbyBTSEwgZm9yIGNhcmluLWluc3VyYW5jZS1leGFtcGxlIn0',
   },
   {
     id: 'localhost',
-    name: 'Broken: a loopback host',
-    blurb: 'Points at the sender’s own laptop. Diagnosed with no request made.',
+    name: 'A link that cannot work',
+    blurb:
+      'Synthesised, and the case this tool exists for: the manifest URL points at the sender’s own laptop, so it opened for them and can open for nobody else.',
+    teaches:
+      'What Loupe settles from the link alone, naming the rule it breaks before any request is made.',
+    ending: 'diagnosis',
+    endingWord: 'Diagnosed, no request made',
     input:
       'shlink:/eyJ1cmwiOiJodHRwczovL2xvY2FsaG9zdDo1MTczL2FwaS9zaGwtbWFuaWZlc3Q_YmlkPTQ4MzY0NzAiLCJrZXkiOiJyeFRnWWxPYUtKUEZ0Y0VkMHFjY2VOOHdFVTRwOTRTcUF3SVdRZTZ1WDdRIiwiZmxhZyI6IkxQIiwibGFiZWwiOiJNaWEncyBzdW1tYXJ5IiwiZXhwIjoxNzg3Nzg4ODAwfQ',
   },
@@ -262,8 +302,10 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
   const input = useSession((state) => state.input);
   const selectedFile = useSession((state) => state.selectedFile);
   const selectFile = useSession((state) => state.selectFile);
+  const reset = useSession((state) => state.reset);
   const layout = useLayoutMode();
   const [tab, setTab] = useState<'trace' | 'payload'>('trace');
+  const startOver = useStartOver(reset, onRun);
 
   // Move to the payload once, per run, and only when there is one. Doing it on
   // every render of an opened run would drag the user back out of the trace
@@ -325,6 +367,19 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
   return (
     <div className="workbench" data-layout={paneLayout} data-mode={layout}>
       <div className="workbench-top">
+        {/* Above the verdict rather than below it: this is the way out of the
+            run, and a way out placed after a long trace is a way out nobody
+            finds. */}
+        <div className="restart-row">
+          <Button
+            size="sm"
+            onClick={startOver}
+            title="Clear this run and go back to the samples and the explanation"
+          >
+            <RotateCcw size={13} aria-hidden />
+            <span>Start over</span>
+          </Button>
+        </div>
         <VerdictBanner run={run} />
         <PasscodePrompt
           run={run}
@@ -387,6 +442,62 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
       )}
     </div>
   );
+}
+
+/**
+ * Getting back to the landing page, from either of the two doors to it.
+ *
+ * Opening a link puts it in the fragment, and this screen renders whatever the
+ * session holds, so before this there was no way back: the samples and the
+ * explanation became unreachable for the rest of the tab's life. Starting over
+ * has to clear BOTH halves of that state. Clearing the store alone leaves the
+ * link in the hash, where the next reload re-opens it; clearing the hash alone
+ * leaves the run on screen.
+ *
+ * The second door is the masthead, whose wordmark and Open tab are plain
+ * anchors pointing at `#`. This screen never sees their clicks, only the hash
+ * losing its link, and that is signal enough: a hash naming the Open screen
+ * with no link in it is a request for the landing page.
+ *
+ * Three traps, each of which is why a line here looks the way it does.
+ *
+ * Navigating to ANOTHER screen must not clear the run. Somebody reads the
+ * checks list to interpret their trace and comes back to it, and finding it
+ * gone would read as the tool having thrown their work away. Hence the
+ * `screen !== 'open'` bail rather than "the hash has no link".
+ *
+ * Going BACK to a link has to re-open it. App's fragment effect opens each link
+ * once ever, by design, so after a reset it will not fire again for the same
+ * one. The re-open therefore lives here, and it is guarded on the session being
+ * idle: a submit navigates and starts its own run, and running that link again
+ * from the hashchange would make two requests out of one paste. The status is
+ * read at event time rather than captured, because `begin` has already set it
+ * to running by the time the hash change is delivered.
+ *
+ * And nothing here can spend a passcode attempt: the re-opened run carries no
+ * passcode, so it stops at the manifest step exactly as a fresh paste does.
+ */
+function useStartOver(reset: () => void, onRun: Runner): () => void {
+  useEffect(() => {
+    const onHashChange = (): void => {
+      const next = parseHash(window.location.hash);
+      if (next.screen !== 'open') return;
+      if (next.link === undefined) {
+        if (useSession.getState().status !== 'idle') reset();
+        return;
+      }
+      if (useSession.getState().status === 'idle') void onRun(next.link);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [onRun, reset]);
+
+  return useCallback(() => {
+    reset();
+    // '#' is the Open screen's own path, so this is "go home" and not a second
+    // route. See router.ts: a link and a screen never coexist in the hash.
+    navigate('#');
+  }, [reset]);
 }
 
 function useLayoutMode(): LayoutMode {
@@ -530,6 +641,8 @@ function NoPayload({
   if (running) {
     return (
       <EmptyState title="Still working">
+        {/* No `.prose` here: an empty state is a centred column and carries its
+            own, narrower measure. */}
         <p>
           The trace on the left is live. Nothing is rendered here until a file has been fetched,
           decrypted and parsed.
@@ -578,12 +691,23 @@ function lowerFirst(text: string): string {
 // First run
 // ---------------------------------------------------------------------------
 
+/**
+ * The icon per ending. Three silhouettes that differ in outline, because the
+ * third card is the one that fails and a reader must not need the colour to see
+ * which one that is.
+ */
+const ENDING_ICON = {
+  document: FileText,
+  card: ShieldCheck,
+  diagnosis: OctagonAlert,
+} as const;
+
 function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
   return (
     <div className="idle">
       <section className="idle-lede">
         <h1>Open a SMART Health Link and see every step of it.</h1>
-        <p>
+        <p className="prose">
           Paste a link, a payload, a scanned code or a file into the field above and Loupe walks the
           whole path: decode, judge the payload against the specification, inspect the URL, request
           the manifest, fetch each file, decrypt, parse and render. Everything runs in this tab, so
@@ -591,24 +715,50 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
         </p>
       </section>
 
-      <section className="idle-samples" aria-label="Sample links">
-        <h2>Start with one of these</h2>
-        <div className="sample-row">
-          {SAMPLES.map((sample) => (
-            <button
-              key={sample.id}
-              type="button"
-              className="sample"
-              onClick={() => void onRun(sample.input)}
-            >
-              <span className="sample-name">
-                <Sparkles size={14} aria-hidden />
-                {sample.name}
-              </span>
-              <span className="sample-blurb">{sample.blurb}</span>
-            </button>
-          ))}
-        </div>
+      <section className="idle-samples" aria-labelledby="idle-samples-title">
+        <h2 id="idle-samples-title">Start with one of these</h2>
+        {/* The review's question, and it was fair: why start with one of these,
+            and what is the difference? Both answers belong above the cards, not
+            in the cards, because the reason to press any of them is the same. */}
+        <p className="idle-samples-lede prose">
+          Because they cost nothing and they prove the tool rather than describing it. The first two
+          are the implementation guide’s own examples: they really resolve, over the real network,
+          and they carry the key the specification publishes, so there is nothing confidential
+          behind either. The third is synthesised and cannot work at all. Each one ends somewhere
+          different, which is the whole reason there are three.
+        </p>
+        <ul className="sample-grid">
+          {SAMPLES.map((sample) => {
+            const Icon = ENDING_ICON[sample.ending];
+            return (
+              <li key={sample.id}>
+                <button type="button" className="sample" onClick={() => void onRun(sample.input)}>
+                  <span className="sample-head">
+                    <Icon size={15} aria-hidden className="sample-icon" />
+                    <span className="sample-name">{sample.name}</span>
+                    <ArrowRight size={14} aria-hidden className="sample-go" />
+                  </span>
+                  <span className="sample-blurb">{sample.blurb}</span>
+                  {/* The one card that ends in a diagnosis is tinted as well as
+                      iconed: tone-* keeps the colour and its surface together,
+                      and the words say it too, so nothing here rests on colour. */}
+                  <span
+                    className={clsx(
+                      'sample-ending',
+                      sample.ending === 'diagnosis' && 'tone tone-warn',
+                    )}
+                  >
+                    {sample.endingWord}
+                  </span>
+                  <span className="sample-teaches">
+                    <GraduationCap size={13} aria-hidden />
+                    <span>{sample.teaches}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       <section className="idle-claims" aria-label="What this does differently">
@@ -619,7 +769,7 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
               <Lightbulb size={15} aria-hidden />
               It answers before it asks
             </h3>
-            <p>
+            <p className="prose">
               Recognising the link, decoding it, judging every payload member and inspecting the
               manifest URL all happen with the network untouched. A link whose URL is{' '}
               <code>https://localhost:5173/api/shl-manifest</code> gets a named verdict, the
@@ -634,7 +784,7 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
               <Lightbulb size={15} aria-hidden />
               It shows the whole path, and hands you a curl for the hop that broke
             </h3>
-            <p>
+            <p className="prose">
               Every hop keeps its request, its response, the headers a browser actually let script
               read, and its timing. A cross-origin failure gives JavaScript one word and no cause,
               so the trace gives you the equivalent <code>curl</code> instead. A curl that succeeds
@@ -647,7 +797,7 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
               <Lightbulb size={15} aria-hidden />
               It names who has to act
             </h3>
-            <p>
+            <p className="prose">
               Every finding says whether it is yours, the sender&rsquo;s or the server
               operator&rsquo;s, carries a stable id such as <code>SHL-URL-LOCALHOST</code>, and
               quotes the sentence of the specification it rests on. That is the part you paste into
@@ -658,7 +808,7 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
       </section>
 
       <Callout tone="info" title="What it never does">
-        <p>
+        <p className="prose">
           No link, key, passcode or payload is uploaded anywhere, and none is written to storage.
           Only your settings persist. Two probes can reach a third party, they are off until you
           turn them on in settings, and each says there what it discloses.

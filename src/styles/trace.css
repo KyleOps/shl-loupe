@@ -85,7 +85,7 @@
 
 .verdict-subline {
   margin: 0;
-  max-width: 78ch;
+  max-width: var(--measure);
   color: var(--fg-muted);
   font-size: 14px;
 }
@@ -430,7 +430,7 @@ ol.trace-children {
 
 .step-summary {
   margin: 0;
-  max-width: 78ch;
+  max-width: var(--measure);
   color: var(--fg-default);
   font-size: 14px;
 }
@@ -497,7 +497,7 @@ ol.trace-children {
 
 .evidence-note p {
   margin: 0;
-  max-width: 78ch;
+  max-width: var(--measure);
   color: var(--fg-default);
   font-size: 14px;
 }
@@ -530,7 +530,7 @@ ol.trace-children {
 
 .wire-note {
   margin: 0;
-  max-width: 78ch;
+  max-width: var(--measure);
   color: var(--fg-muted);
   font-size: 12.5px;
   line-height: 19px;
@@ -694,7 +694,7 @@ ol.trace-children {
   color: var(--fg-default);
   font-size: 14px;
   line-height: 22px;
-  max-width: 78ch;
+  max-width: var(--measure);
 }
 
 .citation a {
@@ -739,7 +739,7 @@ ol.trace-children {
 .finding-remedy,
 .finding-audience {
   margin: 0;
-  max-width: 78ch;
+  max-width: var(--measure);
   color: var(--fg-default);
   font-size: 13.5px;
   line-height: 21px;

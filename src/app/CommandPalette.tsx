@@ -268,8 +268,12 @@ export function CommandPalette({
         id: 'view-large-text',
         group: 'View',
         label: largeText ? 'Use the normal text size' : 'Use larger text',
-        hint: 'Bigger type, stronger hairlines, no dim tier and no step opens itself, for a room reading over your shoulder.',
-        keywords: 'presentation demo room audience',
+        // Type and the separators that have to move with it, and nothing else:
+        // the colour and width parts of the old "projector mode" are how the app
+        // looks now, and the step-by-step reading it also did is "Walk through"
+        // on the trace itself.
+        hint: 'Bigger type with thicker separators, for reading at a distance or over your shoulder.',
+        keywords: 'presentation demo room audience projector size',
         icon: <ALargeSmall size={14} aria-hidden />,
         perform: toggleLargeText,
       },

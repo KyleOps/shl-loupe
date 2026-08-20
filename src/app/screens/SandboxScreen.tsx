@@ -20,23 +20,41 @@
  * pointing the same viewer at each one. Tabs would hide half of that job behind
  * a control nobody presses twice.
  *
- * The honest caveat lives on this screen and not in a footnote: a minted link's
- * `url` points at a host that serves nothing, so opening it here gets every
- * check that happens before the network and then a failed fetch. That is stated
- * where the expectation forms, next to the minted link, rather than left for
- * somebody to discover.
+ * NOTHING MINTED HERE IS SERVABLE, AND THAT IS SAID THREE TIMES ON PURPOSE. The
+ * caveat opens the mint section, every artefact carries a short marker of its
+ * own, and each broken card says what its link alone will reach. Three, because
+ * these artefacts travel as cropped screenshots and pasted code blocks: a
+ * caveat that lives only at the top of a section does not survive either.
+ *
+ * The useful path is therefore made one press. A minted link plus the manifest a
+ * server would have served is exactly what the Offline screen wants, so the
+ * hand-off hands both over through that screen's published fragment contract
+ * (see `parseOfflineHandoff` there) rather than reaching into its store: a query
+ * is a stated interface, and the result is a link that survives a reload.
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Beaker, ExternalLink, RefreshCw, Wand } from 'lucide-react';
+import {
+  Beaker,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  KeyRound,
+  RefreshCw,
+  ServerOff,
+  Wand,
+  WifiOff,
+} from 'lucide-react';
 import { formatBytes } from '../../core/bytes';
 import {
   BROKEN_PRESETS,
   generateLinkKey,
   mintShl,
+  PASSCODE_REJECTION_BODY,
   SAMPLE_PAYLOADS,
   SHL_CONTENT_TYPES,
   type BrokenArtefacts,
   type BrokenPreset,
+  type MintedPasscode,
   type MintOptions,
   type MintResult,
 } from '../../core/mint';
@@ -47,6 +65,7 @@ import {
   Callout,
   Chip,
   CodeBlock,
+  CopyButton,
   Disclosure,
   FieldTable,
   Panel,
@@ -55,7 +74,7 @@ import {
   type FieldRow,
   type Tone,
 } from '../../ui/primitives';
-import { hashForLink, navigate } from '../router';
+import { hashForLink, hashForScreen, navigate } from '../router';
 import { useSettings } from '../store';
 
 // ---------------------------------------------------------------------------
@@ -115,6 +134,29 @@ export function parsePayloadJson(text: string): ParsedPayload {
   }
 }
 
+/**
+ * Why the mint action is unavailable, in the words shown beside it, or undefined
+ * when it is available.
+ *
+ * Stated rather than merely disabled. The review's finding was that selecting
+ * the P flag offered nowhere to type a passcode; a button that quietly stops
+ * working is the same failure one layer down, so the reason is rendered next to
+ * the control and pointed at by `aria-describedby`.
+ */
+export function mintBlocker(state: {
+  jsonError: string | undefined;
+  flags: FlagChoices;
+  passcode: string;
+}): string | undefined {
+  if (state.jsonError !== undefined) {
+    return 'The payload above is not JSON yet, so there is nothing to encrypt.';
+  }
+  if (state.flags.P && state.passcode.trim() === '') {
+    return 'The P flag says the sharing server demands a passcode, so this link needs one first. A link claiming P with no passcode behind it sends every receiver to prompt for a secret that cannot match, and each attempt is charged for the life of the link.';
+  }
+  return undefined;
+}
+
 /** How an expected outcome reads. Never the colour on its own: a word too. */
 export function describeOutcome(outcome: RunOutcome): { tone: Tone; word: string } {
   switch (outcome) {
@@ -139,8 +181,8 @@ export function describeOutcome(outcome: RunOutcome): { tone: Tone; word: string
  * is answered from the link alone, so no request is issued and the demonstration
  * is complete; that is the product thesis and worth saying out loud. Separately,
  * a preset carrying a manifest or a file has its fault in bytes a server would
- * have served, and Loupe has no server, so the fault is only reachable by
- * pasting those bytes into the Offline screen.
+ * have served, and Loupe has no server, so the fault is only reachable with
+ * those bytes supplied, which is what the offline hand-off beside it does.
  *
  * Getting this wrong in either direction wastes somebody's minute: promising a
  * clean diagnosis that ends in a fetch error, or sending them to Offline mode
@@ -153,7 +195,79 @@ export function reachSentence(outcome: RunOutcome, artefacts: BrokenArtefacts): 
   if (artefacts.manifest === undefined && artefacts.jwe === undefined) {
     return 'The fault is in the link, so it is reported before the fetch. The fetch then fails too, because the host serves nothing; both appear in the trace, in that order.';
   }
-  return 'The fault is in bytes a server would have served, and Loupe has no server, so opening the link alone stops at the failed fetch. Copy the manifest or the file below into the Offline screen to reach it.';
+  return 'The fault is in bytes a server would have served, and Loupe has no server, so opening the link alone stops at the failed fetch. Open it offline instead and those bytes are supplied for you.';
+}
+
+// ---------------------------------------------------------------------------
+// The hand-off into Offline mode
+// ---------------------------------------------------------------------------
+
+interface OfflineHandoffFields {
+  /** The primary box: a link, or a bare encrypted file. */
+  input: string;
+  /** The manifest response, for a hand-off that starts at a link. */
+  manifest?: string;
+  /** Needed only when the primary box is a bare file, which carries no key. */
+  key?: string;
+}
+
+/**
+ * Build the Offline screen's published hand-off fragment:
+ * `#/offline?input=…&manifest=…&key=…&open=1`. See `parseOfflineHandoff` in
+ * `OfflineScreen.tsx`, which owns the contract.
+ *
+ * A fragment rather than that screen's store, deliberately: it is somebody
+ * else's screen, the query is a stated interface where a store action is an
+ * internal, and the result is a link that survives a reload and can be pasted to
+ * a colleague.
+ *
+ * `URLSearchParams` does the encoding, and both traps the contract names are
+ * encoding traps. The router matches a bare `shlink:/` ANYWHERE in the fragment
+ * and would send the whole hand-off to the Open screen, which would then try to
+ * fetch it; and a manifest carries `application/fhir+json`, whose `+` decodes as
+ * a space unless it is written `%2B`. Hand-concatenating this query breaks both.
+ */
+export function offlineHandoffHash(fields: OfflineHandoffFields): string {
+  const params = new URLSearchParams();
+  params.set('input', fields.input);
+  if (fields.manifest !== undefined) params.set('manifest', fields.manifest);
+  if (fields.key !== undefined) params.set('key', fields.key);
+  // Fill the boxes AND run it. Safe unasked in a way it would not be on the Open
+  // screen: an offline run issues no request, so it cannot spend one of the
+  // link's counted passcode attempts.
+  params.set('open', '1');
+  return `${hashForScreen('offline')}?${params.toString()}`;
+}
+
+/** The artefacts of a minted link, as the Offline screen wants them. */
+export function handoffForMint(minted: MintResult): string {
+  if (minted.manifest === undefined) {
+    // A U link has no manifest, so the encrypted file itself is the paste. It
+    // carries no link, and therefore no key, so the key goes in beside it.
+    return offlineHandoffHash({ input: minted.file.jwe, key: minted.key });
+  }
+  return offlineHandoffHash({
+    input: minted.shlink,
+    manifest: JSON.stringify(minted.manifest, null, 2),
+  });
+}
+
+/**
+ * The same, for a catalogue entry. Undefined when there is nothing a server
+ * would have served, in which case the link alone already reaches the fault and
+ * a hand-off would only add a step.
+ */
+export function handoffForPreset(artefacts: BrokenArtefacts): string | undefined {
+  if (artefacts.manifest !== undefined) {
+    return offlineHandoffHash({
+      input: artefacts.shlink,
+      manifest: JSON.stringify(artefacts.manifest, null, 2),
+    });
+  }
+  if (artefacts.jwe !== undefined) {
+    return offlineHandoffHash({ input: artefacts.jwe, key: artefacts.key });
+  }
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -165,7 +279,7 @@ export function SandboxScreen(): ReactNode {
     <div className="sandbox">
       <section className="sandbox-lede">
         <h1>Make links, correct and broken, to test something else.</h1>
-        <p>
+        <p className="prose">
           Everything here is produced in this tab, by the same encrypter Loupe uses to read a link,
           so a defect in one direction shows up in the other rather than cancelling itself out.
           Nothing is uploaded, and nothing is stored.
@@ -173,6 +287,31 @@ export function SandboxScreen(): ReactNode {
       </section>
       <MintSection />
       <CatalogueSection />
+    </div>
+  );
+}
+
+/**
+ * The caveat, small enough to sit on an individual artefact.
+ *
+ * These leave the screen as cropped screenshots and pasted code blocks, so the
+ * marker rides on each one. The word carries the meaning and the icon gives it a
+ * silhouette; the colour is the third signal, never the only one.
+ */
+function NotLive({ what }: { what: string }): ReactNode {
+  return (
+    <Chip tone="warn" title={`${what} is a test vector. The host in it serves nothing.`}>
+      <ServerOff size={11} aria-hidden />
+      Test vector, not live
+    </Chip>
+  );
+}
+
+function ArtefactHead({ title, what }: { title: string; what: string }): ReactNode {
+  return (
+    <div className="artefact-head">
+      <h4 className="artefact-title">{title}</h4>
+      <NotLive what={what} />
     </div>
   );
 }
@@ -195,6 +334,7 @@ function MintSection(): ReactNode {
   const [url, setUrl] = useState(DEFAULT_URL);
   const [label, setLabel] = useState('Minted by Loupe');
   const [flags, setFlags] = useState<FlagChoices>({ L: true, P: false, U: false });
+  const [passcode, setPasscode] = useState('');
   const [expiryId, setExpiryId] = useState('day');
   const [compress, setCompress] = useState(false);
   const [ctyHeader, setCtyHeader] = useState(true);
@@ -208,6 +348,11 @@ function MintSection(): ReactNode {
   const parsed = useMemo(() => parsePayloadJson(json), [json]);
   const flagString = flagsFromChoices(flags);
   const conflictingFlags = flags.P && flags.U;
+  const blocker = mintBlocker({
+    jsonError: 'error' in parsed ? parsed.error : undefined,
+    flags,
+    passcode,
+  });
 
   const mint = async (): Promise<void> => {
     if (!('content' in parsed)) return;
@@ -227,6 +372,12 @@ function MintSection(): ReactNode {
         ...(exp === undefined ? {} : { exp }),
         ...(flagString === '' ? {} : { flags: flagString }),
         ...(viewerPrefix.trim() === '' ? {} : { viewerPrefix: viewerPrefix.trim() }),
+        // Sent only when the flag that makes a receiver ask for one is set:
+        // mintShl refuses the mismatched pair in either direction, and a
+        // passcode left in the field after unticking P is the user's draft, not
+        // an instruction. It is passed verbatim, never trimmed: silently
+        // altering a secret is worse than minting a surprising one.
+        ...(flags.P && passcode !== '' ? { passcode } : {}),
       };
       setMinted(await mintShl(options));
     } catch (error) {
@@ -240,6 +391,26 @@ function MintSection(): ReactNode {
   return (
     <Panel title="Mint a link that works">
       <div className="mint">
+        {/* First thing in the section, before a single field: the review's
+            finding was that this read as a footnote, and it was one. */}
+        <div className="mint-caveat tone tone-warn">
+          <StatusIcon tone="warn" />
+          <div className="mint-caveat-body prose">
+            <strong>None of these links is real, and none of them can be opened.</strong>
+            <p>
+              A minted link carries the <code>url</code> exactly as typed below, and{' '}
+              <code>example.org</code> is a reserved name that nothing answers on, here or anywhere
+              else. So no viewer, Loupe included, can fetch what one of these points at.
+            </p>
+            <p>
+              They are for two jobs. Paste one into another viewer to watch how it behaves before
+              any network is involved, which is most of what a receiver gets wrong. Or open it in
+              Loupe&rsquo;s own Offline mode with the manifest supplied by hand, which runs the
+              whole pipeline end to end; there is a button for that under every minted link.
+            </p>
+          </div>
+        </div>
+
         <fieldset className="mint-field mint-field-wide">
           <legend>What the encrypted file carries</legend>
           <div className="mint-samples">
@@ -343,9 +514,9 @@ function MintSection(): ReactNode {
               onChange={(event) => setUrl(event.target.value)}
             />
             <p className="mint-note">
-              <code>example.org</code> is reserved and serves nothing, which is deliberate: see the
-              caveat under the minted link. The path should be long and unguessable, and the whole
-              URL should stay under 128 characters.
+              <code>example.org</code> is reserved and serves nothing, which is what makes these
+              safe to hand around. The path should be long and unguessable, and the whole URL should
+              stay under 128 characters.
             </p>
           </div>
 
@@ -417,8 +588,9 @@ function MintSection(): ReactNode {
             {conflictingFlags ? (
               <Callout tone="fail" title="P and U cannot both be set">
                 A U link is fetched with GET, and a GET has nowhere to carry a passcode. Loupe will
-                still mint it, because a vector for exactly this exists in the catalogue below, but
-                a sender has to drop one of the two.
+                still mint it, because a vector for exactly this exists in the catalogue below, and
+                the passcode will come out with nowhere to send it, which is the contradiction made
+                visible.
               </Callout>
             ) : null}
           </fieldset>
@@ -451,6 +623,10 @@ function MintSection(): ReactNode {
             </div>
           </fieldset>
 
+          {/* Only while the flag that demands it is set. A passcode field on a
+              link with no P flag is a field nothing would ever read. */}
+          {flags.P ? <PasscodeField value={passcode} onChange={setPasscode} /> : null}
+
           <div className="mint-field mint-field-wide">
             <span className="mint-label" id="mint-key-label">
               Content encryption key
@@ -482,13 +658,17 @@ function MintSection(): ReactNode {
           <Button
             variant="primary"
             onClick={() => void mint()}
-            disabled={working || 'error' in parsed}
+            disabled={working || blocker !== undefined}
+            aria-describedby="mint-action-note"
           >
             <Wand size={14} aria-hidden />
             <span>{working ? 'Minting…' : 'Mint the link'}</span>
           </Button>
-          <span className="mint-note">
-            Encrypted here in the tab, with Web Crypto. Nothing leaves the page.
+          <span
+            className={blocker === undefined ? 'mint-note' : 'mint-note mint-note-blocked'}
+            id="mint-action-note"
+          >
+            {blocker ?? 'Encrypted here in the tab, with Web Crypto. Nothing leaves the page.'}
           </span>
         </div>
 
@@ -519,6 +699,69 @@ function MintKey({ value }: { value: string }): ReactNode {
       revealed={revealed}
       onReveal={(next) => setRevealed(next)}
     />
+  );
+}
+
+/**
+ * The passcode, which the P flag has always claimed and until now had nowhere to
+ * come from.
+ *
+ * Typed rather than generated, because a passcode is the one part of a share
+ * that travels by voice or by a separate message, and something a person has to
+ * read out loud is something they choose. Masked like the key field on the
+ * Offline screen, and for the stronger reason: this is a field somebody types a
+ * secret INTO while a room watches.
+ */
+function PasscodeField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}): ReactNode {
+  const revealDefault = useSettings((settings) => settings.revealSecrets);
+  const [revealed, setRevealed] = useState(revealDefault);
+  const empty = value.trim() === '';
+
+  return (
+    <div className="mint-field mint-field-wide">
+      <label className="mint-label" htmlFor="mint-passcode">
+        <KeyRound size={12} aria-hidden /> Passcode (required by the P flag)
+      </label>
+      <div className="mint-passcode-row">
+        <input
+          id="mint-passcode"
+          className="mint-control opaque-value"
+          type={revealed ? 'text' : 'password'}
+          spellCheck={false}
+          autoComplete="off"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="Spoken aloud, or sent by a separate message"
+          aria-describedby="mint-passcode-note"
+          aria-invalid={empty}
+        />
+        <Button size="sm" aria-pressed={revealed} onClick={() => setRevealed(!revealed)}>
+          {revealed ? <EyeOff size={13} aria-hidden /> : <Eye size={13} aria-hidden />}
+          <span className="visually-hidden">
+            {revealed ? 'Hide the passcode' : 'Show the passcode'}
+          </span>
+        </Button>
+      </div>
+      <p className="mint-note" id="mint-passcode-note">
+        A receiver sends this in the manifest POST body as <code>passcode</code>, beside{' '}
+        <code>recipient</code>. It is never inside the link and never in the manifest, so you have
+        to hand it over separately, which is the whole point of it. Every wrong attempt is charged
+        against a lifetime limit that permanently disables the link, so a conformant server counts
+        them and says how many are left.
+      </p>
+      {empty ? (
+        <Callout tone="warn" title="This link cannot be minted without it">
+          The P flag tells a receiver to ask for a passcode. Type the one this link should demand,
+          or untick P.
+        </Callout>
+      ) : null}
+    </div>
   );
 }
 
@@ -564,82 +807,178 @@ function MintedOutput({ minted }: { minted: MintResult }): ReactNode {
     { key: 'content type', value: minted.file.contentType },
   ];
 
+  const direct = minted.manifest === undefined;
+
   return (
     <div className="mint-output">
-      <h3>The minted link</h3>
-      <CodeBlock language="text" maxHeight={160}>
-        {minted.shlink}
-      </CodeBlock>
+      <h3>What came out</h3>
+
+      <div className="mint-artefact">
+        <ArtefactHead title="The minted link" what="This link" />
+        <CodeBlock language="text" maxHeight={160}>
+          {minted.shlink}
+        </CodeBlock>
+      </div>
+
       {minted.viewerLink === undefined ? null : (
-        <>
-          <h4>With the viewer prefix</h4>
+        <div className="mint-artefact">
+          <ArtefactHead title="With the viewer prefix" what="This link" />
           <CodeBlock language="text" maxHeight={160}>
             {minted.viewerLink}
           </CodeBlock>
-        </>
+        </div>
       )}
 
       <div className="mint-output-split">
         <div className="mint-output-facts">
           <FieldTable rows={rows} dense />
           <div className="mint-output-actions">
-            <Button variant="primary" onClick={() => navigate(hashForLink(minted.shlink))}>
+            <Button variant="primary" onClick={() => navigate(handoffForMint(minted))}>
+              <WifiOff size={14} aria-hidden />
+              <span>{direct ? 'Open the file offline' : 'Open offline, manifest supplied'}</span>
+            </Button>
+            <Button onClick={() => navigate(hashForLink(minted.shlink))}>
               <ExternalLink size={14} aria-hidden />
-              <span>Open this in Loupe</span>
+              <span>Open the link alone in Loupe</span>
             </Button>
           </div>
+          <p className="mint-note">
+            The first runs the whole pipeline over these bytes, with{' '}
+            {direct ? 'the file and its key' : 'the manifest below'} already in the boxes and no
+            request at any step. The second navigates to the link and nothing else, so it shows
+            every check that happens before the network and then a failed fetch, which is true and
+            is not the link being wrong.
+          </p>
         </div>
         <QrCode
           value={qrValue}
           caption={
-            minted.viewerLink === undefined
-              ? 'The bare shlink, which is what a QR normally carries.'
-              : 'The viewer-prefixed form, since that is what you supplied a prefix for.'
+            <>
+              {minted.viewerLink === undefined
+                ? 'The bare shlink, which is what a QR normally carries.'
+                : 'The viewer-prefixed form, since that is what you supplied a prefix for.'}{' '}
+              <NotLive what="This code" />
+            </>
           }
         />
       </div>
 
-      <Callout tone="warn" title="This link points at a host that serves nothing">
-        <p>
-          Loupe has no server. The <code>url</code> above is a real, parseable address that nothing
-          is listening on, so opening the link here runs every check that happens before the network
-          (decoding, each payload member, the URL, the flags, the expiry) and then reports a failed
-          fetch. That failure is true, and it is not the link being wrong.
-        </p>
-        <p>Two ways to see the whole path instead:</p>
-        <ul>
-          <li>
-            Paste the link into the <a href="#/offline">Offline screen</a> along with the manifest
-            or the file below. It runs the same pipeline over bytes you supply, with the network
-            untouched.
-          </li>
-          <li>
-            Put the encrypted file somewhere real that sends{' '}
-            <code>Access-Control-Allow-Origin</code>, and mint with the U flag pointing at it. A U
-            link is one GET with no manifest and no preflight, which is why the implementation
-            guide&rsquo;s own examples are the only links a browser-only viewer can rely on.
-          </li>
-        </ul>
-        <p>
-          Opening the link leaves this screen, and the mint is not kept when you come back, so copy
-          anything you still need first.
-        </p>
-      </Callout>
+      {minted.passcode === undefined ? null : (
+        <PasscodeOutput passcode={minted.passcode} direct={direct} />
+      )}
 
-      {minted.manifest === undefined ? (
+      {direct ? (
         <Callout tone="info" title="A U link has no manifest">
           The <code>url</code> is the encrypted file itself. There is one GET, a{' '}
           <code>recipient</code> query parameter on it, and no manifest to serve.
         </Callout>
       ) : (
-        <Disclosure summary="The manifest a server would serve">
+        <Disclosure
+          summary="The manifest a server would serve"
+          meta={<NotLive what="This manifest" />}
+        >
           <CodeBlock language="json">{JSON.stringify(minted.manifest, null, 2)}</CodeBlock>
         </Disclosure>
       )}
 
-      <Disclosure summary="The encrypted file, as compact JWE">
+      <Disclosure summary="The encrypted file, as compact JWE" meta={<NotLive what="This file" />}>
         <CodeBlock language="text">{minted.file.jwe}</CodeBlock>
       </Disclosure>
+
+      <p className="mint-note prose">
+        Either button leaves this screen, and the mint is not kept when you come back, so copy
+        anything you still need first.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * The passcode as artefacts, which is the part that has no home in the link.
+ *
+ * A passcode is not a member of anything the sender publishes: it is held by the
+ * server and compared against a request. So what can be handed over is the
+ * secret itself, out of band, plus the exchange it takes part in, and the
+ * refusal a conformant server owes when it does not match.
+ */
+function PasscodeOutput({
+  passcode,
+  direct,
+}: {
+  passcode: MintedPasscode;
+  direct: boolean;
+}): ReactNode {
+  const revealDefault = useSettings((settings) => settings.revealSecrets);
+  const [revealed, setRevealed] = useState(revealDefault);
+
+  return (
+    <div className="mint-passcode-out">
+      <ArtefactHead title="The passcode, and how it is spent" what="This passcode" />
+      {/*
+        Not the shared `Secret`, and this is the reason rather than a preference.
+        That primitive masks the middle and shows four characters at each end,
+        which is right for a 43-character key and useless for a passcode:
+        "gumnut-42" comes out as "gumn•t-42". A passcode is short by design,
+        because somebody reads it out, so the mask has to cover all of it.
+      */}
+      <div className="mint-passcode-value">
+        <span className="opaque-value">
+          {revealed ? passcode.value : '•'.repeat(Math.min(passcode.value.length, 12))}
+        </span>
+        <Button size="sm" aria-pressed={revealed} onClick={() => setRevealed(!revealed)}>
+          {revealed ? <EyeOff size={13} aria-hidden /> : <Eye size={13} aria-hidden />}
+          <span className="visually-hidden">
+            {revealed ? 'Hide the minted passcode' : 'Reveal the minted passcode'}
+          </span>
+        </Button>
+        <CopyButton value={passcode.value} label="Copy" />
+      </div>
+      <p className="mint-note prose">
+        This travels to the receiver some other way: spoken, or in a separate message. It is not in
+        the link, so anybody who intercepts the link alone still cannot request the manifest.
+      </p>
+
+      {passcode.requestBody === undefined ? (
+        <Callout tone="fail" title="There is nowhere to send this one">
+          The U flag makes the <code>url</code> the encrypted file itself, fetched with a GET, so
+          there is no manifest request and no body to put a passcode in. That is why P and U
+          contradict each other, and it is the catalogue&rsquo;s <code>flag-u-and-p</code> entry.
+        </Callout>
+      ) : (
+        <>
+          <p className="mint-note prose">
+            A receiver POSTs it to the <code>url</code> as the <code>passcode</code> member of the
+            manifest request body, with <code>content-type: application/json</code>. The{' '}
+            <code>recipient</code> member beside it is the receiver&rsquo;s own name for itself,
+            which is why it is a placeholder below.
+          </p>
+          {/* Behind a disclosure because the body necessarily carries the
+              passcode in the clear, and masking the value above buys nothing if
+              the same characters sit in an open code block underneath it on a
+              projected screen. */}
+          <Disclosure summary="The manifest request body, with the passcode in it">
+            <CodeBlock language="json">{passcode.requestBody}</CodeBlock>
+          </Disclosure>
+        </>
+      )}
+
+      {direct ? null : (
+        <Disclosure summary="What the server owes on a wrong attempt">
+          <p className="mint-note prose">
+            401, with a JSON body naming how many attempts are left. The member name is exact:{' '}
+            <code>attemptsRemaining</code> and <code>remaining_attempts</code> are read by nothing,
+            and a receiver that cannot see the count cannot warn anybody before the attempt that
+            permanently disables the link. A vector for a 401 that omits it is in the catalogue
+            below.
+          </p>
+          <CodeBlock language="json">{PASSCODE_REJECTION_BODY}</CodeBlock>
+          <p className="mint-note prose">
+            The manifest above is what a server serves once the passcode MATCHED. Loupe&rsquo;s
+            offline transport serves the bytes it was handed without reading the request body, so an
+            offline run cannot check a passcode: it shows the accepted case.
+          </p>
+        </Disclosure>
+      )}
     </div>
   );
 }
@@ -681,25 +1020,42 @@ function CatalogueSection(): ReactNode {
   return (
     <Panel title="Links that are wrong on purpose">
       <div className="catalogue">
-        <Callout tone="info" title="A red result here is a pass">
-          <p>
-            These exist to test somebody else&rsquo;s viewer. Each link breaks exactly one rule and
-            says which, so you can hand one over and see whether the receiver notices. The vector
-            worked if the receiver refused the link and named the reason; a viewer that opens one of
-            these, or that reports something unrelated, is the finding you came for.
+        {/*
+          The framing, as the section's own opening statement rather than as one
+          callout among several. It is the single thing somebody has to
+          understand before the cards mean anything: the expected result of a
+          good test here is a refusal.
+        */}
+        <div className="catalogue-thesis">
+          <h3 className="catalogue-thesis-title">A red result here is a pass</h3>
+          <p className="prose">
+            Every one of the {BROKEN_PRESETS.length} links below breaks exactly one rule and says
+            which. Hand one to the viewer you are testing: the vector worked if that viewer refused
+            the link and named the reason. A viewer that opens one of these, or that reports
+            something unrelated, is the finding you came for.
           </p>
-          <p>
+          <ol className="catalogue-steps prose">
+            <li>
+              <strong>Take one link.</strong> Copy it from the card, or show its QR code to a phone.
+            </li>
+            <li>
+              <strong>Give it to the viewer under test</strong>, and write down what it said.
+            </li>
+            <li>
+              <strong>Compare that against the card.</strong> Each one states what a conformant
+              receiver should do, which is the thing being tested, and separately what Loupe itself
+              raises.
+            </li>
+          </ol>
+          <p className="catalogue-thesis-note prose">
             Loupe&rsquo;s own reading of every entry is run through the real pipeline by{' '}
-            <code>mint.test.ts</code>, so the rule ids below are what actually fires. Where Loupe
-            raises nothing, that is recorded as a gap with the reason, not dressed up as a check.
+            <code>mint.test.ts</code>, so the rule ids on the cards are what actually fires. Where
+            Loupe raises nothing, the card records that as a gap with the reason rather than
+            dressing it up as a check. These links are test vectors like the minted ones: the hosts
+            in them serve nothing, and the outcome on each card is what Loupe reaches with the bytes
+            a server would have served supplied, which is what the offline button on the card does.
           </p>
-          <p>
-            The outcome on each card is what Loupe reaches with the bytes a server would have served
-            supplied, which is how that test runs them. Pressing <strong>Open in Loupe</strong>{' '}
-            navigates to the link and nothing else, so each card also says what the link alone will
-            show.
-          </p>
-        </Callout>
+        </div>
 
         {failure === undefined ? null : (
           <Callout tone="fail" title="The catalogue could not be built">
@@ -738,6 +1094,8 @@ function PresetCard({
   artefacts: BrokenArtefacts | undefined;
 }): ReactNode {
   const outcome = describeOutcome(preset.expect.outcome);
+  const offline = artefacts === undefined ? undefined : handoffForPreset(artefacts);
+
   return (
     <article className="preset">
       <header className="preset-head">
@@ -756,11 +1114,17 @@ function PresetCard({
         </div>
       </header>
 
-      <dl className="preset-facts">
-        <dt>What is wrong</dt>
-        <dd>{preset.wrong}</dd>
-        <dt>A conformant receiver should</dt>
-        <dd>{preset.receiverShould}</dd>
+      <p className="preset-wrong">{preset.wrong}</p>
+
+      {/* The card's payload: what is being tested. Given its own surface rather
+          than a row in a definition list, because it is the sentence somebody
+          reads their own viewer's behaviour against. */}
+      <div className="preset-should">
+        <span className="preset-should-label">A conformant receiver should</span>
+        <p>{preset.receiverShould}</p>
+      </div>
+
+      <dl className="preset-meta">
         <dt>Loupe raises</dt>
         <dd>
           {preset.expect.ruleIds.length === 0 ? (
@@ -781,7 +1145,7 @@ function PresetCard({
         {preset.expect.payloadMembers === undefined ||
         preset.expect.payloadMembers.length === 0 ? null : (
           <>
-            <dt>Members the table must flag</dt>
+            <dt>Members flagged</dt>
             <dd>
               <span className="preset-rules">
                 {preset.expect.payloadMembers.map((member) => (
@@ -795,7 +1159,14 @@ function PresetCard({
           <>
             <dt>Passcode</dt>
             <dd>
-              <code>{artefacts.passcode}</code>
+              {/* Wrapped the way the rule ids are, so the note after it keeps
+                  the same gap rather than butting against the code. */}
+              <span className="preset-rules">
+                <code>{artefacts.passcode}</code>
+              </span>
+              <span className="preset-source">
+                sent in the manifest POST body, which is the only place one goes
+              </span>
             </dd>
           </>
         )}
@@ -807,26 +1178,51 @@ function PresetCard({
         </p>
       ) : (
         <>
-          <CodeBlock language="text" maxHeight={120}>
-            {artefacts.shlink}
-          </CodeBlock>
+          <div className="preset-artefact">
+            <ArtefactHead title="The link" what="This link" />
+            <CodeBlock language="text" maxHeight={120}>
+              {artefacts.shlink}
+            </CodeBlock>
+          </div>
           <div className="preset-actions">
             <Button onClick={() => navigate(hashForLink(artefacts.shlink))}>
               <ExternalLink size={13} aria-hidden />
-              <span>Open in Loupe</span>
+              <span>Open the link in Loupe</span>
             </Button>
+            {offline === undefined ? null : (
+              <Button onClick={() => navigate(offline)}>
+                <WifiOff size={13} aria-hidden />
+                <span>Open it offline, bytes supplied</span>
+              </Button>
+            )}
           </div>
           <p className="preset-reach">{reachSentence(preset.expect.outcome, artefacts)}</p>
+          {/* The marker rides the caption INSIDE the figure rather than the
+              disclosure head: a QR code leaves this page as a photograph of the
+              symbol, and a marker on the row above it is not in that frame. */}
           <Disclosure summary="Show the QR code">
-            <QrCode value={artefacts.shlink} caption={preset.title} />
+            <QrCode
+              value={artefacts.shlink}
+              caption={
+                <>
+                  {preset.title} <NotLive what="This code" />
+                </>
+              }
+            />
           </Disclosure>
           {artefacts.manifest === undefined ? null : (
-            <Disclosure summary="The manifest a server would serve">
+            <Disclosure
+              summary="The manifest a server would serve"
+              meta={<NotLive what="This manifest" />}
+            >
               <CodeBlock language="json">{JSON.stringify(artefacts.manifest, null, 2)}</CodeBlock>
             </Disclosure>
           )}
           {artefacts.jwe === undefined ? null : (
-            <Disclosure summary="The encrypted file, as compact JWE">
+            <Disclosure
+              summary="The encrypted file, as compact JWE"
+              meta={<NotLive what="This file" />}
+            >
               <CodeBlock language="text">{artefacts.jwe}</CodeBlock>
             </Disclosure>
           )}

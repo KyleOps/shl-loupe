@@ -27,11 +27,16 @@
   min-width: 0;
 }
 
+/*
+ * The lede answers "why does this screen exist" and carries the .prose class, so
+ * its width is the app's one measure rather than a number chosen here. It used
+ * to be 82ch, which is the failure the review named: every screen picking its own
+ * max-width inside a much wider panel makes the wrap look accidental.
+ */
 .offline-lede {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  max-width: 82ch;
 }
 
 .offline-lede h1 {
@@ -82,6 +87,162 @@
   flex-direction: column;
   gap: var(--space-6);
   min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Offline: the numbered flow
+   -------------------------------------------------------------------------- */
+
+/*
+ * The sequence, across the top.
+ *
+ * auto-fit rather than a fixed four columns: the ladder is two, three or four
+ * steps depending on what was pasted, and it has to collapse to one column at
+ * 320px without the page ever scrolling sideways. A grid does both; a flex row
+ * with basis percentages does neither.
+ *
+ * The track is capped rather than `1fr` so a two-step ladder stays two cards
+ * wide instead of stretching each one across half the display, which read as a
+ * banner rather than as a step.
+ */
+.offline-guide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 360px));
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.offline-guide-step {
+  display: flex;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  border: var(--hairline-width) solid var(--border-hairline);
+  background: var(--bg-surface);
+  min-width: 0;
+}
+
+/* The step in progress is a background step plus a stronger boundary plus the
+   word in its title, never a colour on its own: a hairline at 1.55:1 cannot be
+   the sole carrier of "you are here". */
+.offline-guide-step.is-now {
+  background: var(--bg-raised);
+  border-color: var(--border-meaningful);
+}
+
+.offline-guide-marker {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Done and current wear a tone, and the pair travels together: the component
+   adds `tone tone-pass` or `tone tone-running`, so nothing here names a status
+   token directly. */
+.offline-guide-marker.tone {
+  background: var(--tone-bg);
+  color: var(--tone-fg);
+}
+
+.offline-guide-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.offline-guide-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+/* A step still ahead is dimmed by dropping a text tier, never by `opacity`: an
+   opacity sweep would take its one line of explanation below its contrast
+   ratio at the moment that line is the only thing saying what comes next. */
+.offline-guide-step.is-todo .offline-guide-title {
+  color: var(--fg-muted);
+}
+
+.offline-guide-state {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.offline-guide-step.is-now .offline-guide-state {
+  color: var(--accent);
+}
+
+.offline-guide-detail {
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Offline: what the box accepts
+   -------------------------------------------------------------------------- */
+
+.offline-accepts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0;
+  max-width: var(--measure);
+  min-width: 0;
+}
+
+.offline-accepts-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+  border-left: var(--rail-width) solid var(--border-hairline);
+  min-width: 0;
+}
+
+/* The detected row is marked by the rail AND by the chip the component renders,
+   so the mark survives a reader who cannot see the colour. */
+.offline-accepts-row.is-current {
+  border-left-color: var(--accent);
+}
+
+.offline-accepts dt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: 13.5px;
+  line-height: 21px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.offline-accepts dd {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 19px;
+  color: var(--fg-muted);
 }
 
 /* --------------------------------------------------------------------------
@@ -189,6 +350,7 @@
 
 .offline-plan {
   margin: 0;
+  max-width: var(--measure);
   padding: var(--space-5);
   border-radius: var(--radius-card);
   background: var(--bg-raised);
@@ -212,6 +374,7 @@
 
 .offline-http-note {
   margin: 0;
+  max-width: var(--measure);
   font-size: 13px;
   color: var(--fg-muted);
 }
@@ -248,7 +411,7 @@
   font-size: 12.5px;
   line-height: 19px;
   color: var(--fg-muted);
-  max-width: 72ch;
+  max-width: var(--measure);
 }
 
 .offline-field-note-strong {
@@ -293,6 +456,7 @@
   display: flex;
   gap: var(--space-4);
   margin: 0;
+  max-width: var(--measure);
   font-size: 13.5px;
   line-height: 21px;
   color: var(--fg-default);
@@ -306,6 +470,14 @@
 
 .offline-handoff .offline-field {
   margin-top: var(--space-3);
+}
+
+/* The callout's own paragraph, above the button that offers the field. Callout
+   sets the type size; this only has to stop being full bleed and leave the
+   button room. */
+.offline-handoff-callout {
+  margin: 0 0 var(--space-5);
+  max-width: var(--measure);
 }
 
 .offline-actions {
@@ -467,7 +639,7 @@
   font-size: 12.5px;
   line-height: 19px;
   color: var(--fg-muted);
-  max-width: 68ch;
+  max-width: var(--measure-tight);
 }
 
 .palette-option-blocked {
@@ -481,7 +653,7 @@
   color: var(--fg-muted);
   font-size: 13.5px;
   line-height: 21px;
-  max-width: 60ch;
+  max-width: var(--measure-tight);
 }
 
 .palette-keys {

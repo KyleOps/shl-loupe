@@ -8,6 +8,14 @@
  * asks which of those it is has moved the classification job onto the person
  * least able to do it. So there is one field, it accepts all of them, and it
  * says out loud what it thinks it is looking at before anything is submitted.
+ *
+ * The preview under the field used to print the detector's output verbatim: the
+ * kind, then its whole two-sentence description, then every fact joined with
+ * middle dots. Three separate registers in one run-on line, and the label
+ * collided with the sentence that repeated it. It is now three tiers instead:
+ * a chip for the kind, ONE sentence for what happens next, and the facts as
+ * discrete labelled items. See {@link consequenceSentence} and
+ * {@link detectionFacts} for the two pieces of judgement that needs.
  */
 import {
   useMemo,
@@ -21,7 +29,7 @@ import { clsx } from 'clsx';
 import { ArrowRight, QrCode, X } from 'lucide-react';
 import { detectInput, type DetectedInput, type DetectedVariant } from '../core/detect';
 import { QrScanner } from '../ui/QrScanner';
-import { StatusIcon, type Tone } from '../ui/primitives';
+import { Chip, StatusIcon, type Tone } from '../ui/primitives';
 import { useSession } from './store';
 
 /**
@@ -66,6 +74,132 @@ export function toneForDetection(detected: DetectedInput): Tone {
       return 'warn';
   }
 }
+
+// ---------------------------------------------------------------------------
+// Shaping the detector's prose
+// ---------------------------------------------------------------------------
+
+/**
+ * Split prose into sentences without a lookbehind.
+ *
+ * A naive `split('. ')` is not enough and `[^.!?]+` is worse: `shl.example.org`
+ * and `raw.githubusercontent.com` are full of full stops, and a host is exactly
+ * what these sentences end on. The signal is a terminator followed by
+ * whitespace AND a capital, which a host never has, so the pattern keeps the
+ * terminator in a capture group and the split is put back together below.
+ * Lookbehind would read better and is deliberately avoided: it is the one
+ * regular-expression feature this tool cannot assume on a borrowed laptop.
+ */
+export function splitSentences(text: string): string[] {
+  const pieces = text.split(/([.!?])\s+(?=[A-Z])/);
+  const sentences: string[] = [];
+  for (let index = 0; index < pieces.length; index += 2) {
+    const body = pieces[index] ?? '';
+    const terminator = pieces[index + 1] ?? '';
+    const sentence = `${body}${terminator}`.trim();
+    if (sentence.length > 0) sentences.push(sentence);
+  }
+  return sentences;
+}
+
+/**
+ * The one sentence worth the space under the field: what Loupe is about to do.
+ *
+ * The detector writes identity first and consequence second ("A SMART Health
+ * Link pointing at shl.example.org. Loupe will check every member of the
+ * payload, then…"), and the chip beside this already carries the identity, so
+ * printing both is what made the preview read as a run-on.
+ *
+ * The trap is that not every leading sentence is an identity statement: "A
+ * numeric SMART Health Card whose digit count is odd (147), so at least one
+ * digit is missing" is a finding, and dropping it would lose the only place
+ * that fact is stated. The test is a comma: the detector names a thing in a
+ * comma-free clause and qualifies it with one. So a leading sentence is dropped
+ * only while it has no comma and is short, and the last sentence is always
+ * kept.
+ */
+const IDENTITY_MAX = 80;
+
+export function consequenceSentence(sentence: string): string {
+  const sentences = splitSentences(sentence);
+  let first = 0;
+  while (first < sentences.length - 1) {
+    const candidate = sentences[first];
+    if (candidate === undefined) break;
+    if (candidate.includes(',') || candidate.length > IDENTITY_MAX) break;
+    first += 1;
+  }
+  return sentences.slice(first).join(' ');
+}
+
+export interface DetectionFact {
+  /** Present when the fact's own wording names what it is a value of. */
+  label: string | undefined;
+  value: string;
+  /** A value with no spaces is a token, and a token is read in mono. */
+  mono: boolean;
+}
+
+/**
+ * The leading words the detector uses as a label, and what to call each one.
+ *
+ * This couples to `src/core/detect.ts`'s wording, on purpose and cheaply: the
+ * detector produces prose facts ("manifest host shl.example.org") rather than
+ * pairs, and a fact whose prefix is not listed here is simply shown whole. So
+ * the coupling degrades to "no label", never to a wrong one or a crash, which is
+ * the trade that makes it safe to keep the detector free of presentation.
+ *
+ * Longest first, so a prefix cannot be shadowed by a shorter one.
+ */
+const FACT_PREFIXES: Array<{ prefix: string; label: string }> = [
+  { prefix: 'access-control-allow-origin:', label: 'allow-origin' },
+  { prefix: 'manifest host', label: 'host' },
+  { prefix: 'resourceType', label: 'resource' },
+  { prefix: 'carried as', label: 'carried as' },
+  { prefix: 'labelled', label: 'label' },
+  { prefix: 'status', label: 'status' },
+  { prefix: 'flags', label: 'flags' },
+  { prefix: 'HTTP', label: 'HTTP' },
+  { prefix: 'type', label: 'type' },
+  { prefix: 'alg', label: 'alg' },
+  { prefix: 'enc', label: 'enc' },
+  { prefix: 'zip', label: 'zip' },
+  { prefix: 'kid', label: 'kid' },
+];
+
+/** "256 characters of payload" is a labelled fact written back to front. */
+const SIZE_OF = /^(\d+ (?:characters|bytes|digits)) of (.+)$/;
+
+function splitFact(detail: string): DetectionFact {
+  const size = SIZE_OF.exec(detail);
+  if (size?.[1] !== undefined && size[2] !== undefined) {
+    return { label: size[2], value: size[1], mono: false };
+  }
+  for (const { prefix, label } of FACT_PREFIXES) {
+    if (!detail.startsWith(`${prefix} `)) continue;
+    const value = detail.slice(prefix.length + 1).trim();
+    return { label, value, mono: !value.includes(' ') };
+  }
+  return { label: undefined, value: detail, mono: false };
+}
+
+/**
+ * The facts, as discrete items rather than as one dot-separated run.
+ *
+ * The run was the review's complaint and it was not only ugly: five facts in one
+ * line with the same weight means the host and the flags, which are what
+ * somebody is looking for, sit level with the character count.
+ */
+export function detectionFacts(details: readonly string[]): DetectionFact[] {
+  return details.map(splitFact);
+}
+
+/** What the chip's tooltip says, since "certain" and "unsure" are not the same claim. */
+const CONFIDENCE_NOTE: Record<DetectedInput['confidence'], string> = {
+  certain: 'Loupe is certain of this shape.',
+  likely: 'Loupe is fairly sure of this shape, and says so rather than guessing.',
+  unsure: 'Loupe is unsure of this shape, and says so rather than guessing.',
+};
 
 const DROPPABLE = /\.(txt|json|jose|jwe)$/i;
 
@@ -168,28 +302,7 @@ export function LinkInput({ onSubmit }: { onSubmit: (value: string) => void }): 
         </button>
       </div>
 
-      <p className="link-verdict" id="link-field-verdict" aria-live="polite">
-        {detected === undefined ? (
-          <span className="link-verdict-idle">
-            Paste a link, a payload, an <code>shc:/</code> string or JSON. A <code>.txt</code> or{' '}
-            <code>.json</code> file can be dropped here too.
-          </span>
-        ) : (
-          <>
-            <StatusIcon tone={toneForDetection(detected)} />
-            <strong className="link-verdict-label">{VARIANT_LABEL[detected.variant]}</strong>
-            <span className="link-verdict-detail">{detected.sentence}</span>
-            {detected.details.length > 0 ? (
-              <span className="link-verdict-facts">{detected.details.join(' · ')}</span>
-            ) : null}
-            {detected.kind !== 'shlink' && detected.kind !== 'unknown' ? (
-              <a className="link-verdict-elsewhere" href="#/offline">
-                This screen opens links. Run this one through Offline mode instead.
-              </a>
-            ) : null}
-          </>
-        )}
-      </p>
+      <DetectionPreview detected={detected} />
 
       {scanning ? (
         <QrScanner
@@ -201,5 +314,78 @@ export function LinkInput({ onSubmit }: { onSubmit: (value: string) => void }): 
         />
       ) : null}
     </form>
+  );
+}
+
+/**
+ * The preview under the field.
+ *
+ * It sits inside the masthead, so its height is a shared resource: every state
+ * has to fit the SAME box, or the whole page below jumps as somebody types. Two
+ * things hold it still, and both are in `screens.css` beside the reason: the
+ * block reserves the height of its tallest ordinary state, and the sentence is
+ * clamped to two lines. The full sentence stays in the DOM, so a screen reader
+ * reads all of it and the title attribute carries the identity clause that
+ * {@link consequenceSentence} drops.
+ */
+function DetectionPreview({ detected }: { detected: DetectedInput | undefined }): ReactNode {
+  if (detected === undefined) {
+    return (
+      <div className="detect" id="link-field-verdict" aria-live="polite" data-state="idle">
+        <p className="detect-idle">
+          Paste a SMART Health Link, a payload, an <code>shc:/</code> string or JSON. A{' '}
+          <code>.txt</code> or <code>.json</code> file can be dropped here, and a QR code can be
+          scanned with the camera. Nothing is requested until you press Open.
+        </p>
+      </div>
+    );
+  }
+
+  const tone = toneForDetection(detected);
+  const facts = detectionFacts(detected.details);
+  const elsewhere = detected.kind !== 'shlink' && detected.kind !== 'unknown';
+
+  return (
+    <div className="detect" id="link-field-verdict" aria-live="polite" data-state="detected">
+      <div className="detect-head">
+        <Chip tone={tone} title={CONFIDENCE_NOTE[detected.confidence]}>
+          <StatusIcon tone={tone} size={12} />
+          <span>{VARIANT_LABEL[detected.variant]}</span>
+          {/* The word, not the colour, carries the doubt. A tone alone would say
+              this to nobody who cannot see the difference between blue and
+              green. */}
+          {detected.confidence === 'certain' ? null : (
+            <span className="detect-confidence">{detected.confidence}</span>
+          )}
+        </Chip>
+        <p className="detect-next" title={detected.sentence}>
+          {consequenceSentence(detected.sentence)}
+        </p>
+      </div>
+
+      {facts.length > 0 ? (
+        <ul className="detect-facts">
+          {facts.map((fact, index) => (
+            <li className="detect-fact" key={`${fact.label ?? ''}-${index}`}>
+              {fact.label === undefined ? null : (
+                <span className="detect-fact-label">{fact.label}</span>
+              )}
+              {/* `is-token`, not the shared `.mono`: that utility carries its own
+                  font size, which is larger than this block's and would make one
+                  pill taller than its neighbours. */}
+              <span className={clsx('detect-fact-value', fact.mono && 'is-token')}>
+                {fact.value}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {elsewhere ? (
+        <a className="detect-elsewhere" href="#/offline">
+          This screen opens links. Run this one through Offline mode instead.
+        </a>
+      ) : null}
+    </div>
   );
 }

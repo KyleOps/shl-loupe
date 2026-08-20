@@ -109,44 +109,111 @@
   color: var(--fg-muted);
 }
 
-.tool-word {
-  font-size: 12px;
-}
-
 .masthead-tools .btn[aria-pressed='true'] {
   background: var(--accent-bg);
   color: var(--accent);
 }
 
+/* --------------------------------------------------------------------------
+   The section tabs
+   -------------------------------------------------------------------------- */
+
+/*
+ * These are the parts of the app, and they have to look like it.
+ *
+ * They were 13px muted links with a 2px underline, which the review read as a
+ * row of secondary utilities rather than as sections. So: a real tab strip,
+ * sitting on the masthead's bottom border so the active tab reads as attached to
+ * the page below it.
+ *
+ * One row that scrolls, never a wrapping one. The overflow itself comes from the
+ * shared `.scroll-x` utility on the element; `min-width: 0` is what makes it
+ * actually scroll, because this is a grid item and a grid item's automatic
+ * minimum size is its content, so without it the strip forces the whole masthead
+ * wider and the PAGE scrolls sideways instead of the nav.
+ */
 .masthead-nav {
   grid-area: nav;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: var(--space-2);
-  margin-top: var(--space-3);
-  overflow-x: auto;
+  margin-top: var(--space-2);
+  min-width: 0;
   scrollbar-width: none;
 }
 
-.masthead-nav a {
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 2px solid transparent;
+.masthead-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tab {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: var(--space-5) var(--space-6);
+  /* The rail is on every tab, transparent until it is the current one, so the
+     labels do not shift by its width when the section changes. It is
+     var(--rail-width) rather than a literal because it has to stay at least as
+     heavy as the masthead's own bottom hairline, which thickens with the text
+     size preference. */
+  border-bottom: var(--rail-width) solid transparent;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
   color: var(--fg-muted);
-  font-size: 13px;
-  font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.masthead-nav a:hover {
+.nav-tab:hover {
+  background: var(--bg-hover);
   color: var(--fg-default);
 }
 
-/* The current screen is marked by an underline AND a colour change, never by
-   colour alone. */
-.masthead-nav a[aria-current='page'] {
-  color: var(--fg-default);
+/*
+ * Scaled from the inherited body size rather than pinned in px, so the section
+ * names grow with the larger-text preference. A nav that stays 15px while the
+ * body goes to 19px is the one thing on the page that did not respond.
+ */
+.nav-tab-label {
+  font-size: 0.9375em; /* 15px at the 16px base. */
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+/*
+ * Hidden by default, and NOT hidden per tab in the markup: rendering only the
+ * current tab's blurb would change the strip's height every time you moved
+ * between sections. Shown from the width at which the widest blurb plus five
+ * labels still fits; below that the tooltip and the palette's Go actions carry
+ * the same sentence.
+ */
+.nav-tab-blurb {
+  display: none;
+  font-size: 0.75em; /* 12px at the 16px base. */
+  font-weight: 400;
+  color: var(--fg-subtle);
+}
+
+/*
+ * The current section is carried by four things at once, none of them colour
+ * alone: the accent rail, a raised surface, heavier and brighter type, and the
+ * blurb appearing. `aria-current` is what a screen reader gets, and it is on the
+ * link rather than on a wrapper so it lands on the thing that is activated.
+ */
+.nav-tab[aria-current='page'] {
+  background: var(--bg-raised);
   border-bottom-color: var(--accent);
+  color: var(--fg-default);
+}
+
+.nav-tab[aria-current='page'] .nav-tab-label {
+  font-weight: 650;
+}
+
+@media (min-width: 1080px) {
+  .nav-tab[aria-current='page'] .nav-tab-blurb {
+    display: block;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -260,7 +327,7 @@
    -------------------------------------------------------------------------- */
 
 .footer span {
-  max-width: 92ch;
+  max-width: var(--measure);
 }
 
 .footer nav a {
@@ -292,9 +359,10 @@
     max-width: none;
   }
 
-  /* The word is the first thing to go: the icon carries it. */
-  .tool-word {
-    display: none;
+  /* Tighter tabs, not smaller ones: the type stays legible and the strip
+     scrolls instead. */
+  .nav-tab {
+    padding: var(--space-4) var(--space-5);
   }
 }
 
@@ -341,7 +409,7 @@
 
 .insecure-notice p {
   margin: 0;
-  max-width: 92ch;
+  max-width: var(--measure);
   font-size: 14px;
   line-height: 22px;
 }

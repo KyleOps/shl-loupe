@@ -5,7 +5,7 @@
  * Three rules are enforced here rather than left to each caller:
  *
  *  - Status is never colour alone. A verdict carries a distinct icon silhouette
- *    and a word, so it survives both a colour-blind reader and a projector's
+ *    and a word, so it survives both a colour-blind reader and a washed-out
  *    colour cast (WCAG 1.4.1).
  *  - A copy button is in the DOM and focusable, never revealed on hover. Hover
  *    reveal is a trap for touch and screen readers, and it is also unusable when
@@ -332,9 +332,12 @@ export function FieldTable({
 
 /**
  * A value that must be shown but should not be readable over someone's
- * shoulder. Masked by default with an explicit reveal, and in projector mode the
- * caller is expected to require a second confirmation, because the audience is
- * looking at a decryption key.
+ * shoulder. Masked by default with an explicit reveal.
+ *
+ * Callers require a second confirmation before revealing, always. That used to be
+ * conditional on a "projector mode" setting, on the theory that only an audience
+ * made it matter; this tool gets used on borrowed laptops at shared tables, where
+ * a shoulder is as good as a projector, so the condition was wrong and is gone.
  */
 export function Secret({
   value,

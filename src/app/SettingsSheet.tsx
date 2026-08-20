@@ -283,10 +283,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }): ReactNode {
               <span className="setting-toggle-title">Larger text</span>
               <span className="setting-note">
                 Scales the type up, with thicker separators to match, for reading at a distance or
-                over somebody&rsquo;s shoulder. There is a quick toggle for it in the header too.
-                This used to be part of a wider &ldquo;projector mode&rdquo;; the rest of that mode
-                (a capped line length and lighter mid-greys) turned out to be better everywhere and
-                is simply how the app looks now.
+                over somebody&rsquo;s shoulder. There is a quick toggle in the header too.
               </span>
             </span>
           </label>

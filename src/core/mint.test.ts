@@ -160,6 +160,98 @@ describe('mintShl', () => {
     expect(result.run.findings.filter((f) => f.severity === 'fatal')).toEqual([]);
   });
 
+  it('refuses to mint a P link with no passcode, rather than minting an incoherent one', async () => {
+    // The whole point of the flag is that the server demands a secret. A link
+    // claiming P with no secret behind it tells every receiver to prompt for
+    // something that cannot match, and each attempt is charged for life.
+    await expect(
+      mintShl({
+        content: SAMPLE,
+        contentType: FHIR,
+        url: 'https://a.example.org/m',
+        flags: 'LP',
+      }),
+    ).rejects.toThrow(/P flag/);
+  });
+
+  it('refuses a passcode with no P flag, which nothing would ever send', async () => {
+    await expect(
+      mintShl({
+        content: SAMPLE,
+        contentType: FHIR,
+        url: 'https://a.example.org/m',
+        passcode: 'shibboleth',
+      }),
+    ).rejects.toThrow(/without the P flag/);
+  });
+
+  it('treats an empty passcode as none supplied rather than as a passcode', async () => {
+    await expect(
+      mintShl({
+        content: SAMPLE,
+        contentType: FHIR,
+        url: 'https://a.example.org/m',
+        flags: 'P',
+        passcode: '',
+      }),
+    ).rejects.toThrow(/P flag/);
+  });
+
+  it('carries a passcode as the request body a receiver sends, never as a manifest member', async () => {
+    const minted = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://shl.example.org/m/abc',
+      flags: 'LP',
+      passcode: 'gumnut-42',
+    });
+    expect(minted.payload.flag).toBe('LP');
+    expect(minted.passcode?.value).toBe('gumnut-42');
+    // Sent in the manifest POST body, under the member name the specification
+    // gives it, beside the recipient the receiver names itself with.
+    const body: unknown = JSON.parse(minted.passcode?.requestBody ?? '{}');
+    expect(body).toMatchObject({ passcode: 'gumnut-42' });
+    expect(Object.keys(body as object)).toContain('recipient');
+    // And nowhere in the served manifest, which has no such member: the server
+    // holds the passcode and serves this only once a request matched it.
+    expect(JSON.stringify(minted.manifest)).not.toContain('gumnut-42');
+    expect(JSON.stringify(minted.manifest)).not.toContain('passcode');
+  });
+
+  it('opens end to end when the passcode is supplied, so the artefacts agree', async () => {
+    const minted = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://shl.example.org/m/BOd6Y1sMxV0BThMOEmZjPUlQ',
+      flags: 'LP',
+      passcode: 'gumnut-42',
+    });
+    const result = await openShl({
+      input: minted.shlink,
+      viewer: HTTPS_VIEWER,
+      recipient: 'Loupe test suite',
+      transport: new OfflineTransport(new Map(Object.entries(minted.responses))),
+      passcode: minted.passcode?.value ?? '',
+    });
+    expect(result.outcome).toBe('opened');
+    expect(result.files[0]?.content).toEqual(SAMPLE);
+  });
+
+  it('reports a P link as having nowhere to put the passcode when U is also set', async () => {
+    const minted = await mintShl({
+      content: SAMPLE,
+      contentType: FHIR,
+      url: 'https://a.example.org/file',
+      flags: 'PU',
+      passcode: 'gumnut-42',
+    });
+    // A direct GET has no manifest request, so there is no body to carry it.
+    // The absence is the finding, and the sandbox says so on screen.
+    expect(minted.passcode?.value).toBe('gumnut-42');
+    expect(minted.passcode?.requestBody).toBeUndefined();
+    expect(minted.manifest).toBeUndefined();
+  });
+
   it('rejects a key that is not 32 bytes rather than encrypting with a coerced one', async () => {
     await expect(
       mintShl({

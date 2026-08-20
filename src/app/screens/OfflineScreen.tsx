@@ -1,11 +1,14 @@
 /**
  * Offline mode: the same pipeline, over content that arrived some other way.
  *
- * A browser frequently cannot reach a sharing server at all, either because the
- * server sends no CORS headers or because the host in the link only resolves on
- * the sender's own network. This screen runs the identical pipeline over content
- * you fetched some other way, with the network untouched from the first step to
- * the last.
+ * A browser frequently cannot reach a sharing server at all. The specification
+ * never mentions CORS, so plenty of perfectly conformant servers do not send the
+ * headers a browser needs before it will hand a response to a page; a manifest
+ * URL may name a host that only resolves on the sender's own network; a venue or
+ * corporate network may block it outright. In every one of those cases the link
+ * is fine and the browser is the wrong tool, so this screen runs the identical
+ * pipeline over bytes fetched some other way, with the network untouched from
+ * the first step to the last.
  *
  * The round trip is the whole feature. Loupe cannot make the request, so it
  * hands over the exact command that can and takes the output back: paste the
@@ -13,7 +16,16 @@
  * it printed into the manifest box. What comes out is the trace a live run would
  * have produced, minus the hops nobody could make.
  *
- * Three decisions worth knowing before changing anything here.
+ * Five decisions worth knowing before changing anything here.
+ *
+ * THE FLOW IS ON SCREEN, NOT INFERRED FROM A TEXTAREA. A reviewer looking at the
+ * running app could not tell what the screen was for, and the cause was that the
+ * sequence (copy, run, paste, read) existed only in the head of whoever built
+ * it. {@link guideSteps} makes it a numbered ladder and marks the step the user
+ * is on. It is derived from observable facts ONLY: whether a command exists,
+ * whether a box has content, whether a run happened. "Did you copy it?" and "did
+ * you run it?" are not observable, so no step claims to know them, and the
+ * evidence for the terminal round trip is the paste that comes back from it.
  *
  * THE DRAFT IS ITS OWN STORE. Everything typed here survives leaving the screen
  * and coming back, because the workflow leaves it by design: you go to a
@@ -34,6 +46,11 @@
  * results are gated on the run id this screen started. Rendering whatever run
  * happened to be in the store would attribute a live run's network hops to the
  * one screen that makes none.
+ *
+ * IT CAN BE HANDED A WHOLE JOB IN THE FRAGMENT. See
+ * {@link parseOfflineHandoff} for the contract, and for the trap that shape has
+ * to dodge: the router matches a bare `shlink:/` anywhere in the fragment and
+ * routes it to the Open screen, so a hand-off must percent-encode its values.
  */
 import {
   useCallback,
@@ -47,6 +64,7 @@ import {
 } from 'react';
 import { create } from 'zustand';
 import {
+  Check,
   ClipboardPaste,
   Eye,
   EyeOff,
@@ -108,6 +126,13 @@ export interface OfflineDraft {
   setJwks(jwks: string): void;
   /** Fill the box and ask the screen to open it. One `set`, so no render sees a stale pair. */
   stage(text: string): void;
+  /**
+   * Take a whole job from somewhere else: every box at once, from a hand-off in
+   * the fragment. It REPLACES all five boxes rather than merging, so what the
+   * screen shows is exactly what was handed over and never half of it beside a
+   * leftover from ten minutes ago.
+   */
+  receive(fields: OfflineHandoff): void;
   /** Take the staged flag, before opening, so a re-render cannot open it twice. */
   claim(): void;
   reset(): void;
@@ -126,9 +151,86 @@ export const useOfflineDraft = create<OfflineDraft>()((set) => ({
   setJwe: (jwe) => set({ jwe }),
   setJwks: (jwks) => set({ jwks }),
   stage: (text) => set({ text, staged: true }),
+  receive: (fields) =>
+    set({
+      text: fields.text,
+      key: fields.key,
+      manifest: fields.manifest,
+      jwe: fields.jwe,
+      jwks: fields.jwks,
+      staged: fields.open,
+    }),
   claim: () => set({ staged: false }),
   reset: () => set({ text: '', key: '', manifest: '', jwe: '', jwks: '', staged: false }),
 }));
+
+// ---------------------------------------------------------------------------
+// The hand-off contract
+// ---------------------------------------------------------------------------
+
+export interface OfflineHandoff {
+  /** The primary box: a link, a manifest, a JWE, a card, a bundle, curl output. */
+  text: string;
+  key: string;
+  manifest: string;
+  jwe: string;
+  jwks: string;
+  /** Run it on arrival, rather than only filling the boxes. */
+  open: boolean;
+}
+
+/**
+ * Read a hand-off out of the fragment.
+ *
+ * The contract, which anything wanting to open this screen pre-loaded should use:
+ *
+ *     #/offline?input=…&key=…&manifest=…&jwe=…&jwks=…&open=1
+ *
+ * `input` is the primary box (`link` is accepted as a synonym, because a caller
+ * handing over a minted link reaches for that word first). Every value is
+ * percent-encoded: build the query with `URLSearchParams`, or run each value
+ * through `encodeURIComponent`. `open=1` runs it on arrival; anything else, or
+ * absent, fills the boxes and waits for the button.
+ *
+ * Two traps, both of which the obvious version walks into.
+ *
+ * The values MUST be encoded. `parseHash` in the router matches `shlink:/…`
+ * anywhere in the fragment and treats the whole fragment as a link to open, so
+ * an unencoded link in this query never reaches this screen at all: it lands on
+ * the Open screen and tries to fetch. Encoding turns the colon into `%3A` and
+ * the pattern no longer matches.
+ *
+ * A manifest carries `application/fhir+json`, and `+` in a query string decodes
+ * as a space. `encodeURIComponent` and `URLSearchParams` both write it as `%2B`;
+ * hand-concatenating the query does not, and silently corrupts every content
+ * type in the paste.
+ *
+ * The fragment is never sent to a server, which is the same reason the rest of
+ * the app carries a link (key included) there rather than in the query string.
+ */
+export function parseOfflineHandoff(hash: string): OfflineHandoff | undefined {
+  const raw = hash.startsWith('#') ? hash.slice(1) : hash;
+  const mark = raw.indexOf('?');
+  if (mark === -1) return undefined;
+  const params = new URLSearchParams(raw.slice(mark + 1));
+  const fields: OfflineHandoff = {
+    text: (params.get('input') ?? params.get('link') ?? '').trim(),
+    key: (params.get('key') ?? '').trim(),
+    manifest: (params.get('manifest') ?? '').trim(),
+    jwe: (params.get('jwe') ?? '').trim(),
+    jwks: (params.get('jwks') ?? '').trim(),
+    open: params.get('open') === '1' || params.get('open') === 'true',
+  };
+  const carriesContent =
+    fields.text.length > 0 ||
+    fields.key.length > 0 ||
+    fields.manifest.length > 0 ||
+    fields.jwe.length > 0 ||
+    fields.jwks.length > 0;
+  // A bare `#/offline` and a query of unrelated members are both "no hand-off",
+  // so the boxes are left alone rather than being cleared by a navigation.
+  return carriesContent ? fields : undefined;
+}
 
 // ---------------------------------------------------------------------------
 // Pure logic
@@ -158,6 +260,63 @@ export const PLAN: Record<InputKind, string> = {
     'Say what it saw and stop, rather than guessing. The verdict above is the whole answer in that case.',
 };
 
+/**
+ * Everything this box accepts, with what each one still needs beside it.
+ *
+ * The screen takes six quite different things and a reader had no way to know
+ * that, so the list is on screen rather than in the placeholder. `matches` ties
+ * each row to the live detection, which is what stops the list and the verdict
+ * disagreeing about what was pasted. More than one row can match at once, and
+ * that is accurate: curl output holding a manifest really is both.
+ */
+export interface AcceptedInput {
+  id: string;
+  /** What you have, including whatever has to come with it. */
+  what: string;
+  /** One line: what Loupe does with it. */
+  does: string;
+  matches(detected: DetectedInput): boolean;
+}
+
+export const ACCEPTED_INPUTS: readonly AcceptedInput[] = [
+  {
+    id: 'shlink',
+    what: 'A SMART Health Link, plus the manifest you fetched for it',
+    does: "Every member of the payload is judged against the specification, then the manifest you paste is read and its files decrypted with the link's own key.",
+    matches: (detected) => detected.kind === 'shlink',
+  },
+  {
+    id: 'manifest',
+    what: "A manifest response, plus the link's key",
+    does: 'Everything embedded in it is decrypted, decompressed and identified. A file the manifest only located needs the encrypted-file box as well.',
+    matches: (detected) => detected.kind === 'manifest',
+  },
+  {
+    id: 'jwe',
+    what: 'One encrypted file, plus the key',
+    does: 'The protected header is checked, then the five-part JWE is decrypted on its own, with no manifest and no link in sight.',
+    matches: (detected) => detected.kind === 'jwe',
+  },
+  {
+    id: 'fhir',
+    what: 'An already-decrypted bundle or resource',
+    does: 'Nothing to decode and no key to supply: it is indexed and rendered.',
+    matches: (detected) => detected.kind === 'fhir',
+  },
+  {
+    id: 'shc',
+    what: 'A health card, plus the issuer key set if you have it',
+    does: 'shc:/ digits, a health-card file or a bare signed JWS. Without the key set the signature is reported as not checked, which is the honest answer rather than a failure.',
+    matches: (detected) => detected.kind === 'shc' || detected.kind === 'jws',
+  },
+  {
+    id: 'curl',
+    what: 'The raw output of curl, headers and all',
+    does: 'The status line and the headers a browser hid are reported, and the body is opened as whichever of the above it turns out to be.',
+    matches: (detected) => detected.httpResponse !== undefined,
+  },
+];
+
 /** Which extra boxes are worth showing, per detected kind. */
 export interface Needs {
   /** A manifest fetched by hand, which only a link can be short of. */
@@ -179,6 +338,130 @@ export function needsFor(kind: InputKind, empty: boolean): Needs {
     jwks: kind === 'shc' || kind === 'jws',
   };
 }
+
+// ---------------------------------------------------------------------------
+// The numbered flow
+// ---------------------------------------------------------------------------
+
+export type GuideState = 'done' | 'now' | 'todo';
+
+export interface GuideStep {
+  /** 1-based, and the number the marker shows. */
+  n: number;
+  title: string;
+  detail: string;
+  state: GuideState;
+}
+
+/**
+ * The facts the ladder is allowed to reason from. Every one of them is something
+ * the screen can actually see: no member here stands for "the user has probably
+ * done that by now".
+ */
+export interface GuideFacts {
+  /** The detector recognised something openable in the primary box. */
+  recognised: boolean;
+  /** The flow includes the terminal round trip: a link, or a box not filled in yet. */
+  viaTerminal: boolean;
+  /** A manifest URL is known, so there is a command to copy. */
+  hasCommand: boolean;
+  /** Something came back from the shell and was pasted in. */
+  handoffFilled: boolean;
+  /** The content cannot open without a decryption key. */
+  needsKey: boolean;
+  /** A key is to hand, whether typed or taken out of a pasted link. */
+  hasKey: boolean;
+  /** This screen has a run of its own. */
+  hasRun: boolean;
+}
+
+/**
+ * The sequence, as steps with a state each.
+ *
+ * Two shapes, because the terminal round trip is not part of every job: a bundle
+ * somebody already decrypted needs no command and no shell, and a ladder telling
+ * them to run one would be inventing work.
+ *
+ * "Now" is the earliest step with no evidence behind it. A later step that IS
+ * done still says so, rather than being relabelled "to do" to keep the ladder
+ * tidy: pasting a manifest before its link is a real order to work in, and the
+ * screen can see that it happened.
+ *
+ * Steps 2 and 3 of the terminal flow share their evidence, and that is the
+ * honest answer rather than a bug. Loupe cannot see a terminal. What it can see
+ * is the paste that only exists because somebody ran the command, so both steps
+ * complete on it, and while the box is empty step 2 is where you are and step 3
+ * is genuinely still ahead of you.
+ */
+export function guideSteps(facts: GuideFacts): GuideStep[] {
+  const planned: Array<{ title: string; detail: string; done: boolean }> = facts.viaTerminal
+    ? [
+        {
+          title: 'Copy the command',
+          detail:
+            'Put your link in the box below and Loupe fills the command in for you: the manifest URL, the POST body and the recipient, ready to run.',
+          done: facts.hasCommand,
+        },
+        {
+          title: 'Run it in a terminal',
+          detail:
+            'A shell has no CORS, no preflight and no page sandbox, so the request this tab is refused usually just works there.',
+          done: facts.handoffFilled,
+        },
+        {
+          title: 'Paste what came back',
+          detail:
+            'Into the manifest box, headers and all. Loupe splits the headers off and reports what the server said to the shell.',
+          done: facts.handoffFilled,
+        },
+      ]
+    : [
+        {
+          title: 'Paste what you have',
+          detail:
+            'A manifest, an encrypted file, a health card or an already-decrypted bundle. Loupe says what it thinks it is before anything runs.',
+          done: facts.recognised,
+        },
+        ...(facts.needsKey
+          ? [
+              {
+                title: 'Add the key from its link',
+                detail:
+                  'The key member of the SMART Health Link this content came from. It decrypts here in the tab and is sent nowhere.',
+                done: facts.hasKey,
+              },
+            ]
+          : []),
+      ];
+
+  planned.push({
+    title: 'Open it, and read the trace',
+    detail:
+      'The trace is the one a live run produces, minus the hops nobody could make from this tab.',
+    done: facts.hasRun,
+  });
+
+  const now = planned.findIndex((step) => !step.done);
+  return planned.map((step, index) => ({
+    n: index + 1,
+    title: step.title,
+    detail: step.detail,
+    state: step.done ? 'done' : index === now ? 'now' : 'todo',
+  }));
+}
+
+const GUIDE_STATE_WORD: Record<GuideState, string> = {
+  done: 'Done',
+  now: 'You are here',
+  todo: 'To do',
+};
+
+/** Done and current wear a tone; a step still ahead is dimmed by a text tier. */
+const GUIDE_TONE: Record<GuideState, string> = {
+  done: 'tone tone-pass',
+  now: 'tone tone-running',
+  todo: '',
+};
 
 export interface KeyResolution {
   /** The 43 characters to hand the pipeline, once a link has been peeled off. */
@@ -271,6 +554,7 @@ export function OfflineScreen(): ReactNode {
   const jwks = useOfflineDraft((state) => state.jwks);
   const staged = useOfflineDraft((state) => state.staged);
   const setText = useOfflineDraft((state) => state.setText);
+  const receive = useOfflineDraft((state) => state.receive);
   const claim = useOfflineDraft((state) => state.claim);
   const reset = useOfflineDraft((state) => state.reset);
 
@@ -298,6 +582,30 @@ export function OfflineScreen(): ReactNode {
   const keyResolution = useMemo(() => resolveKeyField(keyField), [keyField]);
   const needs = needsFor(detected.kind, detected.variant === 'empty');
   const ready = detected.content.trim().length > 0;
+
+  const steps = useMemo(
+    () =>
+      guideSteps({
+        recognised: detected.kind !== 'unknown' && detected.content.trim().length > 0,
+        viaTerminal: needs.manifest,
+        hasCommand: detected.link?.url !== undefined,
+        handoffFilled: manifest.trim().length > 0 || jwe.trim().length > 0,
+        needsKey: detected.needsKey,
+        hasKey: keyResolution.key !== undefined,
+        hasRun: ownRun !== undefined,
+      }),
+    [
+      detected.content,
+      detected.kind,
+      detected.link?.url,
+      detected.needsKey,
+      jwe,
+      keyResolution.key,
+      manifest,
+      needs.manifest,
+      ownRun,
+    ],
+  );
 
   const open = useCallback(async () => {
     const content = detected.content.trim();
@@ -328,7 +636,32 @@ export function OfflineScreen(): ReactNode {
   }, [complete, detected, jwe, jwks, keyResolution.key, manifest, progress, recipient]);
 
   /*
-   * A sample staged from the command palette opens on arrival.
+   * A hand-off in the fragment fills the boxes on arrival.
+   *
+   * Keyed on the whole hash rather than on a parsed member, so re-reading the
+   * same fragment (a re-render, a hashchange to the same value) cannot overwrite
+   * boxes the user has since edited, while a genuinely different hand-off does
+   * land. Navigating to a plain `#/offline` parses to nothing and is therefore
+   * not a hand-off, which is what keeps the nav link from wiping the draft.
+   */
+  const handedOff = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const apply = (): void => {
+      const hash = window.location.hash;
+      if (handedOff.current === hash) return;
+      const fields = parseOfflineHandoff(hash);
+      if (fields === undefined) return;
+      handedOff.current = hash;
+      receive(fields);
+    };
+    apply();
+    window.addEventListener('hashchange', apply);
+    return () => window.removeEventListener('hashchange', apply);
+  }, [receive]);
+
+  /*
+   * A sample staged from the command palette, or a hand-off asking to be run,
+   * opens on arrival.
    *
    * Opening it unasked is safe here in a way it is not on the Open screen: an
    * offline run issues no request and cannot spend one of the patient's counted
@@ -390,19 +723,37 @@ export function OfflineScreen(): ReactNode {
     if (dragged.length > 0) setText(dragged);
   };
 
+  // The handoff's "this needs a link first" callout offers the field rather than
+  // describing where it is. The box is one panel up, so this is a caret move
+  // rather than a scroll on most screens, which is exactly why it is a button
+  // and not a second link field: two fields for one value is how they drift.
+  const inputField = useRef<HTMLTextAreaElement | null>(null);
+  const focusInput = useCallback(() => {
+    inputField.current?.focus();
+    inputField.current?.scrollIntoView({ block: 'nearest' });
+  }, []);
+
   return (
     <div className="offline">
-      <section className="offline-lede">
-        <h1>Open what you already have, with nothing on the network.</h1>
+      <section className="offline-lede prose">
+        <h1>Open a link the browser cannot reach.</h1>
         <p>
-          A browser often cannot reach a sharing server at all: it sends no CORS headers, or its
-          host only resolves on the sender&rsquo;s own network. This screen runs the identical
-          pipeline over content you fetched some other way, and issues no request at any step.
+          The specification never mentions CORS, so plenty of conformant sharing servers do not send
+          the headers a browser needs before it will hand a response to a page, and plenty of
+          manifest URLs name a host that only resolves on the sender&rsquo;s own network or sits
+          behind a venue firewall.
+        </p>
+        <p>
+          In every one of those cases the link is fine and the browser is the wrong tool: fetch the
+          bytes some other way, bring them here, and the identical pipeline runs over them with no
+          network at all.
         </p>
         <p className="offline-lede-badge">
-          <WifiOff size={14} aria-hidden /> Everything below is decided from what you paste.
+          <WifiOff size={14} aria-hidden /> Nothing on this screen issues a request, at any step.
         </p>
       </section>
+
+      <Guide steps={steps} />
 
       <div className="offline-columns">
         <div className="offline-form">
@@ -460,6 +811,7 @@ export function OfflineScreen(): ReactNode {
               </label>
               <textarea
                 id="offline-text"
+                ref={inputField}
                 className="offline-textarea opaque-value"
                 spellCheck={false}
                 autoComplete="off"
@@ -476,10 +828,19 @@ export function OfflineScreen(): ReactNode {
             <Verdict detected={detected} />
           </Panel>
 
+          <Panel title="What you can paste here">
+            <Accepts detected={detected} />
+          </Panel>
+
           {detected.needsKey ? <KeyPanel resolution={keyResolution} /> : null}
 
           {needs.manifest || needs.jwe || needs.jwks ? (
-            <Handoff detected={detected} recipient={recipient} needs={needs} />
+            <Handoff
+              detected={detected}
+              recipient={recipient}
+              needs={needs}
+              onFocusInput={focusInput}
+            />
           ) : null}
 
           {error !== undefined ? (
@@ -509,18 +870,18 @@ export function OfflineScreen(): ReactNode {
 
         <div className="offline-results">
           {ownRun === undefined ? (
-            <Panel title="Result">
+            <Panel title="Result" actions={<Chip tone="info">{`Step ${steps.length}`}</Chip>}>
               <EmptyState icon={<WifiOff size={20} aria-hidden />} title="Nothing has run here yet">
                 <p>
-                  Paste something on the left and press Open. The trace that comes out is the same
-                  one a live run produces, minus the hops nobody could make from this tab.
+                  Work down the steps above and press Open. The trace that comes out is the same one
+                  a live run produces, minus the hops nobody could make from this tab.
                 </p>
               </EmptyState>
             </Panel>
           ) : (
             <>
               <VerdictBanner run={ownRun} />
-              <Panel title="Trace">
+              <Panel title="Trace" actions={<Chip tone="info">{`Step ${steps.length}`}</Chip>}>
                 <TraceList run={ownRun} />
               </Panel>
               <Panel
@@ -563,6 +924,65 @@ export function OfflineScreen(): ReactNode {
         </div>
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// The guide
+// ---------------------------------------------------------------------------
+
+/**
+ * The sequence, on screen.
+ *
+ * An ordered list, so the numbering is real to a screen reader rather than
+ * painted on, and the step in progress carries `aria-current="step"`. The state
+ * is never colour alone: a done step's marker is a tick where the others are a
+ * digit, and both done and current say so in a word.
+ */
+function Guide({ steps }: { steps: readonly GuideStep[] }): ReactNode {
+  return (
+    <ol className="offline-guide" aria-label="How this screen is used">
+      {steps.map((step) => (
+        <li
+          key={step.n}
+          className={clsx('offline-guide-step', `is-${step.state}`)}
+          aria-current={step.state === 'now' ? 'step' : undefined}
+        >
+          <span className={clsx('offline-guide-marker', GUIDE_TONE[step.state])} aria-hidden>
+            {step.state === 'done' ? <Check size={14} strokeWidth={2.5} /> : step.n}
+          </span>
+          <span className="offline-guide-body">
+            <span className="offline-guide-title">
+              {step.title}
+              {step.state === 'todo' ? null : (
+                <span className="offline-guide-state">{GUIDE_STATE_WORD[step.state]}</span>
+              )}
+            </span>
+            <span className="offline-guide-detail">{step.detail}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** What the box takes, and which row the live detection landed on. */
+function Accepts({ detected }: { detected: DetectedInput }): ReactNode {
+  return (
+    <dl className="offline-accepts">
+      {ACCEPTED_INPUTS.map((row) => {
+        const current = row.matches(detected);
+        return (
+          <div key={row.id} className={clsx('offline-accepts-row', current && 'is-current')}>
+            <dt>
+              <span>{row.what}</span>
+              {current ? <Chip tone="info">Detected</Chip> : null}
+            </dt>
+            <dd>{row.does}</dd>
+          </div>
+        );
+      })}
+    </dl>
   );
 }
 
@@ -690,10 +1110,12 @@ function Handoff({
   detected,
   recipient,
   needs,
+  onFocusInput,
 }: {
   detected: DetectedInput;
   recipient: string;
   needs: Needs;
+  onFocusInput: () => void;
 }): ReactNode {
   const manifest = useOfflineDraft((state) => state.manifest);
   const setManifest = useOfflineDraft((state) => state.setManifest);
@@ -702,9 +1124,19 @@ function Handoff({
   const jwks = useOfflineDraft((state) => state.jwks);
   const setJwks = useOfflineDraft((state) => state.setJwks);
   const url = detected.link?.url;
+  // Only a link that resolved a URL has a command, so the two notes below hang
+  // off that rather than off the flag alone: reassuring somebody that a command
+  // carries no passcode before any command exists reads as noise.
+  const passcodeFlagged = url !== undefined && (detected.link?.flag ?? '').includes('P');
 
   return (
-    <Panel title="Fetched by hand">
+    <Panel
+      title="Fetched by hand"
+      // Numbered only for the flow that has those steps: a manifest paste shows
+      // this panel for its located files, and calling that "steps 1 to 3" would
+      // put a terminal round trip in front of somebody who needs none.
+      actions={needs.manifest ? <Chip tone="info">Steps 1 to 3</Chip> : undefined}
+    >
       {needs.manifest ? (
         <div className="offline-handoff">
           <p className="offline-handoff-lede">
@@ -714,14 +1146,19 @@ function Handoff({
           </p>
           {url === undefined ? (
             <Callout tone="info" title="The command needs the link first.">
-              Paste the link into the box above and the exact command appears here, with its URL and
-              recipient already filled in.
+              <p className="offline-handoff-callout">
+                Put the link in the box above and the exact command appears here, with its URL and
+                recipient already filled in.
+              </p>
+              <Button size="sm" onClick={onFocusInput}>
+                <span>Put the cursor in that box</span>
+              </Button>
             </Callout>
           ) : (
             <CodeBlock language="bash">{curlForOfflineHandoff({ url, recipient })}</CodeBlock>
           )}
 
-          {url !== undefined && (detected.link?.flag ?? '').includes('P') ? (
+          {passcodeFlagged ? (
             <Callout tone="warn" title="This link needs a passcode.">
               The <code>P</code> flag means the server rejects a manifest request that carries none,
               so add <code>&quot;passcode&quot;:&quot;…&quot;</code> to the JSON after{' '}
@@ -729,6 +1166,14 @@ function Handoff({
               is counted for the life of the link, and enough of them disable it for the patient
               permanently.
             </Callout>
+          ) : null}
+
+          {url !== undefined && !passcodeFlagged ? (
+            <p className="offline-field-note">
+              The command carries no key and no passcode, so it is safe to paste into a group chat:
+              a key decrypts the files rather than granting access, and Loupe never puts one in a
+              command.
+            </p>
           ) : null}
           <Field
             id="offline-manifest"

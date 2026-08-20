@@ -212,18 +212,44 @@ test.describe('modes', () => {
 });
 
 test.describe('reflow', () => {
-  // WCAG 1.4.10: content usable at 400% zoom on a 1280px viewport, which is a
-  // 320px CSS viewport, with no two-dimensional scrolling.
-  for (const width of [1440, 1100, 900, 700, 390, 320]) {
-    test(`never scrolls the page sideways at ${width}px`, async ({ page }) => {
-      await page.setViewportSize({ width, height: 900 });
-      await page.goto(`/#${LOOPBACK_LINK}`);
-      await expect(page.locator('.verdict')).toBeVisible();
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      );
-      expect(overflow, 'wide content scrolls inside its own container').toBeLessThanOrEqual(1);
-    });
+  /*
+   * WCAG 1.4.10: usable at 400% zoom on a 1280px viewport, which is a 320px CSS
+   * viewport, with no two-dimensional scrolling.
+   *
+   * Every screen, not just the home screen. The first version of this test
+   * loaded the home screen at each width, which is why two real overflows
+   * survived it: the Learn screen's contents list ran 240px past the viewport at
+   * 320px and the Sandbox verdict row ran 171px past. A reflow test that only
+   * visits one screen is a reflow test for one screen.
+   */
+  const screens: Array<[string, string]> = [
+    ['home', ''],
+    ['a diagnosed link', `#${LOOPBACK_LINK}`],
+    ['offline', '#/offline'],
+    ['sandbox', '#/sandbox'],
+    ['learn', '#/learn'],
+    ['checks', '#/rules'],
+    ['about', '#/about'],
+  ];
+
+  for (const [label, path] of screens) {
+    for (const width of [1560, 900, 390, 320]) {
+      test(`${label} does not scroll sideways at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(`/${path}`);
+        await expect(page.locator('main')).not.toBeEmpty();
+        // Let fonts settle: Geist swapping in widens content, and a measurement
+        // taken against the fallback metrics reports an overflow that is not there
+        // (or misses one that is).
+        await page.evaluate(() => document.fonts.ready);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        );
+        expect(overflow, 'wide content must scroll inside its own container').toBeLessThanOrEqual(
+          1,
+        );
+      });
+    }
   }
 });
 
