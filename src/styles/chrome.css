@@ -51,7 +51,14 @@
   transition: transform var(--motion-state) var(--motion-ease);
 }
 
-.skip-link:focus-visible {
+/*
+ * `:focus`, not `:focus-visible`. A skip link is reachable by nothing except the
+ * keyboard, so the two are equivalent in intent, and `:focus` is the one every
+ * engine agrees on. Relying on `:focus-visible` here left the link off screen
+ * when it had focus, which is worse than not having one: the first tab stop went
+ * somewhere invisible.
+ */
+.skip-link:focus {
   transform: translateY(0);
 }
 

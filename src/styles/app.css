@@ -418,16 +418,33 @@ table.fields.is-dense td {
   top: var(--space-3);
   right: var(--space-3);
   z-index: 1;
+  /* Opaque, because it floats over content. A ghost button here let a long
+     shlink scroll underneath it and show through the label, which read as
+     overlapping glyphs rather than as a button over text. */
+  background: var(--bg-inset);
+  border-radius: var(--radius-control);
 }
 
 .code-block pre {
   margin: 0;
-  padding: var(--space-5);
+  /* Right padding clears the floating copy button, so a long value ends before
+     it rather than running under it. */
+  padding: var(--space-5) var(--space-11) var(--space-5) var(--space-5);
   overflow: auto;
 }
 
+/*
+ * Wrap, do not scroll sideways.
+ *
+ * `pre` preserves the line breaks an author wrote (a curl command spans several
+ * lines and means it), and `anywhere` lets a single enormous token, which is
+ * what a shlink or a JWE is, break so the whole of it is visible. The
+ * alternative is a horizontal scrollbar hiding the end of a value the reader
+ * has to check, or worse an ellipsis that makes a truncated key look complete.
+ */
 .code-block code {
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .secret {
