@@ -37,6 +37,7 @@ import {
   curlForManifest,
   curlForPreflight,
   manifestBody,
+  powershellForManifest,
 } from './net/curl';
 import {
   BrowserTransport,
@@ -451,6 +452,14 @@ async function fetchManifest(
         'Check the preflight the browser sends first',
         'bash',
         curlForPreflight(link.url, options.viewer.origin),
+      );
+      // The same request for Windows. There are always several Windows laptops at
+      // an event, and telling somebody to "just run the curl" when their shell
+      // has no curl is how a diagnosis stops being actionable.
+      step.command(
+        'The same request in PowerShell',
+        'powershell',
+        powershellForManifest({ url: link.url, recipient: options.recipient }),
       );
       recorder.markNetworkUsed();
 

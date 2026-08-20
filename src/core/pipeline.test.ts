@@ -346,6 +346,24 @@ describe('server behaviour', () => {
 });
 
 describe('the network failure differential', () => {
+  it('offers the request for a shell that has no curl', async () => {
+    // There are always several Windows laptops at an event, and telling somebody
+    // to "just run the curl" when their shell has no curl ends the diagnosis.
+    const result = await openShl({
+      ...base,
+      input: encodeShlink({ url: 'https://sharing.example.org/manifest', key: key() }),
+      transport: OfflineTransport.withBodies({
+        'https://sharing.example.org/manifest': JSON.stringify({ files: [] }),
+      }),
+    });
+    const step = result.run.steps.find((s) => s.kind === 'net.manifest');
+    const shells = (step?.evidence ?? [])
+      .filter((e) => e.type === 'command')
+      .map((e) => (e.type === 'command' ? e.shell : ''));
+    expect(shells).toContain('bash');
+    expect(shells).toContain('powershell');
+  });
+
   it('ranks CORS first for a public host and keeps the browser message verbatim', async () => {
     const { NetworkFailure } = await import('./net/transport');
     const transport: Transport = {

@@ -11,7 +11,6 @@
  * decrypts the files, it is not an access credential), so a copied command is
  * safe to paste into a group chat, and Loupe says so.
  */
-import type { ShlLink } from '../shlink';
 
 export interface ManifestRequestShape {
   url: string;
@@ -96,16 +95,4 @@ export function corsRequirementsFor(origin: string): Array<{ header: string; val
     { header: 'Access-Control-Allow-Headers', value: 'content-type' },
     { header: 'Access-Control-Max-Age', value: '600 (optional, avoids a preflight per request)' },
   ];
-}
-
-/** Everything a sender needs to reproduce the failure outside a browser. */
-export function reproductionBundle(link: ShlLink, recipient: string, viewerOrigin: string): string {
-  const shape: ManifestRequestShape = { url: link.url, recipient };
-  return [
-    '# 1. Does the server answer the browser preflight?',
-    curlForPreflight(link.url, viewerOrigin),
-    '',
-    '# 2. Does the manifest request itself work outside a browser?',
-    curlForManifest(shape),
-  ].join('\n');
 }
