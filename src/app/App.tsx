@@ -20,7 +20,7 @@ import { InsecureContextNotice, readSecureContext } from './InsecureContextNotic
 /*
  * Every screen but Open is loaded on demand.
  *
- * Open is what a link opens to, so it ships in the first chunk. The other seven
+ * Open is what a link opens to, so it ships in the first chunk. The other six
  * are a teaching guide, a minting sandbox, a conformance runner and a spec
  * index, and between them they were most of a one-megabyte bundle that somebody
  * at an event downloads over venue wifi before they can look at their link. The
