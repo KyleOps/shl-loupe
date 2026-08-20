@@ -1,0 +1,31 @@
+# The build context is the repo root (the Dockerfile needs package.json, src/ and
+# index.html), so everything the image does not need is excluded here rather than
+# being sent to the daemon and then ignored.
+
+# Reinstalled from the lockfile inside the build stage. Sending a local
+# node_modules also risks shipping a platform-wrong native binary into a
+# linux/amd64 image.
+node_modules
+**/node_modules
+
+# Build output, regenerated in the build stage.
+dist
+coverage
+
+# Research notes: about 400 kB of markdown that no layer reads.
+research
+
+# Deployment and repo metadata. The Dockerfile itself is passed with -f, so it
+# does not need to be in the context.
+.git
+.github
+deploy
+*.md
+!README.md
+
+# Editor and OS noise.
+.DS_Store
+.vscode
+.idea
+.vite
+*.local
