@@ -7,22 +7,52 @@
  * that arrived in the fragment, guarded so React's development double-invoke
  * cannot spend two of somebody's attempts on one guess.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { openShl } from '../core/pipeline';
 import { viewerOriginFromLocation } from '../core/diagnose/context';
 import { parseHash, SCREENS, navigate, hashForLink, type Route } from './router';
 import { useSession, useSettings } from './store';
 import { Header } from './Header';
 import { OpenScreen } from './screens/OpenScreen';
-import { OfflineScreen } from './screens/OfflineScreen';
-import { SandboxScreen } from './screens/SandboxScreen';
-import { LearnScreen } from './screens/LearnScreen';
-import { RulesScreen } from './screens/RulesScreen';
-import { VectorsScreen } from './screens/VectorsScreen';
-import { AboutScreen } from './screens/AboutScreen';
-import { SettingsScreen } from './screens/SettingsScreen';
 import { CommandPalette } from './CommandPalette';
 import { InsecureContextNotice, readSecureContext } from './InsecureContextNotice';
+
+/*
+ * Every screen but Open is loaded on demand.
+ *
+ * Open is what a link opens to, so it ships in the first chunk. The other seven
+ * are a teaching guide, a minting sandbox, a conformance runner and a spec
+ * index, and between them they were most of a one-megabyte bundle that somebody
+ * at an event downloads over venue wifi before they can look at their link. The
+ * ones they never visit should not be in the way of the one they came for.
+ *
+ * The fallback is `null` rather than a spinner, for two reasons. A local chunk
+ * arrives in a frame or two, so a spinner would be a flash of furniture rather
+ * than information. And it keeps the browser tests honest: they wait for `main`
+ * to stop being empty, which with a spinner would be satisfied by the spinner,
+ * and every measurement after it would be of the wrong thing.
+ */
+const OfflineScreen = lazy(async () => ({
+  default: (await import('./screens/OfflineScreen')).OfflineScreen,
+}));
+const SandboxScreen = lazy(async () => ({
+  default: (await import('./screens/SandboxScreen')).SandboxScreen,
+}));
+const VectorsScreen = lazy(async () => ({
+  default: (await import('./screens/VectorsScreen')).VectorsScreen,
+}));
+const LearnScreen = lazy(async () => ({
+  default: (await import('./screens/LearnScreen')).LearnScreen,
+}));
+const RulesScreen = lazy(async () => ({
+  default: (await import('./screens/RulesScreen')).RulesScreen,
+}));
+const AboutScreen = lazy(async () => ({
+  default: (await import('./screens/AboutScreen')).AboutScreen,
+}));
+const SettingsScreen = lazy(async () => ({
+  default: (await import('./screens/SettingsScreen')).SettingsScreen,
+}));
 
 export function App(): React.ReactNode {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash));
@@ -83,13 +113,15 @@ export function App(): React.ReactNode {
       <main id="main" className="main">
         <InsecureContextNotice state={secureContext} />
         {route.screen === 'open' && <OpenScreen onRun={run} />}
-        {route.screen === 'offline' && <OfflineScreen />}
-        {route.screen === 'sandbox' && <SandboxScreen />}
-        {route.screen === 'vectors' && <VectorsScreen />}
-        {route.screen === 'learn' && <LearnScreen />}
-        {route.screen === 'rules' && <RulesScreen />}
-        {route.screen === 'about' && <AboutScreen />}
-        {route.screen === 'settings' && <SettingsScreen />}
+        <Suspense fallback={null}>
+          {route.screen === 'offline' && <OfflineScreen />}
+          {route.screen === 'sandbox' && <SandboxScreen />}
+          {route.screen === 'vectors' && <VectorsScreen />}
+          {route.screen === 'learn' && <LearnScreen />}
+          {route.screen === 'rules' && <RulesScreen />}
+          {route.screen === 'about' && <AboutScreen />}
+          {route.screen === 'settings' && <SettingsScreen />}
+        </Suspense>
       </main>
       <footer className="footer">
         <span>

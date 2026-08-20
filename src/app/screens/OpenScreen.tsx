@@ -14,7 +14,7 @@
  * of the finished result, so the pane is populated from the first step onwards
  * instead of staying blank for the fifteen seconds a slow manifest takes.
  */
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { clsx } from 'clsx';
 import {
   ArrowRight,
@@ -47,7 +47,18 @@ import { VariantBadge } from '../../ui/VariantBadge';
 import { ProfileChecks } from '../../ui/ProfileChecks';
 import type { VariantIdentification } from '../../core/variants';
 import type { ProfileConformance } from '../../core/profiles';
-import { PayloadView } from '../../ui/fhir';
+/*
+ * The FHIR renderers are loaded when something has actually opened.
+ *
+ * They are the largest thing in the app, they render exactly one thing (a
+ * payload), and nothing can be rendered until a fetch and a decryption have both
+ * finished, which is orders of magnitude slower than fetching a local chunk. So
+ * shipping them in the first bundle only delays the trace, which is the screen a
+ * failing link needs.
+ */
+const PayloadView = lazy(async () => ({
+  default: (await import('../../ui/fhir')).PayloadView,
+}));
 import type { Runner } from '../App';
 import { PasscodePrompt } from '../PasscodePrompt';
 import { navigate, parseHash } from '../router';
@@ -361,7 +372,9 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
       }
     >
       {file !== undefined && file.content !== undefined ? (
-        <PayloadView file={file} />
+        <Suspense fallback={<p className="pane-waiting">Rendering the payload…</p>}>
+          <PayloadView file={file} />
+        </Suspense>
       ) : (
         <NoPayload run={run} running={running} file={file} onRun={onRun} />
       )}

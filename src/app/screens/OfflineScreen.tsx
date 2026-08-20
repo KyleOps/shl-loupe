@@ -53,6 +53,8 @@
  * routes it to the Open screen, so a hand-off must percent-encode its values.
  */
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -94,7 +96,13 @@ import {
   type FieldRow,
 } from '../../ui/primitives';
 import { TraceList, VerdictBanner } from '../../ui/trace';
-import { PayloadView } from '../../ui/fhir';
+/* Lazy for the same reason as on the Open screen, and lazy in BOTH places on
+   purpose: a module that one lazy chunk imports statically gets hoisted back
+   into the entry, so splitting it in one screen and not the other made the first
+   download bigger rather than smaller (742 kB to 788 kB, measured). */
+const PayloadView = lazy(async () => ({
+  default: (await import('../../ui/fhir')).PayloadView,
+}));
 import { toneForDetection, VARIANT_LABEL } from '../LinkInput';
 import { useSession, useSettings } from '../store';
 
@@ -904,7 +912,9 @@ export function OfflineScreen(): ReactNode {
                 }
               >
                 {file !== undefined && file.content !== undefined ? (
-                  <PayloadView file={file} />
+                  <Suspense fallback={<p className="pane-waiting">Rendering the payload…</p>}>
+                    <PayloadView file={file} />
+                  </Suspense>
                 ) : (
                   <EmptyState title={running ? 'Still working' : 'No file opened'}>
                     <p>
