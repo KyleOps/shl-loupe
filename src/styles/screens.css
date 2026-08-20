@@ -55,8 +55,6 @@
    * captions, fact lists) goes smaller. A 14px paragraph in a card sized for 16px
    * stops 100px short of the border, which is the same defect one scale down.
    */
-  --card-max: calc(var(--measure) + var(--space-6) * 2);
-  --figure-max: calc(var(--card-max) + var(--space-12) * 2);
   --toc-width: 220px;
 
   display: flex;
@@ -110,6 +108,13 @@
 .rules-lede,
 .about-lede {
   margin: 0;
+  /*
+   * Deliberately narrower than the body, and deliberately left short of its
+   * container: a standfirst is meant to be a tighter column than the prose under
+   * it. This is the one place where text ending before its container does NOT
+   * mean the width was forgotten, so it is called out rather than left to look
+   * like the defect it resembles.
+   */
   max-width: var(--measure-tight);
   color: var(--fg-muted);
   font-size: 1.0625em;
@@ -233,7 +238,6 @@
    different places is the whole complaint this file is answering. */
 .learn-section-lede {
   margin: 0;
-  max-width: var(--measure);
   color: var(--fg-muted);
   line-height: 1.55;
 }
@@ -276,7 +280,6 @@
  */
 .learn-note,
 .learn-checklist p,
-.anatomy-part p,
 .rules-group-blurb,
 .rules-varies,
 .about-links li,
@@ -289,7 +292,6 @@
    example rather than as another row of the list that lost its label. */
 .learn-note {
   margin: var(--space-5) 0 0;
-  max-width: var(--measure);
   line-height: 1.5;
   color: var(--fg-muted);
 }
@@ -648,6 +650,9 @@
 }
 
 .anatomy-part {
+  /* Sized from the measure so a base-size paragraph ends exactly at the inner
+     edge, rather than stopping short of a card that was wider than its text. */
+  max-width: var(--card-max);
   padding: var(--space-5) var(--space-6);
   background: var(--bg-surface);
   border: var(--hairline-width) solid var(--border-hairline);
@@ -1168,7 +1173,6 @@
 
 .rules-group-blurb {
   margin: 0;
-  max-width: var(--measure);
   line-height: 1.5;
   color: var(--fg-muted);
 }
@@ -1619,7 +1623,20 @@
    What somebody sees before they have pasted anything, and the one way back to
    it once they have. */
 
+/*
+ * A screen that is mostly reading is narrowed and centred, so the leftover width
+ * sits on both sides as layout instead of trailing off to the right of every
+ * paragraph. That trailing edge is the defect the review reported: capping the
+ * PARAGRAPH inside a container three times its width makes the text look cut
+ * short, because nothing on the row agrees about where a line stops.
+ *
+ * --figure-max rather than --card-max, because the card grids on this screen want
+ * three across, and at this width a paragraph fills about four fifths of the
+ * column, which reads as a column rather than as a truncation.
+ */
 .idle {
+  max-width: var(--figure-max);
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-9);
@@ -1628,7 +1645,6 @@
 
 .idle-lede h1 {
   margin: 0 0 var(--space-5);
-  max-width: var(--measure);
   font-size: 28px;
   line-height: 36px;
   letter-spacing: -0.015em;
@@ -1855,7 +1871,6 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  max-width: var(--measure);
 }
 
 .idle-offline > svg {

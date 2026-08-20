@@ -112,6 +112,30 @@
   --content-max: 1560px;
   --measure: 74ch;
   --measure-tight: 62ch;
+
+  /*
+   * Container widths, both derived from --measure so the design still holds one
+   * number rather than three. Promoted here from the About screen, which was the
+   * only screen that had solved this: every other one capped the PARAGRAPH and
+   * left the container wide, which is the defect itself. A paragraph adrift in a
+   * box, with nothing on the row agreeing where the line stops, reads as text
+   * that has been cut short.
+   *
+   * --card-max is the measure plus a card's own horizontal padding, so a
+   * paragraph ends exactly at the card's inner edge.
+   *
+   * --figure-max is the widest a table, a code block or a card grid gets, and it
+   * is deliberately wider than a card so a figure reads as an interruption of the
+   * column rather than as one more card in it.
+   *
+   * The trap in both: --measure is in `ch`, so it resolves against the font size
+   * of the element that USES it. A card sized from it fits text at the base size
+   * only, which is why the main sentence of a card is base size and only
+   * genuinely secondary text goes smaller. A 14px paragraph in a card sized for
+   * 16px stops short of the border, which is the same defect one scale down.
+   */
+  --card-max: calc(var(--measure) + var(--space-6) * 2);
+  --figure-max: calc(var(--card-max) + var(--space-12) * 2);
   /* A centred caption under an icon, in an empty state or a camera overlay. A
      short line is right there: the eye is not reading a column, it is reading a
      label, and 74 characters centred looks like a mistake. */
@@ -262,23 +286,20 @@ a {
 }
 
 /*
- * One measure for prose, applied by class.
+ * `.prose` marks a block of reading text. It does NOT set a width.
  *
- * Screens were each choosing their own max-width, which is why a paragraph
- * wrapped at an arbitrary point inside a much wider panel and read as a hard
- * line limit rather than as a column. `.prose` is the single answer, and
- * `.prose-tight` is for a narrow column beside something else.
+ * It used to, and that was the defect: a paragraph capped at the measure inside a
+ * container three times as wide reads as text that has been cut short, because
+ * nothing on the row agrees about where a line stops. Worse, `ch` resolves
+ * against the element's own font size, so a note set below the base size stopped
+ * well short even of a container that HAD been sized from the measure.
+ *
+ * The measure now lives on containers (--card-max, --figure-max, and the screen
+ * roots), and text fills the room it is given. One number, one place, and the
+ * container's edge and the text's edge are the same edge.
  */
-.prose,
-.prose > p,
-.prose > ul,
-.prose > ol {
-  max-width: var(--measure);
-}
-
-.prose-tight,
-.prose-tight > p {
-  max-width: var(--measure-tight);
+.prose > * + * {
+  margin-top: var(--space-5);
 }
 
 /* Wide content scrolls inside its own container. The page never scrolls

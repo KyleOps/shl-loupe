@@ -26,7 +26,6 @@
   font-size: 13.5px;
   line-height: 21px;
   color: var(--fg-muted);
-  max-width: var(--measure);
 }
 
 .shc-note {
@@ -34,7 +33,6 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--fg-muted);
-  max-width: var(--measure);
 }
 
 .shc-note code {
@@ -131,7 +129,6 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--fg-muted);
-  max-width: var(--measure);
   /* The URL in this sentence is long and must wrap rather than push the pane
      sideways. */
   overflow-wrap: anywhere;
@@ -242,7 +239,6 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--fg-muted);
-  max-width: var(--measure);
 }
 
 .shc-option-lede svg {
@@ -280,7 +276,6 @@
   font-size: 12.5px;
   line-height: 19px;
   color: var(--fg-muted);
-  max-width: var(--measure);
 }
 
 .shc-option-url {

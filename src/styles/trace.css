@@ -430,7 +430,6 @@ ol.trace-children {
 
 .step-summary {
   margin: 0;
-  max-width: var(--measure);
   color: var(--fg-default);
   font-size: 14px;
 }
@@ -497,7 +496,6 @@ ol.trace-children {
 
 .evidence-note p {
   margin: 0;
-  max-width: var(--measure);
   color: var(--fg-default);
   font-size: 14px;
 }
@@ -530,7 +528,6 @@ ol.trace-children {
 
 .wire-note {
   margin: 0;
-  max-width: var(--measure);
   color: var(--fg-muted);
   font-size: 12.5px;
   line-height: 19px;

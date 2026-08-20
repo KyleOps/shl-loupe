@@ -11,7 +11,13 @@
  * room to be read rather than being squeezed under a control in a sheet.
  */
 
+/*
+ * Pure text and controls, so this takes the tighter container: --card-max sizes a
+ * card so a paragraph ends exactly at its inner edge.
+ */
 .settings {
+  max-width: var(--card-max);
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
@@ -80,7 +86,6 @@
  */
 .setting-note {
   margin: 0;
-  max-width: var(--measure);
   font-size: 13.5px;
   line-height: 21px;
   color: var(--fg-muted);

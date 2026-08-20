@@ -436,3 +436,86 @@ test.describe('the masthead is the same height on every screen', () => {
     expect(await page.locator('header .settings').count()).toBe(0);
   });
 });
+
+test.describe('no paragraph is cut short inside a wider box', () => {
+  /*
+   * The defect this guards, in the maintainer's words: "a lot of textboxes look
+   * weird and seem to be cut short to a new line".
+   *
+   * The cause was a rule I had written and applied backwards. A measure belongs to
+   * a CONTAINER: cap the container, and let the text fill it, so the text's edge
+   * and the container's edge are the same edge. Capping the PARAGRAPH instead
+   * leaves it short of a box three times its width, and the reader sees
+   * truncation rather than a column. It was guaranteed to happen wherever the
+   * text was set below the base size, because `ch` resolves against the element's
+   * own font size, so a 14px note capped at 74ch stops well inside a card that
+   * was sized for 16px.
+   *
+   * The check is the audit that found it: any long block of text filling less than
+   * four fifths of the room it is given, with more than 120px going spare.
+   *
+   * Two exclusions, both deliberate rather than convenient:
+   *  - A standfirst (`.learn-lede`, `.rules-lede`, `.about-lede`) is MEANT to be a
+   *    tighter column than the prose beneath it. It is the one case where ending
+   *    early is a choice.
+   *  - A grid or flex item is sized by its track, not by its parent's box, so
+   *    comparing the two measures nothing.
+   */
+  const screens: Array<[string, string]> = [
+    ['home', ''],
+    ['a diagnosed link', `#${LOOPBACK_LINK}`],
+    ['an opened link', `#${WORKING_LINK}`],
+    ['offline', '#/offline'],
+    ['sandbox', '#/sandbox'],
+    ['learn', '#/learn'],
+    ['checks', '#/rules'],
+    ['about', '#/about'],
+    ['settings', '#/settings'],
+  ];
+
+  for (const [label, path] of screens) {
+    test(`${label} fills the width it is given`, async ({ page }) => {
+      // Wide on purpose: the defect is invisible at laptop widths and glaring on a
+      // large display, which is where it was reported from.
+      await page.setViewportSize({ width: 1800, height: 1000 });
+      await page.goto(`/${path}`);
+      await expect(page.locator('main')).not.toBeEmpty();
+      await page.evaluate(() => document.fonts.ready);
+      if (path.startsWith('#shlink')) {
+        await expect(page.locator('.verdict')).toBeVisible({ timeout: 20_000 });
+      }
+
+      const short = await page.evaluate(() => {
+        const STANDFIRST = ['learn-lede', 'rules-lede', 'about-lede'];
+        const out: string[] = [];
+        for (const el of document.querySelectorAll<HTMLElement>(
+          'main p, main dd, main .setting-note',
+        )) {
+          if ((el.textContent ?? '').trim().length < 120) continue;
+          if (STANDFIRST.some((name) => el.classList.contains(name))) continue;
+          const parent = el.parentElement;
+          if (!parent) continue;
+          const laidOutByTrack = ['grid', 'inline-grid', 'flex', 'inline-flex'].includes(
+            getComputedStyle(parent).display,
+          );
+          if (laidOutByTrack) continue;
+          const style = getComputedStyle(parent);
+          const available =
+            parent.getBoundingClientRect().width -
+            parseFloat(style.paddingLeft) -
+            parseFloat(style.paddingRight);
+          const own = el.getBoundingClientRect().width;
+          if (available <= 0) continue;
+          if (own / available < 0.8 && available - own > 120) {
+            out.push(
+              `${el.className || el.tagName.toLowerCase()}: ${Math.round(own)}px of ${Math.round(available)}px`,
+            );
+          }
+        }
+        return out;
+      });
+
+      expect(short, 'cap the container, not the paragraph').toEqual([]);
+    });
+  }
+});

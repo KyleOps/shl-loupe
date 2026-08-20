@@ -34,6 +34,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  /*
+   * The pane this sits in is as wide as the three-pane layout gives it, which on
+   * a large display is most of the screen. The document's own prose is still
+   * prose, so the header takes a reading container and its notes fill that
+   * instead of each one stopping at its own measure with a thousand pixels of
+   * empty pane beside it.
+   */
+  max-width: var(--figure-max);
   min-width: 0;
 }
 
@@ -60,7 +68,6 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--fg-muted);
-  max-width: var(--measure);
 }
 
 .payload-reconciliation {
@@ -387,7 +394,6 @@
   font-size: 12px;
   line-height: 18px;
   color: var(--fg-muted);
-  max-width: var(--measure-tight);
   overflow-wrap: anywhere;
 }
 
@@ -574,7 +580,6 @@ button.ref-chip:hover {
   margin: 0;
   font-size: 13.5px;
   line-height: 21px;
-  max-width: var(--measure);
 }
 
 .stated-absence {
@@ -747,7 +752,6 @@ button.ref-chip:hover {
   font-size: 12px;
   line-height: 18px;
   color: var(--fg-muted);
-  max-width: var(--measure);
 }
 
 .narrative-note {
@@ -755,7 +759,6 @@ button.ref-chip:hover {
   font-size: 12px;
   line-height: 18px;
   color: var(--fg-muted);
-  max-width: var(--measure);
 }
 
 /*
