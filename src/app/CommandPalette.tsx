@@ -11,7 +11,7 @@
  * Two structural notes.
  *
  * THE OVERLAY IS NOT REIMPLEMENTED. Focus trapping, focus return and Escape all
- * come from `Overlay` in SettingsSheet, which was written to be shared. A second
+ * come from `Overlay`, which is written once and shared. A second
  * copy of trap logic is a second chance to get it wrong, and this is the one
  * place in the app where trapping focus is correct: a palette that lets Tab walk
  * out into the page behind it has lost the keyboard.
@@ -43,7 +43,7 @@ import { redactRun } from '../core/trace';
 import { Button } from '../ui/primitives';
 import type { Runner } from './App';
 import { hashForLink, hashForScreen, navigate, parseHash, SCREENS } from './router';
-import { Overlay } from './SettingsSheet';
+import { Overlay } from './Overlay';
 import { useOfflineDraft } from './screens/OfflineScreen';
 import { useSession, useSettings } from './store';
 

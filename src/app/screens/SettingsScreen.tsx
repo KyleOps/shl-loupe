@@ -1,124 +1,49 @@
 /**
- * Settings, and the overlay both overlays are built from.
+ * Settings, as a screen.
  *
- * Every setting here changes what leaves the tab, so none of them is presented
- * as a preference. Each one says what it sends, to whom, and what a person on
- * the other end sees, because the whole trust proposition of this tool is that
- * it makes no request the user did not ask for. A toggle labelled "DNS probe"
- * with no further words would break that promise while appearing to keep it.
+ * It used to be a dialog, and the dialog was broken in a way nothing caught: the
+ * overlay layer it rendered into had no stylesheet, so opening it injected a
+ * section into the masthead above the tab strip rather than covering the page.
  *
- * The overlay lives in this file rather than in the primitives, which are
- * frozen, and rather than being written twice: the command palette needs the
- * same focus trap, and a second copy of trap logic is a second chance to get it
- * wrong.
+ * The fix is not to write the overlay CSS and carry on. A dialog was the wrong
+ * shape here anyway. Every value on this page changes what leaves the tab, so
+ * these are decisions to read and think about rather than a quick adjustment
+ * over the top of what you were doing, and as a screen it is addressable by URL,
+ * survives a reload, needs no focus trap, and works at 320px without becoming a
+ * full-height sheet. The command palette keeps the overlay, because a palette
+ * genuinely must not navigate.
+ *
+ * Every setting says what it sends, to whom, and what a person on the other end
+ * sees. The trust proposition of this tool is that it makes no request the user
+ * did not ask for, and a toggle labelled "DNS probe" with no further words would
+ * break that promise while appearing to keep it.
  */
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { clsx } from 'clsx';
-import { KeyRound, Radar, Settings2, X } from 'lucide-react';
-import { formatBytes } from '../core/bytes';
-import { DOH_RESOLVERS } from '../core/net/probe';
-import { Button, Callout } from '../ui/primitives';
-import { DEFAULT_RECIPIENT, useSettings } from './store';
-
-/**
- * Everything that can hold focus. Kept as one selector so the trap and the
- * initial focus agree about what counts; a trap that walks a different set from
- * the one the browser walks lets focus escape on the element they disagree on.
- */
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-export function Overlay({
-  labelledBy,
-  onClose,
-  className,
-  children,
-}: {
-  labelledBy: string;
-  onClose: () => void;
-  className?: string;
-  children: ReactNode;
-}): ReactNode {
-  const surface = useRef<HTMLDivElement | null>(null);
-
-  // Focus returns to whatever opened this. Captured from the DOM at mount
-  // rather than passed in as a prop, because a caller opened by a keyboard
-  // shortcut has no trigger element to hand over, and the document already
-  // knows which one had focus.
-  useEffect(() => {
-    const opener = document.activeElement;
-    return () => {
-      if (opener instanceof HTMLElement) opener.focus();
-    };
-  }, []);
-
-  useEffect(() => {
-    const node = surface.current;
-    if (!node) return;
-    const first = node.querySelector<HTMLElement>(FOCUSABLE);
-    (first ?? node).focus();
-  }, []);
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-    if (event.key === 'Escape') {
-      event.stopPropagation();
-      onClose();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-    const node = surface.current;
-    if (!node) return;
-    const items = [...node.querySelectorAll<HTMLElement>(FOCUSABLE)];
-    const first = items[0];
-    const last = items[items.length - 1];
-    if (first === undefined || last === undefined) return;
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
-
-  return (
-    <div className="overlay" onKeyDown={onKeyDown}>
-      {/* Decorative: closing by click is a convenience, and Escape is the
-          keyboard path, so this must not become a tab stop of its own. */}
-      <div className="overlay-backdrop" aria-hidden="true" onClick={onClose} />
-      <div
-        ref={surface}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={labelledBy}
-        tabIndex={-1}
-        className={clsx('sheet', className)}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
+import { type ReactNode } from 'react';
+import { KeyRound, Radar, Settings2 } from 'lucide-react';
+import { formatBytes } from '../../core/bytes';
+import { DOH_RESOLVERS } from '../../core/net/probe';
+import { Button, Callout } from '../../ui/primitives';
+import { DEFAULT_RECIPIENT, useSettings } from '../store';
 
 const EMBEDDED_PRESETS = [64 * 1024, 1024 * 1024, 4 * 1024 * 1024, 16 * 1024 * 1024];
 
-export function SettingsSheet({ onClose }: { onClose: () => void }): ReactNode {
-  const titleId = useId();
+export function SettingsScreen(): ReactNode {
   const settings = useSettings();
 
   return (
-    <Overlay labelledBy={titleId} onClose={onClose} className="sheet-settings">
-      <header className="sheet-head">
-        <h2 id={titleId} className="sheet-title">
-          <Settings2 size={16} aria-hidden />
+    <div className="settings">
+      <header className="settings-head">
+        <h1 className="settings-title">
+          <Settings2 size={20} aria-hidden />
           Settings
-        </h2>
-        <Button variant="ghost" onClick={onClose} aria-label="Close settings">
-          <X size={15} aria-hidden />
-        </Button>
+        </h1>
+        <p className="settings-lede prose">
+          Three of these change what Loupe sends to somebody else&rsquo;s server, so each one says
+          what it sends and who reads it. They are kept in this browser and nowhere else.
+        </p>
       </header>
 
-      <div className="sheet-body">
+      <div className="settings-body">
         <section className="setting">
           <label className="setting-label" htmlFor="setting-recipient">
             Recipient
@@ -295,6 +220,6 @@ export function SettingsSheet({ onClose }: { onClose: () => void }): ReactNode {
           lists.
         </Callout>
       </div>
-    </Overlay>
+    </div>
   );
 }

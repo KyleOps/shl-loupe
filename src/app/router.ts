@@ -17,7 +17,7 @@
  * the home screen does.
  */
 
-export type ScreenName = 'open' | 'offline' | 'sandbox' | 'learn' | 'rules' | 'about';
+export type ScreenName = 'open' | 'offline' | 'sandbox' | 'learn' | 'rules' | 'about' | 'settings';
 
 export const SCREENS: Array<{ name: ScreenName; path: string; label: string; blurb: string }> = [
   {
@@ -51,6 +51,12 @@ export const SCREENS: Array<{ name: ScreenName; path: string; label: string; blu
     blurb: 'Every check Loupe runs, and what each one is looking for.',
   },
   { name: 'about', path: '/about', label: 'About', blurb: 'What this is, and what it never does.' },
+  {
+    name: 'settings',
+    path: '/settings',
+    label: 'Settings',
+    blurb: 'What gets sent with a request, and which optional checks are on.',
+  },
 ];
 
 export interface Route {

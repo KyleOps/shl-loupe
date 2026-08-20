@@ -97,17 +97,32 @@ test.describe('the chrome renders', () => {
   });
 
   test('hides the skip link until it has focus, then shows it', async ({ page }) => {
+    /*
+     * This was flaky under parallel load, passing alone and failing about one run
+     * in seven with six workers. The cause was pressing Tab before the page had
+     * settled: the header adjusts the tab strip's scrollLeft once fonts have
+     * loaded, and a Tab arriving in that window landed somewhere other than the
+     * first stop. A flaky test is worse than no test, so the wait is explicit
+     * rather than a timeout: focus the body first, so the tab order starts from a
+     * known place, and let the fonts resolve before pressing anything.
+     */
     await page.goto('/');
     const skip = page.locator('.skip-link');
-    const before = await skip.boundingBox();
-    expect(before!.y, 'off screen at rest').toBeLessThan(0);
+    await expect(skip).toBeAttached();
+    await page.evaluate(() => document.fonts.ready);
 
+    await expect
+      .poll(async () => Math.round((await skip.boundingBox())!.y), { timeout: 2000 })
+      .toBeLessThan(0);
+
+    await page.evaluate(() => document.body.focus());
     await page.keyboard.press('Tab');
     await expect(skip).toBeFocused();
+
     // The reveal is a transform transition, so wait for it to settle rather than
     // reading mid-animation.
     await expect
-      .poll(async () => (await skip.boundingBox())!.y, { timeout: 2000 })
+      .poll(async () => Math.round((await skip.boundingBox())!.y), { timeout: 2000 })
       .toBeGreaterThan(0);
   });
 });
@@ -320,5 +335,79 @@ test.describe('the deployment failure most likely to happen at an event', () => 
   test('says nothing at all when served from localhost', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.insecure-notice')).toHaveCount(0);
+  });
+});
+
+test.describe('the overlay layer', () => {
+  /*
+   * Two failures here shipped unnoticed, both of the same kind: a stylesheet that
+   * did not exist. `Overlay` rendered a backdrop and a `role="dialog"` surface
+   * with no rules behind them, so it laid out as ordinary block content in the
+   * page flow. The settings dialog injected a section into the masthead above the
+   * tab strip, and Cmd-K added a 640px block to the middle of the page. Nothing
+   * errored, no test failed, and the markup and the React state were both right.
+   *
+   * These assert the properties that make an overlay an overlay, rather than
+   * asserting a screenshot, because the failure mode is structural.
+   */
+  test('the command palette covers the page rather than joining it', async ({ page }) => {
+    await page.goto('/');
+    const heightBefore = await page.evaluate(() => document.documentElement.scrollHeight);
+
+    await page.keyboard.press('ControlOrMeta+k');
+    const overlay = page.locator('.overlay');
+    await expect(overlay).toBeVisible();
+
+    // Fixed and full-viewport: the two things it was not.
+    await expect(overlay).toHaveCSS('position', 'fixed');
+    const box = await overlay.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box!.height).toBeCloseTo(viewport!.height, 0);
+    expect(Math.round(box!.y)).toBe(0);
+
+    // A layer that covers does not lengthen the document beneath it.
+    const heightAfter = await page.evaluate(() => document.documentElement.scrollHeight);
+    expect(heightAfter).toBe(heightBefore);
+
+    await page.keyboard.press('Escape');
+    await expect(overlay).toBeHidden();
+  });
+
+  test('the palette is in sentence case, not capitals', async ({ page }) => {
+    // `text-transform` inherits, and the uppercase micro-label styling was on the
+    // wrapper that holds a group's options rather than on the group's label, so
+    // every command and every hint rendered in capitals.
+    await page.goto('/');
+    await page.keyboard.press('ControlOrMeta+k');
+    await expect(page.locator('.palette-option-label').first()).toHaveCSS('text-transform', 'none');
+    await expect(page.locator('.palette-group').first()).toHaveCSS('text-transform', 'uppercase');
+  });
+});
+
+test.describe('the masthead is the same height on every screen', () => {
+  // Settings used to render its dialog inside the header, so opening it injected a
+  // section above the tab strip and shifted the whole page. It is a screen now,
+  // and this is the guard: no screen may add anything to the masthead.
+  test('no screen changes the header', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.masthead')).toBeVisible();
+    const baseline = (await page.locator('.masthead').boundingBox())!.height;
+
+    for (const path of ['/settings', '/offline', '/sandbox', '/learn', '/rules', '/about']) {
+      await page.goto(`/#${path}`);
+      await expect(page.locator('main')).not.toBeEmpty();
+      const height = (await page.locator('.masthead').boundingBox())!.height;
+      expect(height, `#${path} changed the masthead height`).toBeCloseTo(baseline, 0);
+    }
+  });
+
+  test('settings is a screen with its own URL', async ({ page }) => {
+    await page.goto('/#/settings');
+    await expect(page.locator('.settings-title')).toContainText('Settings');
+    // Reachable, reloadable and linkable, which a dialog is not.
+    await page.reload();
+    await expect(page.locator('.settings-title')).toContainText('Settings');
+    // And it did not land inside the header.
+    expect(await page.locator('header .settings').count()).toBe(0);
   });
 });

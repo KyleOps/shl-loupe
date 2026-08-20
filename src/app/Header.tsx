@@ -14,12 +14,11 @@
  * showing the sentence saying what it is for. That reads as "these are the
  * places you can be" instead of "here are some more links".
  */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AArrowUp, ALargeSmall, Command, Moon, Settings, Sun } from 'lucide-react';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { AArrowUp, ALargeSmall, Command, Moon, Sun } from 'lucide-react';
 import { SCREENS, type ScreenName } from './router';
 import { useSettings } from './store';
 import { LinkInput } from './LinkInput';
-import { SettingsSheet } from './SettingsSheet';
 
 /**
  * Read at render rather than at module load: a test importing anything from this
@@ -44,7 +43,6 @@ export function Header({
   const setTheme = useSettings((state) => state.setTheme);
   const largeText = useSettings((state) => state.largeText);
   const toggleLargeText = useSettings((state) => state.toggleLargeText);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   /**
    * The strip scrolls at narrow widths and the browser does not scroll it for us,
@@ -148,15 +146,6 @@ export function Header({
           {largeText ? <AArrowUp size={16} aria-hidden /> : <ALargeSmall size={16} aria-hidden />}
           <span className="visually-hidden">Larger text</span>
         </button>
-
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm"
-          onClick={() => setSettingsOpen(true)}
-        >
-          <Settings size={15} aria-hidden />
-          <span className="visually-hidden">Open settings</span>
-        </button>
       </div>
 
       {/*
@@ -174,7 +163,7 @@ export function Header({
           return (
             <a
               key={entry.name}
-              className="nav-tab"
+              className={entry.name === 'settings' ? 'nav-tab nav-tab-aside' : 'nav-tab'}
               href={`#${entry.path}`}
               // Every tab carries its description on hover, the current one
               // included: no blurb is shown in the strip any more, so there is
@@ -188,8 +177,6 @@ export function Header({
           );
         })}
       </nav>
-
-      {settingsOpen ? <SettingsSheet onClose={() => setSettingsOpen(false)} /> : null}
     </header>
   );
 }

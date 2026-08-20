@@ -19,6 +19,7 @@ import { SandboxScreen } from './screens/SandboxScreen';
 import { LearnScreen } from './screens/LearnScreen';
 import { RulesScreen } from './screens/RulesScreen';
 import { AboutScreen } from './screens/AboutScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 import { CommandPalette } from './CommandPalette';
 import { InsecureContextNotice, readSecureContext } from './InsecureContextNotice';
 
@@ -86,6 +87,7 @@ export function App(): React.ReactNode {
         {route.screen === 'learn' && <LearnScreen />}
         {route.screen === 'rules' && <RulesScreen />}
         {route.screen === 'about' && <AboutScreen />}
+        {route.screen === 'settings' && <SettingsScreen />}
       </main>
       <footer className="footer">
         <span>

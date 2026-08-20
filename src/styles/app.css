@@ -6,6 +6,8 @@
  * stylesheet. Each imported file styles only its own area's classes.
  */
 @import './chrome.css';
+@import './overlay.css';
+@import './settings.css';
 @import './trace.css';
 @import './payload.css';
 @import './shc.css';
@@ -105,7 +107,13 @@
 
 .footer nav {
   display: flex;
-  gap: var(--space-5);
+  /* Wraps. It did not, and a seventh screen took the row past 320px, so the PAGE
+     scrolled sideways from the footer while every reflow test blamed the masthead
+     it was measuring. Any list that grows by one item needs to wrap before it
+     needs anything else. */
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  min-width: 0;
 }
 
 /* --------------------------------------------------------------------------

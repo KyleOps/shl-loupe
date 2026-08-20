@@ -162,6 +162,20 @@
   white-space: nowrap;
 }
 
+/*
+ * Settings sits apart from the six.
+ *
+ * The other tabs name jobs the tool does; this one is where you configure it, and
+ * running it in with them made the strip read as seven equal things. `auto` on the
+ * left margin pushes it to the end of the row, and a hairline before it says the
+ * grouping is deliberate rather than a gap.
+ */
+.nav-tab-aside {
+  margin-left: auto;
+  padding-left: var(--space-7);
+  border-left: var(--hairline-width) solid var(--border-hairline);
+}
+
 .nav-tab:hover {
   background: var(--bg-hover);
   color: var(--fg-default);
