@@ -103,29 +103,31 @@ export function LearnScreen(): ReactNode {
 
   return (
     <div className="learn">
-      <header className="learn-head">
-        <h1>The life of a link</h1>
-        <p className="learn-lede">
-          What a SMART Health Link is, what each field means, and where the specification says so.
-          Every quoted sentence is verbatim and carries the section it came from, so you can take an
-          argument back to the source rather than to this page.
-        </p>
-      </header>
-
       <div className="learn-body">
         <PageNav items={NAV_ITEMS} label="Sections of this guide" />
 
-        <div className="learn-sections">
-          {GUIDE_SECTIONS.map((section) => (
-            <GuideSectionView
-              key={section.id}
-              section={section}
-              recipient={recipient}
-              origin={origin}
-              onFollow={follow}
-            />
-          ))}
-          <GlossaryView onFollow={follow} />
+        <div className="page-column">
+          <header className="learn-head">
+            <h1>The life of a link</h1>
+            <p className="learn-lede">
+              What a SMART Health Link is, what each field means, and where the specification says
+              so. Every quoted sentence is verbatim and carries the section it came from, so you can
+              take an argument back to the source rather than to this page.
+            </p>
+          </header>
+
+          <div className="learn-sections">
+            {GUIDE_SECTIONS.map((section) => (
+              <GuideSectionView
+                key={section.id}
+                section={section}
+                recipient={recipient}
+                origin={origin}
+                onFollow={follow}
+              />
+            ))}
+            <GlossaryView onFollow={follow} />
+          </div>
         </div>
       </div>
     </div>

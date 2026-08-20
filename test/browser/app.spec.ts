@@ -554,16 +554,37 @@ test.describe('every screen has one column', () => {
       }
 
       const report = await page.evaluate(() => {
+        // Page-level prose only: a block sitting on the page's own ground, with
+        // no card, panel or figure between it and `main`.
+        //
+        // That is what defines the column. Text inside a box is bounded by the
+        // box, which is the other guard's business, and using every descendant
+        // here produced two false positives worth remembering: the workbench's
+        // two panes have their own widths on purpose and share a left edge
+        // without sharing a column, and a 12.5px annotation inside the segment
+        // diagram is not a paragraph in the column at all.
+        const onPageGround = (el: HTMLElement): boolean => {
+          for (let node = el.parentElement; node !== null; node = node.parentElement) {
+            if (node.tagName === 'MAIN') return true;
+            const style = getComputedStyle(node);
+            const painted =
+              !['rgba(0, 0, 0, 0)', 'transparent'].includes(style.backgroundColor) ||
+              style.borderLeftWidth !== '0px' ||
+              style.borderRightWidth !== '0px';
+            if (painted) return false;
+          }
+          return false;
+        };
         const blocks = [
           ...document.querySelectorAll<HTMLElement>('main h1, main h2, main h3, main p, main dd'),
         ].filter(
           (el) =>
             (el.textContent ?? '').trim().length >= 40 &&
             el.getBoundingClientRect().width > 0 &&
-            // The workbench is a two-column data layout, not a reading page: its
-            // panes have their own widths on purpose, and prose in two different
-            // panes shares a left edge without sharing a column.
-            el.closest('.workbench') === null,
+            onPageGround(el) &&
+            // Body prose only. A 12.5px annotation inside a diagram is not what
+            // sets the column, and nothing that is a sentence is set below 14px.
+            parseFloat(getComputedStyle(el).fontSize) >= 14,
         );
         if (blocks.length < 2) return { spread: 0, widest: '', narrowest: '' };
         const pageLeft = Math.min(...blocks.map((el) => el.getBoundingClientRect().left));

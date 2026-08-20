@@ -117,25 +117,25 @@ const NAV_ITEMS: readonly PageNavItem[] = [
 export function AboutScreen(): ReactNode {
   return (
     <div className="about">
-      <header className="about-head">
-        <h1>SHLoupe</h1>
-        <p className="about-lede">
-          A SMART Health Link viewer, debugger and teaching tool that runs entirely in one browser
-          tab. No backend, no upload, no account. You paste a link and it shows every step it takes,
-          what each step observed, and who has to act when a step fails.
-        </p>
-        <p className="about-version">
-          <Chip>version {version}</Chip>
-          <Chip tone="skip">{STATIC_RULES.length} checks</Chip>
-          <Chip tone="skip">{GUIDE_SECTIONS.length} guide sections</Chip>
-          <Chip tone="skip">{GLOSSARY.length} glossary terms</Chip>
-        </p>
-      </header>
-
       <div className="page-body">
         <PageNav items={NAV_ITEMS} label="Sections of this page" />
 
         <div className="page-column">
+          <header className="about-head">
+            <h1>SHLoupe</h1>
+            <p className="about-lede">
+              A SMART Health Link viewer, debugger and teaching tool that runs entirely in one
+              browser tab. No backend, no upload, no account. You paste a link and it shows every
+              step it takes, what each step observed, and who has to act when a step fails.
+            </p>
+            <p className="about-version">
+              <Chip>version {version}</Chip>
+              <Chip tone="skip">{STATIC_RULES.length} checks</Chip>
+              <Chip tone="skip">{GUIDE_SECTIONS.length} guide sections</Chip>
+              <Chip tone="skip">{GLOSSARY.length} glossary terms</Chip>
+            </p>
+          </header>
+
           <section className="about-section" aria-labelledby="about-why" tabIndex={-1}>
             <h2 id="about-why">Why it exists</h2>
             <p>

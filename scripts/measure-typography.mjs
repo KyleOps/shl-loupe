@@ -190,16 +190,30 @@ function measureInPage() {
   // Headings and paragraphs only. A list ITEM is often a row rather than prose (a
   // trace step, a card in a guide), and it is legitimately as wide as its
   // container, so including `li` here reported a column where there was none.
+  // Page-level prose only: no card, panel or figure between it and `main`. Text
+  // inside a box is bounded by the box, which is the other measurement.
+  const onPageGround = (el) => {
+    for (let node = el.parentElement; node !== null; node = node.parentElement) {
+      if (node.tagName === 'MAIN') return true;
+      const style = getComputedStyle(node);
+      const painted =
+        !['rgba(0, 0, 0, 0)', 'transparent'].includes(style.backgroundColor) ||
+        style.borderLeftWidth !== '0px' ||
+        style.borderRightWidth !== '0px';
+      if (painted) return false;
+    }
+    return false;
+  };
   const inColumn = [
     ...document.querySelectorAll('main h1, main h2, main h3, main p, main dd'),
   ].filter(
     (el) =>
       (el.textContent ?? '').trim().length >= 40 &&
       el.getBoundingClientRect().width > 0 &&
-      // The workbench is a two-column data layout, not a reading page: its panes
-      // have their own widths on purpose, and prose in two different panes shares
-      // a left edge without sharing a column.
-      el.closest('.workbench') === null,
+      onPageGround(el) &&
+      // Body prose only. A 12.5px annotation inside a diagram is not what
+      // sets the column, and nothing that is a sentence is set below 14px.
+      parseFloat(getComputedStyle(el).fontSize) >= 14,
   );
   const lefts = inColumn.map((el) => Math.round(el.getBoundingClientRect().left));
   const pageLeft = Math.min(...lefts);
