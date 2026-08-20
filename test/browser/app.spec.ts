@@ -617,7 +617,7 @@ test.describe('every screen has one column', () => {
         const name = (el: HTMLElement | undefined): string =>
           el === undefined
             ? ''
-            : `${el.tagName.toLowerCase()}.${(el.className || '').toString().split(' ')[0]} @${getComputedStyle(el).fontSize}`;
+            : `${el.tagName.toLowerCase()}.${el.className.split(' ')[0] ?? ''} @${getComputedStyle(el).fontSize}`;
         return {
           spread: Math.max(...rights) - Math.min(...rights),
           widest: name(column[rights.indexOf(Math.max(...rights))]),
