@@ -17,7 +17,8 @@
  * the home screen does.
  */
 
-export type ScreenName = 'open' | 'offline' | 'sandbox' | 'learn' | 'rules' | 'about' | 'settings';
+export type ScreenName =
+  'open' | 'offline' | 'sandbox' | 'vectors' | 'learn' | 'rules' | 'about' | 'settings';
 
 export const SCREENS: Array<{ name: ScreenName; path: string; label: string; blurb: string }> = [
   {
@@ -37,6 +38,12 @@ export const SCREENS: Array<{ name: ScreenName; path: string; label: string; blu
     path: '/sandbox',
     label: 'Sandbox',
     blurb: 'Mint links, including deliberately broken ones, to test another viewer.',
+  },
+  {
+    name: 'vectors',
+    path: '/vectors',
+    label: 'Vectors',
+    blurb: 'Run the published KTC conformance vectors against this engine.',
   },
   {
     name: 'learn',

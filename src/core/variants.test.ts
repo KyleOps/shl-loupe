@@ -162,7 +162,14 @@ describe('the catalogue', () => {
     // teach with.
     expect(VARIANTS['shl-who-phw'].differences.length).toBeGreaterThan(0);
     expect(VARIANTS['shl-ktc'].differences.length).toBeGreaterThan(0);
-    expect(VARIANTS['shl-ktc'].differences[0]).toContain('byte for byte');
+    // This assertion used to require the words "byte for byte", locking in a
+    // claim that had gone out of date: KTC pins `flag` to `U` and requires
+    // `exp`, so the payload is NOT the HL7 payload byte for byte. What the entry
+    // has to name is the constraint, since that is what makes a link fail the
+    // profile while remaining a valid SMART Health Link.
+    expect(VARIANTS['shl-ktc'].differences[0]).toContain('`flag` SHALL be exactly `U`');
+    expect(VARIANTS['shl-ktc'].differences[0]).toContain('not a KTC link');
+    expect(VARIANTS['shl-ktc'].protocol).toBe('shl-direct-get');
   });
 });
 
@@ -224,9 +231,13 @@ describe('link payloads', () => {
       { kind: 'payload', payload: payload({ _ktcVersion: '1' }) },
       'shl-ktc',
     );
-    // Nothing in a link can prove KTC conformance, because KTC constrains the
-    // server. Saying so is the difference between a claim and a finding.
-    expect(said(identification)).toContain('nothing in a link can prove KTC conformance');
+    // A member naming the profile is the sender's claim about the sender's own
+    // link, and saying so is the difference between a claim and a finding. What
+    // the profile requires OF THE LINK is answered separately, by the profile
+    // step, which is where a reader is pointed rather than being told that
+    // nothing in a link can show conformance (it can: two members of it).
+    expect(said(identification)).toContain('taking the sender’s word for the name');
+    expect(said(identification)).toContain('`flag` pinned to `U`');
   });
 
   it('treats an unrecognised member as a legal extension, not a fault', () => {

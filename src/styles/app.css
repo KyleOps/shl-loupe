@@ -15,6 +15,7 @@
 @import './screens.css';
 @import './offline.css';
 @import './sandbox.css';
+@import './vectors.css';
 
 /* --------------------------------------------------------------------------
    Tone: one place where a status colour and its tinted surface travel together.
@@ -403,8 +404,24 @@
    Field tables
    -------------------------------------------------------------------------- */
 
+/*
+ * The key column does not wrap, which is right for `url` and wrong for
+ * `KTC-BUNDLE-PATIENT-PLUS-ONE`.
+ *
+ * Every key in this table used to be a payload member name, three or four
+ * characters, so `white-space: nowrap` below was free. The profile checks put
+ * 28-character requirement ids in the same column, and a column that cannot
+ * shrink pushed the whole page sideways at 320px: 94px of horizontal document
+ * overflow, on the one screen where a reader is most likely to be on a phone at
+ * a table.
+ *
+ * The condition is the CONTAINER's width, not the viewport's. This table appears
+ * in a 400px pane on a 1600px display as readily as on a phone, and a media
+ * query cannot see the difference.
+ */
 .field-table {
   min-width: 0;
+  container-type: inline-size;
 }
 
 table.fields {
@@ -433,6 +450,16 @@ table.fields th {
   font-weight: 400;
   color: var(--fg-muted);
   font-size: 12.5px;
+}
+
+/* AFTER the rule it overrides: both selectors have the same specificity, so
+   source order is what decides, and writing this block above cost a round of
+   wondering why a container query "did not apply". */
+@container (max-width: 560px) {
+  table.fields th {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
 
 table.fields.is-dense th,

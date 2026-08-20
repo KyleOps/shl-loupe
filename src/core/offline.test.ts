@@ -191,6 +191,7 @@ describe('a link whose manifest was fetched from a shell', () => {
       'jwe.header',
       'jwe.decrypt',
       'payload.classify',
+      'profile.conform',
     ]);
   });
 

@@ -104,8 +104,9 @@ describe('buildDiagnosisReport', () => {
     expect(rows.map((cells) => cells[1])).toEqual(result.run.steps.map((step) => step.title));
     expect(rows[0]?.[1]).toBe('Recognise the link');
 
-    // Three passes and the step that stopped it: a story, not one error line.
-    expect(rows.map((cells) => cells[2])).toEqual(['pass', 'pass', 'pass', 'failed']);
+    // Three passes, the step that stopped it, and the profile pass that runs
+    // afterwards anyway: a story, not one error line.
+    expect(rows.map((cells) => cells[2])).toEqual(['pass', 'pass', 'pass', 'failed', 'pass']);
     // The status words are English, because the reader is a person: a raw
     // `fail` in a pasted table reads as tooling output.
     expect(report).not.toContain('| ok |');

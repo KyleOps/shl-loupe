@@ -46,6 +46,7 @@ export type StepKind =
   | 'jwe.decrypt' // AES-256-GCM, alg=dir
   | 'payload.inflate' // zip=DEF raw DEFLATE
   | 'payload.classify' // what did we actually get
+  | 'profile.conform' // requirements a downstream profile adds, and whose they are
   | 'shc.verify' // ES256 signature over a health card
   | 'fhir.parse' // parse and index a bundle
   | 'fhir.resolve'; // resolve references inside the bundle

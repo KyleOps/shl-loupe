@@ -18,6 +18,7 @@ import { OfflineScreen } from './screens/OfflineScreen';
 import { SandboxScreen } from './screens/SandboxScreen';
 import { LearnScreen } from './screens/LearnScreen';
 import { RulesScreen } from './screens/RulesScreen';
+import { VectorsScreen } from './screens/VectorsScreen';
 import { AboutScreen } from './screens/AboutScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { CommandPalette } from './CommandPalette';
@@ -84,6 +85,7 @@ export function App(): React.ReactNode {
         {route.screen === 'open' && <OpenScreen onRun={run} />}
         {route.screen === 'offline' && <OfflineScreen />}
         {route.screen === 'sandbox' && <SandboxScreen />}
+        {route.screen === 'vectors' && <VectorsScreen />}
         {route.screen === 'learn' && <LearnScreen />}
         {route.screen === 'rules' && <RulesScreen />}
         {route.screen === 'about' && <AboutScreen />}

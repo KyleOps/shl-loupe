@@ -269,15 +269,20 @@ export const VARIANTS: Record<VariantId, Variant> = {
     name: 'KTC-profiled SMART Health Link',
     family: 'shl',
     summary:
-      'A downstream profile of the same payload that tightens what the server must do, notably requiring a permissive CORS policy so a browser can read the payload at all.',
+      'A downstream profile for a patient handing a document to a provider at reception. It tightens both ends: the link is pinned to one shape, and the server has to be readable from a browser.',
     differences: [
-      'The payload is the HL7 payload, byte for byte. KTC constrains the server, not the link.',
-      'KTC requires `Access-Control-Allow-Origin: *` on the retrieval endpoint, which the base specification never mentions.',
+      'The payload is structurally the HL7 payload, and two of its members are pinned: `flag` SHALL be exactly `U`, and `exp` is required rather than optional. A link without them is a conformant SMART Health Link and not a KTC link.',
+      'Retrieval is therefore always a direct GET of one encrypted file. There is no manifest POST in this profile.',
+      'KTC requires a permissive CORS policy on the retrieval endpoint, which the base specification never mentions, and a `recipient` parameter from the receiver.',
+      'The Bundle is constrained too: type `collection`, carrying a Patient and at least one content entry. An App Attestation may be present, and a receiver SHALL NOT refuse the Bundle when it is absent or fails.',
       'KTC states the extraction rule the base specification leaves implicit: a receiver accepts both the bare `shlink:/` form and a viewer-prefixed URL by extracting the `shlink:/` substring.',
     ],
     support: 'full',
     missing: [],
-    protocol: 'shl-manifest-post',
+    // A KTC link is a U link, so the retrieval is the direct GET rather than the
+    // manifest POST the baseline uses. Saying `shl-manifest-post` here described
+    // a request this profile never makes.
+    protocol: 'shl-direct-get',
   },
   'shl-extension-unknown': {
     id: 'shl-extension-unknown',
@@ -1605,7 +1610,7 @@ function identifyPayload(payload: ShlPayload, inherited: VariantSignal[]): Varia
     signals.push({
       observation: `A member naming the KTC profile: \`${ktc.join('`, `')}\`.`,
       meaning:
-        'SHLoupe is taking the sender’s word for that. KTC constrains the server rather than the payload, so nothing in a link can prove KTC conformance: only the retrieval response can.',
+        'SHLoupe is taking the sender’s word for the name. What KTC requires of the link itself is checked separately, in the profile step at the end of the trace: `flag` pinned to `U`, and `exp` present. The rest of the profile is about the server and the Bundle, which only a retrieval can show.',
       severity: 'info',
     });
   }

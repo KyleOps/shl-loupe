@@ -43,6 +43,10 @@ import {
   type Tone,
 } from '../../ui/primitives';
 import { TraceList, VerdictBanner } from '../../ui/trace';
+import { VariantBadge } from '../../ui/VariantBadge';
+import { ProfileChecks } from '../../ui/ProfileChecks';
+import type { VariantIdentification } from '../../core/variants';
+import type { ProfileConformance } from '../../core/profiles';
 import { PayloadView } from '../../ui/fhir';
 import type { Runner } from '../App';
 import { PasscodePrompt } from '../PasscodePrompt';
@@ -326,7 +330,7 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
   const files = result?.files ?? [];
   const file = files[selectedFile] ?? files[0];
 
-  const linkPane = <LinkPane run={run} />;
+  const linkPane = <LinkPane run={run} variant={result?.variant} profiles={result?.profiles} />;
   const tracePane = (
     <Panel title="Trace" className="pane pane-trace">
       <TraceList run={run} />
@@ -517,7 +521,15 @@ function useLayoutMode(): LayoutMode {
 // Panes
 // ---------------------------------------------------------------------------
 
-function LinkPane({ run }: { run: TraceRun }): ReactNode {
+function LinkPane({
+  run,
+  variant,
+  profiles,
+}: {
+  run: TraceRun;
+  variant?: VariantIdentification | undefined;
+  profiles?: readonly ProfileConformance[] | undefined;
+}): ReactNode {
   const facts = linkFactsFromRun(run);
   const key = typeof facts.payload?.['key'] === 'string' ? facts.payload['key'] : undefined;
   const flag = typeof facts.payload?.['flag'] === 'string' ? facts.payload['flag'] : undefined;
@@ -551,6 +563,25 @@ function LinkPane({ run }: { run: TraceRun }): ReactNode {
       ) : null}
 
       {conflict !== undefined ? <Callout tone="fail">{conflict}</Callout> : null}
+
+      {/* What kind of link this is, before anything is retrieved. Open by
+          default for anything that is not the plain HL7 baseline, because that
+          is precisely when a reader needs to know why the retrieval is about to
+          look different. */}
+      {variant !== undefined ? (
+        <VariantBadge
+          identification={variant}
+          defaultOpen={variant.variant.id !== 'shl-baseline'}
+        />
+      ) : null}
+
+      {/* And whose added requirements it meets. Separate from the member table
+          above on purpose: that table answers "is this a valid link", this
+          answers "is it the profile somebody is expecting", and running the two
+          together is how a valid link gets reported as broken. */}
+      {profiles !== undefined && profiles.length > 0 ? (
+        <ProfileChecks conformances={profiles} />
+      ) : null}
 
       {facts.urlRows.length > 0 ? (
         <Disclosure summary="The URL, taken apart">

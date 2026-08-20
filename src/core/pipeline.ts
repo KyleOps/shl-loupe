@@ -22,6 +22,13 @@ import { inflateForgiving } from './compress';
 import type { DiagnosisContext, ViewerOrigin } from './diagnose/context';
 import { differentialFor, differentialPreamble, type ProbeResults } from './diagnose/differential';
 import { isBlocking, runStaticRules } from './diagnose/rules';
+import { checkProfiles, type ProfileConformance, type ProfileObservations } from './profiles';
+import {
+  identifyVariant,
+  PROTOCOL_LABEL,
+  SUPPORT_LABEL,
+  type VariantIdentification,
+} from './variants';
 import {
   decryptDirA256Gcm,
   describeIvLength,
@@ -129,6 +136,16 @@ export interface PipelineResult {
   files: OpenedFile[];
   outcome: RunOutcome;
   /**
+   * Which family of link this is, and how far SHLoupe can take it. Absent only
+   * when nothing decoded at all.
+   */
+  variant?: VariantIdentification;
+  /**
+   * How this link measures against the downstream profiles that add
+   * requirements to the base specification. Empty when nothing decoded.
+   */
+  profiles: ProfileConformance[];
+  /**
    * The secret registry for this run. Anything that leaves the tab (a copied
    * diagnosis, an exported report) passes the run through `redactRun` with this
    * first, which is the single place that guarantee is made.
@@ -164,6 +181,7 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
 
   const files: OpenedFile[] = [];
   let link: ShlLink | undefined;
+  let variant: VariantIdentification | undefined;
 
   try {
     // -----------------------------------------------------------------------
@@ -247,6 +265,32 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
         if (typeof decoded.key === 'string') recorder.redactor.register(decoded.key, 'link key');
         step.json('Decoded payload', decoded);
         step.cite(CITATIONS.payloadMembers);
+
+        // Which family this link belongs to, before anything is retrieved.
+        //
+        // This is the step that stops the tool making the incumbent's mistake:
+        // four ecosystems reuse this payload over three incompatible retrieval
+        // protocols, so a viewer that decodes a payload and then assumes the HL7
+        // manifest POST reports a perfectly good WHO or IHE link as broken. The
+        // identification is never a verdict, which is why it is recorded here as
+        // evidence rather than as a finding.
+        variant = identifyVariant({ kind: 'raw', text: options.input });
+        step.kv([
+          { key: 'family', value: variant.variant.name, mono: false },
+          { key: 'retrieval', value: PROTOCOL_LABEL[variant.protocol], mono: false },
+          {
+            key: 'in SHLoupe',
+            value: SUPPORT_LABEL[variant.variant.support],
+            mono: false,
+            status: variant.variant.support === 'full' ? 'ok' : 'warn',
+          },
+          ...variant.signals.map((signal) => ({
+            key: 'saw',
+            value: signal.observation,
+            mono: false,
+            note: signal.meaning,
+          })),
+        ]);
         return decoded;
       },
     );
@@ -366,14 +410,136 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // 6. Profiles: whose rule, if anybody's, does this link break?
+  // ---------------------------------------------------------------------------
+  //
+  // Outside the try, so it runs for a link that was stopped as well as for one
+  // that opened. The stopped case is the one that matters most: a link nobody
+  // could retrieve is exactly when somebody starts asking whether it was minted
+  // correctly, and this step answers that without a request.
+  //
+  // Last in the trace, because it is the only step that can look at everything:
+  // half of what KTC requires is about the response and the Bundle, so checking
+  // early would have to report those as unobserved on a link that did open.
+  let profiles: ProfileConformance[] = [];
+  if (link !== undefined) {
+    const observed = link;
+    profiles = await recorder.run(
+      {
+        kind: 'profile.conform',
+        title: 'Check the link against published profiles',
+        summary:
+          'A profile is a delta on the base specification, so this is a separate question from whether the link is valid.',
+      },
+      (step) => {
+        const results = checkProfiles(observationsFor(recorder.snapshot(), observed, files));
+
+        for (const conformance of results) {
+          step.kv([
+            {
+              key: conformance.profile.name,
+              value: conformance.headline,
+              mono: false,
+              status:
+                conformance.verdict === 'conformant'
+                  ? 'ok'
+                  : conformance.verdict === 'non-conformant'
+                    ? 'warn'
+                    : 'skipped',
+              note: conformance.profile.declaration,
+            },
+            ...conformance.checks.map((check) => ({
+              key: check.requirement.id,
+              value: check.requirement.requirement,
+              mono: false,
+              status:
+                check.verdict === 'met'
+                  ? ('ok' as const)
+                  : check.verdict === 'unmet'
+                    ? ('warn' as const)
+                    : ('skipped' as const),
+              note: check.saw,
+            })),
+          ]);
+        }
+
+        // One finding per contradicted profile, at `info` and addressed to
+        // nobody. It is deliberately not a warning: the link is not wrong, and
+        // inflating the error count on the verdict banner for "somebody else's
+        // profile says otherwise" would be the incumbent's mistake pointed the
+        // other way.
+        for (const conformance of results) {
+          if (conformance.unmet === 0) continue;
+          const unmet = conformance.checks.filter((check) => check.verdict === 'unmet');
+          step.find({
+            ruleId: `PROFILE-${conformance.profile.id.toUpperCase()}`,
+            severity: 'info',
+            audience: 'nobody',
+            title: `A valid SMART Health Link, and not ${conformance.profile.name}.`,
+            detail: `${conformance.profile.declaration} Measured against it, ${String(unmet.length)} of ${String(conformance.checks.length)} added requirements ${unmet.length === 1 ? 'is' : 'are'} unmet: ${unmet
+              .map((check) => `${check.requirement.id} (${check.saw})`)
+              .join(' ')}`,
+            remedy:
+              'Nothing, unless the receiver at the other end checks for this profile. If it does, the sender has to mint the link differently; the base specification permits what this link does.',
+            ...(unmet[0] === undefined ? {} : { citation: unmet[0].requirement.citation }),
+          });
+        }
+        if (results.some((conformance) => conformance.unmet > 0)) step.end('ok');
+        return results;
+      },
+    );
+  }
+
   const outcome = decideOutcome(recorder.snapshot(), files);
   const run = recorder.finish(outcome);
   return {
     run,
     ...(link === undefined ? {} : { link }),
+    ...(variant === undefined ? {} : { variant }),
     files,
     outcome,
+    profiles,
     redactor: recorder.redactor,
+  };
+}
+
+/**
+ * Read the profile observations back out of the recorded run.
+ *
+ * Sourced from the trace rather than threaded through the pipeline as another
+ * accumulator, for the same reason the Link pane is: the trace is already the
+ * record of what happened, and a second copy of it would be a second thing to
+ * keep in step. The response taken is the one for the file this link actually
+ * resolved to, so a manifest link reports the manifest's own CORS posture rather
+ * than a file host's.
+ */
+function observationsFor(run: TraceRun, link: ShlLink, files: OpenedFile[]): ProfileObservations {
+  const retrieval = run.steps.find(
+    (step) => step.kind === 'net.direct' || step.kind === 'net.manifest',
+  );
+  const response = retrieval?.evidence.find((evidence) => evidence.type === 'response');
+  const request = retrieval?.evidence.find((evidence) => evidence.type === 'request');
+  const content = files.find((file) => file.content !== undefined)?.content;
+
+  return {
+    payload: link.raw,
+    ...(response?.type === 'response' && response.response.status > 0
+      ? {
+          response: {
+            status: response.response.status,
+            headers: response.response.headers,
+          },
+        }
+      : {}),
+    ...(request?.type === 'request'
+      ? {
+          recipientSent:
+            request.request.url.includes('recipient=') ||
+            (request.request.body ?? '').includes('"recipient"'),
+        }
+      : {}),
+    ...(content === undefined ? {} : { content }),
   };
 }
 

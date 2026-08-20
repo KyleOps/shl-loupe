@@ -411,3 +411,153 @@
   gap: var(--space-5);
   min-width: 0;
 }
+
+/* --------------------------------------------------------------------------
+   Downstream profile conformance
+   -------------------------------------------------------------------------- */
+
+/*
+ * Whose rule is this link breaking?
+ *
+ * Everything here is in service of keeping two facts on screen at once: the link
+ * is valid, AND a profile that adds requirements is or is not met. So the block
+ * leads with a sentence rather than with a table, the chip carries the word as
+ * well as the colour, and each requirement shows the quoted sentence it comes
+ * from. A conformance table with no citations is an assertion, and this tool's
+ * whole argument is that an assertion is not evidence.
+ */
+.profiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.profiles-heading {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* The sentence that stops the table below reading as a verdict on the link. */
+.profiles-aside {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--fg-default);
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+.profile {
+  min-width: 0;
+}
+
+.profile .disclosure-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.profile-count {
+  color: var(--fg-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.profile-headline {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--fg-default);
+  font-size: 13.5px;
+  line-height: 21px;
+  font-weight: 500;
+}
+
+.profile-blurb,
+.profile-declaration,
+.profile-source {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.profile-source a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* One requirement: what it asks, and whose behaviour it constrains. The second
+   half is a chip-sized aside rather than a column, because it is the same three
+   words over and over and a column of them would read as data. */
+.requirement {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.requirement-text {
+  max-width: var(--measure);
+}
+
+.requirement-level {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: var(--micro-tracking);
+  color: var(--fg-muted);
+}
+
+.requirement-whom {
+  font-size: 11.5px;
+  color: var(--fg-subtle);
+}
+
+.requirement-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: var(--measure);
+}
+
+.requirement-cite {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 12px;
+}
+
+.requirement-cite a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  align-self: flex-start;
+}
+
+/* The specification's own sentence, quoted so it is visibly theirs and not
+   ours. This is the line that ends the argument at a table. */
+.requirement-quote {
+  color: var(--fg-default);
+  font-size: 12.5px;
+  line-height: 19px;
+}

@@ -63,6 +63,10 @@ describe('the motivating incident', () => {
       'shlink.decode:ok',
       'shlink.validate:ok',
       'static.analyse:fail',
+      // Runs even though the link was stopped, and this is the case it matters
+      // most in: a link nobody can retrieve is when somebody starts asking
+      // whether it was minted to the profile they think it was.
+      'profile.conform:ok',
     ]);
   });
 
@@ -174,6 +178,9 @@ describe('a link that works', () => {
       'jwe.header',
       'jwe.decrypt',
       'payload.classify',
+      // Last, and only ever last: it is the one step that can look at the
+      // payload, the response and the decrypted Bundle together.
+      'profile.conform',
     ]);
   });
 

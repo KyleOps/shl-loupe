@@ -261,6 +261,7 @@ test.describe('reflow', () => {
     ['a diagnosed link', `#${LOOPBACK_LINK}`],
     ['offline', '#/offline'],
     ['sandbox', '#/sandbox'],
+    ['vectors', '#/vectors'],
     ['learn', '#/learn'],
     ['checks', '#/rules'],
     ['about', '#/about'],
@@ -288,7 +289,7 @@ test.describe('reflow', () => {
 });
 
 test.describe('every screen renders without throwing', () => {
-  for (const path of ['', '/offline', '/sandbox', '/learn', '/rules', '/about']) {
+  for (const path of ['', '/offline', '/sandbox', '/vectors', '/learn', '/rules', '/about']) {
     test(`#${path || ' (home)'}`, async ({ page }) => {
       const errors = await watchForErrors(page);
       await page.goto(`/#${path}`);
@@ -418,7 +419,15 @@ test.describe('the masthead is the same height on every screen', () => {
     await expect(page.locator('.masthead')).toBeVisible();
     const baseline = (await page.locator('.masthead').boundingBox())!.height;
 
-    for (const path of ['/settings', '/offline', '/sandbox', '/learn', '/rules', '/about']) {
+    for (const path of [
+      '/settings',
+      '/offline',
+      '/sandbox',
+      '/vectors',
+      '/learn',
+      '/rules',
+      '/about',
+    ]) {
       await page.goto(`/#${path}`);
       await expect(page.locator('main')).not.toBeEmpty();
       const height = (await page.locator('.masthead').boundingBox())!.height;
@@ -434,6 +443,35 @@ test.describe('the masthead is the same height on every screen', () => {
     await expect(page.locator('.settings-title')).toContainText('Settings');
     // And it did not land inside the header.
     expect(await page.locator('header .settings').count()).toBe(0);
+  });
+});
+
+test.describe('the vectors screen', () => {
+  test('fetches nothing until it is asked to', async ({ page }) => {
+    // The one screen that reaches a third party. Its whole claim is that it does
+    // so only on request, and that claim is worth a test rather than a sentence.
+    const outbound: string[] = [];
+    page.on('request', (request) => {
+      if (!request.url().startsWith('http://localhost:4173/')) outbound.push(request.url());
+    });
+
+    await page.goto('/#/vectors');
+    await expect(page.locator('.vectors')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Load and run/ })).toBeVisible();
+    expect(outbound, 'the vectors screen fetched something before being asked').toEqual([]);
+
+    // And it names the host it will reach, before the button rather than after.
+    await expect(page.locator('.vectors-run')).toContainText('ktc-spec.github.io');
+  });
+
+  test('explains all three verdicts, including the one that is not a failure', async ({ page }) => {
+    await page.goto('/#/vectors');
+    const legend = page.locator('.vectors-legend');
+    await expect(legend).toContainText('Agrees via the profile');
+    // The sentence this project exists for. If the legend ever loses it, the
+    // middle verdict reads as a fudge rather than as the point.
+    await expect(legend).toContainText('conformant SMART Health Link');
+    await expect(legend).toContainText('Disagrees');
   });
 });
 
@@ -558,6 +596,7 @@ test.describe('no paragraph is cut short inside a wider box', () => {
     ['an opened link', `#${WORKING_LINK}`],
     ['offline', '#/offline'],
     ['sandbox', '#/sandbox'],
+    ['vectors', '#/vectors'],
     ['learn', '#/learn'],
     ['checks', '#/rules'],
     ['about', '#/about'],

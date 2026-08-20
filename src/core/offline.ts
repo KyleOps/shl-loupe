@@ -53,6 +53,8 @@ import {
 import { OfflineTransport, toRequestRecord, toResponseRecord } from './net/browser';
 import { curlForDirectFile, curlForOfflineHandoff, manifestBody } from './net/curl';
 import { classifyContent, type OpenedFile, type PipelineResult } from './pipeline';
+import { checkProfiles, type ProfileConformance } from './profiles';
+import { identifyVariant } from './variants';
 import { decodeShlPayload, extractShlink, validateShlPayload, verdictsToRows } from './shlink';
 import type { ShlLink } from './shlink';
 import {
@@ -1296,16 +1298,74 @@ function finish(
   files: OpenedFile[],
   link: ShlLink | undefined,
 ): PipelineResult {
+  // The same profile pass the online pipeline runs, minus the half that needs a
+  // response. Offline mode is where a link that nobody can retrieve gets pasted,
+  // so "is this even the profile they think it is" is asked here more than
+  // anywhere, and answering it costs no request.
+  const profiles = link === undefined ? [] : conformanceStep(recorder, link, files);
+  const variant =
+    link === undefined ? undefined : identifyVariant({ kind: 'payload', payload: link.raw });
   const snapshot = recorder.snapshot();
   const outcome = decideOutcome(snapshot.steps, snapshot.findings, files);
   const run = recorder.finish(outcome);
   return {
     run,
     ...(link === undefined ? {} : { link }),
+    ...(variant === undefined ? {} : { variant }),
     files,
     outcome,
+    profiles,
     redactor: recorder.redactor,
   };
+}
+
+/** One synchronous step, because nothing here can await anything. */
+function conformanceStep(
+  recorder: Recorder,
+  link: ShlLink,
+  files: OpenedFile[],
+): ProfileConformance[] {
+  const content = files.find((file) => file.content !== undefined)?.content;
+  const results = checkProfiles({
+    payload: link.raw,
+    ...(content === undefined ? {} : { content }),
+  });
+  const step = recorder.open({
+    kind: 'profile.conform',
+    title: 'Check the link against published profiles',
+    summary:
+      'A profile is a delta on the base specification, so this is a separate question from whether the link is valid. Nothing here needs the network.',
+  });
+  for (const conformance of results) {
+    step.kv([
+      {
+        key: conformance.profile.name,
+        value: conformance.headline,
+        mono: false,
+        status:
+          conformance.verdict === 'conformant'
+            ? 'ok'
+            : conformance.verdict === 'non-conformant'
+              ? 'warn'
+              : 'skipped',
+        note: conformance.profile.declaration,
+      },
+      ...conformance.checks.map((check) => ({
+        key: check.requirement.id,
+        value: check.requirement.requirement,
+        mono: false,
+        status:
+          check.verdict === 'met'
+            ? ('ok' as const)
+            : check.verdict === 'unmet'
+              ? ('warn' as const)
+              : ('skipped' as const),
+        note: check.saw,
+      })),
+    ]);
+  }
+  step.end('ok');
+  return results;
 }
 
 /**

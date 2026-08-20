@@ -22,7 +22,17 @@ export interface TransportRequest {
   /** Abort after this many milliseconds. */
   timeoutMs?: number;
   /** What this request is for, used in the trace label. */
-  purpose: 'manifest' | 'direct-file' | 'manifest-file' | 'jwks' | 'probe';
+  purpose:
+    | 'manifest'
+    | 'direct-file'
+    | 'manifest-file'
+    | 'jwks'
+    | 'probe'
+    // Loading a published conformance suite, which is the one request this app
+    // makes that is not part of opening somebody's link. It goes through the
+    // seam anyway: "every request goes through Transport" is worth more as an
+    // invariant with no exceptions than as a rule with one.
+    | 'vector-suite';
 }
 
 export interface TransportResponse {
