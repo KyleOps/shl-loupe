@@ -24,14 +24,16 @@ const IG_LINK =
 describe('splitSentences', () => {
   it('does not split a host, which is what a full stop usually is here', () => {
     expect(
-      splitSentences('A SMART Health Link pointing at raw.githubusercontent.com. Loupe will look.'),
-    ).toEqual(['A SMART Health Link pointing at raw.githubusercontent.com.', 'Loupe will look.']);
+      splitSentences(
+        'A SMART Health Link pointing at raw.githubusercontent.com. SHLoupe will look.',
+      ),
+    ).toEqual(['A SMART Health Link pointing at raw.githubusercontent.com.', 'SHLoupe will look.']);
   });
 
   it('leaves a single sentence whole', () => {
-    expect(splitSentences('This parses as JSON, but not as an object Loupe recognises.')).toEqual([
-      'This parses as JSON, but not as an object Loupe recognises.',
-    ]);
+    expect(splitSentences('This parses as JSON, but not as an object SHLoupe recognises.')).toEqual(
+      ['This parses as JSON, but not as an object SHLoupe recognises.'],
+    );
   });
 
   it('returns nothing for nothing', () => {
@@ -45,7 +47,7 @@ describe('consequenceSentence', () => {
     // The clause the chip already carries, and the run-on the review saw.
     expect(detected.sentence).toContain('A SMART Health Link');
     const shown = consequenceSentence(detected.sentence);
-    expect(shown.startsWith('Loupe will')).toBe(true);
+    expect(shown.startsWith('SHLoupe will')).toBe(true);
     expect(shown).not.toContain('A SMART Health Link');
   });
 

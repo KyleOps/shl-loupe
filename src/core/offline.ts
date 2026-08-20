@@ -4,7 +4,7 @@
  * This is not a fallback. It is the only path that always works: it survives a
  * relay that is down, a server with no CORS headers, a link that points at the
  * sender's laptop, a locked-down conference network and an air gap. Every
- * "Loupe cannot fetch this" verdict is only useful because it ends with "run
+ * "SHLoupe cannot fetch this" verdict is only useful because it ends with "run
  * this command and paste what comes back", and this module is what makes that
  * sentence true.
  *
@@ -88,7 +88,7 @@ export interface OfflineInput {
   onProgress?: (run: TraceRun) => void;
 }
 
-const DEFAULT_RECIPIENT = 'Loupe (offline)';
+const DEFAULT_RECIPIENT = 'SHLoupe (offline)';
 
 const NO_NETWORK_NOTE =
   'Nothing in this run touched the network. Every byte came from what you pasted.';
@@ -117,13 +117,13 @@ export async function openOffline(input: OfflineInput): Promise<PipelineResult> 
         input,
         'hcert',
         'This is an HC1 certificate, from the EU Digital COVID Certificate and WHO DDCC family.',
-        'Loupe reads SMART Health Links and SMART Health Cards. An HC1 payload is base45-encoded CBOR inside a COSE signature envelope, which is a different stack end to end, and a half-decode that showed you some bytes would be worse than saying so.',
+        'SHLoupe reads SMART Health Links and SMART Health Cards. An HC1 payload is base45-encoded CBOR inside a COSE signature envelope, which is a different stack end to end, and a half-decode that showed you some bytes would be worse than saying so.',
       );
     default:
       return openUnsupported(
         input,
         'unknown',
-        'Loupe does not recognise this content.',
+        'SHLoupe does not recognise this content.',
         'It reads a SMART Health Link, a manifest response, an encrypted JWE file, a SMART Health Card, a FHIR resource or bundle, and the raw output of a curl command. If you believe this is one of those, the detection sentence above the box says what it saw.',
       );
   }
@@ -249,7 +249,7 @@ export async function openOfflineLink(input: OfflineInput): Promise<PipelineResu
         // so a verdict about reachability is information rather than a gate.
         step.note(
           findings.some((f) => f.severity === 'fatal')
-            ? 'Loupe would stop here on a live run, because no request to this address can succeed. Offline it carries on: the content came from your paste, so reachability decides who else can open the link, not whether you can read it now.'
+            ? 'SHLoupe would stop here on a live run, because no request to this address can succeed. Offline it carries on: the content came from your paste, so reachability decides who else can open the link, not whether you can read it now.'
             : 'Nothing about this address would have stopped a live run.',
         );
         if (findings.length > 0) step.end('warn');
@@ -275,7 +275,7 @@ export async function openOfflineLink(input: OfflineInput): Promise<PipelineResu
             ruleId: 'OFFLINE-NO-MANIFEST',
             severity: 'info',
             audience: 'you',
-            title: 'Loupe needs the manifest response before it can open this link.',
+            title: 'SHLoupe needs the manifest response before it can open this link.',
             detail:
               'Offline mode issues no requests, so the manifest has to arrive the same way everything else here does: pasted. The command above fetches it from a shell, where the browser rules that block this page do not apply.',
             remedy:
@@ -353,7 +353,7 @@ async function servedManifest(
           severity: 'fatal',
           audience: 'you',
           title: 'What you pasted as a manifest is not JSON.',
-          detail: `${formatBytes(response.bodyBytes)} arrived and none of it parses. If this came from curl with -D or -i, the response headers are still on the front of it: paste the whole thing, headers included, and Loupe will split them off for you.`,
+          detail: `${formatBytes(response.bodyBytes)} arrived and none of it parses. If this came from curl with -D or -i, the response headers are still on the front of it: paste the whole thing, headers included, and SHLoupe will split them off for you.`,
           citation: CITATIONS.manifestResponse,
         });
         throw new StepFailure('Pasted manifest not JSON');
@@ -530,7 +530,7 @@ export async function openOfflineManifest(input: OfflineInput): Promise<Pipeline
             audience: 'you',
             title: 'This does not parse as JSON.',
             detail:
-              'A manifest response is a JSON object with a files array. If this came from curl with -D or -i, paste the whole output including the headers and Loupe will split them off.',
+              'A manifest response is a JSON object with a files array. If this came from curl with -D or -i, paste the whole output including the headers and SHLoupe will split them off.',
           });
           throw new StepFailure('Pasted manifest not JSON');
         }
@@ -587,7 +587,7 @@ export async function openOfflineJwe(input: OfflineInput): Promise<PipelineResul
             audience: 'you',
             title: 'This file is encrypted, and there is no key yet.',
             detail:
-              'The key is the `key` member of the SMART Health Link this file belongs to: 43 characters of base64url, being 32 random bytes. Loupe decrypts with it here in the tab and never sends it anywhere.',
+              'The key is the `key` member of the SMART Health Link this file belongs to: 43 characters of base64url, being 32 random bytes. SHLoupe decrypts with it here in the tab and never sends it anywhere.',
             remedy: 'Paste the link, or just its key, into the key box and open it again.',
             citation: CITATIONS.payloadKey,
           });
@@ -1130,7 +1130,7 @@ async function verifyCard(
       title: 'The signature on this card was not checked.',
       detail: `Checking it needs the issuer's public key set, which lives at${
         iss === undefined ? ' the issuer URL' : ` ${iss}/.well-known/jwks.json`
-      } and can only be fetched over the network. Everything below is what the card says about itself, not something Loupe has confirmed.`,
+      } and can only be fetched over the network. Everything below is what the card says about itself, not something SHLoupe has confirmed.`,
       remedy: 'Fetch the key set with the command above and paste it into the key-set box.',
       citation: CITATIONS.shcJwks,
     });
@@ -1338,7 +1338,7 @@ function recordUnexpected(recorder: Recorder, error: unknown): void {
     ruleId: 'LOUPE-INTERNAL',
     severity: 'error',
     audience: 'nobody',
-    title: 'Loupe itself hit an unexpected error.',
+    title: 'SHLoupe itself hit an unexpected error.',
     detail: `This is a defect in the tool, not in what you pasted: ${
       error instanceof Error ? error.message : String(error)
     }. The trace above is accurate up to the step that failed.`,

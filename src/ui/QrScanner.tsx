@@ -466,8 +466,8 @@ export function QrScanner({ onResult, onClose }: QrScannerProps): ReactNode {
               <p>
                 This is one code of {chunked.total} carrying a single SMART Health Card. Chunked QRs
                 were deprecated in December 2022, and a card that needs them is one the issuer
-                should be sharing as a health link instead. Loupe reads one code at a time here, so
-                the other {chunked.total - 1} would have nowhere to go.
+                should be sharing as a health link instead. SHLoupe reads one code at a time here,
+                so the other {chunked.total - 1} would have nowhere to go.
               </p>
               <p>
                 <Button size="sm" onClick={() => finish(chunked.value)}>

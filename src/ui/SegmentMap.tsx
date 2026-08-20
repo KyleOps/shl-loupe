@@ -479,7 +479,7 @@ export function SegmentMap({ link, recipient, onFollow }: SegmentMapProps): Reac
                 <CodeBlock language="bash">
                   {direct
                     ? curlForDirectFile(url)
-                    : curlForManifest({ url, recipient: recipient ?? 'Loupe' })}
+                    : curlForManifest({ url, recipient: recipient ?? 'SHLoupe' })}
                 </CodeBlock>
                 <p className="segmap-use-note">
                   The key is not in that command and does not need to be: it decrypts the file after

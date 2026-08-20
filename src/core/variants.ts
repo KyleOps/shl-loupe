@@ -12,7 +12,7 @@
  * Three rules hold this module together:
  *
  * 1. **A different profile is never "invalid".** Every variant carries a name,
- *    what it changes relative to the HL7 baseline, whether Loupe can process it
+ *    what it changes relative to the HL7 baseline, whether SHLoupe can process it
  *    end to end, and what is missing when it cannot. Nothing here returns a
  *    verdict of "broken" for a link that is simply someone else's profile.
  * 2. **Identification keys off what is observable**, and says which observation
@@ -69,14 +69,14 @@ export type VariantFamily =
   | 'unknown';
 
 /**
- * How far Loupe can take this variant. Stated as a capability rather than a
- * verdict, because "Loupe cannot finish this" and "this link is broken" are
+ * How far SHLoupe can take this variant. Stated as a capability rather than a
+ * verdict, because "SHLoupe cannot finish this" and "this link is broken" are
  * different sentences and conflating them is the incumbent viewer's whole bug.
  */
 export type VariantSupport =
   | 'full' // recognised, retrieved, decrypted and rendered
   | 'partial' // some of the path works here, the rest is named below
-  | 'decode-only' // Loupe reads it and explains it, but cannot complete retrieval
+  | 'decode-only' // SHLoupe reads it and explains it, but cannot complete retrieval
   | 'unsupported'; // recognised by name only
 
 export type RetrievalProtocol =
@@ -232,7 +232,7 @@ const CITE = {
 // ---------------------------------------------------------------------------
 
 /**
- * Every family Loupe recognises, as data. A screen can enumerate this to teach
+ * Every family SHLoupe recognises, as data. A screen can enumerate this to teach
  * the family tree without a link in hand, and identification below only ever
  * selects from it, so a variant cannot exist with no explanation attached.
  */
@@ -284,7 +284,7 @@ export const VARIANTS: Record<VariantId, Variant> = {
     name: 'SMART Health Link with an unrecognised extension',
     family: 'shl',
     summary:
-      'A baseline link carrying a member no specification Loupe knows about. The specification requires receivers to ignore it, so the link still opens.',
+      'A baseline link carrying a member no specification SHLoupe knows about. The specification requires receivers to ignore it, so the link still opens.',
     differences: [
       'One or more members outside the six the specification defines. That is legal: `extension` is reserved for downstream guides, and so is any name beginning with an underscore.',
     ],
@@ -308,7 +308,7 @@ export const VARIANTS: Record<VariantId, Variant> = {
     support: 'decode-only',
     missing: [
       'A trust-network credential. Signing an RFC 9421 request or an SSRAA client assertion needs a private key issued by the trust network, which a static browser page does not hold and should not hold.',
-      'Loupe therefore prints the `List/_search` request it would issue, and stops there.',
+      'SHLoupe therefore prints the `List/_search` request it would issue, and stops there.',
     ],
     protocol: 'vhl-list-search',
     citation: CITE.vhlManifest,
@@ -326,7 +326,7 @@ export const VARIANTS: Record<VariantId, Variant> = {
     ],
     support: 'decode-only',
     missing: [
-      'Proof verification. A `DataIntegrityProof` is computed over JSON-LD canonicalised input, which needs a canonicalisation library and context resolution Loupe does not carry.',
+      'Proof verification. A `DataIntegrityProof` is computed over JSON-LD canonicalised input, which needs a canonicalisation library and context resolution SHLoupe does not carry.',
       'The same trust-network credential every VHL retrieval needs.',
     ],
     protocol: 'vhl-list-search',
@@ -345,7 +345,7 @@ export const VARIANTS: Record<VariantId, Variant> = {
     ],
     support: 'partial',
     missing: [
-      'Signature verification. Checking the COSE_Sign1 needs the signing certificate for this `kid` from a trust list, which Loupe does not fetch.',
+      'Signature verification. Checking the COSE_Sign1 needs the signing certificate for this `kid` from a trust list, which SHLoupe does not fetch.',
     ],
     protocol: 'shl-manifest-post',
     citation: CITE.hcertContextId,
@@ -362,7 +362,7 @@ export const VARIANTS: Record<VariantId, Variant> = {
     ],
     support: 'decode-only',
     missing: [
-      'Signature verification, which needs the signing certificate for this `kid` from a trust list Loupe does not fetch.',
+      'Signature verification, which needs the signing certificate for this `kid` from a trust list SHLoupe does not fetch.',
       'A trust-network credential for the retrieval itself, which a browser page cannot hold.',
     ],
     protocol: 'vhl-list-search',
@@ -380,8 +380,8 @@ export const VARIANTS: Record<VariantId, Variant> = {
     ],
     support: 'partial',
     missing: [
-      'A statement of which protocol to use. Loupe reads the payload and shows both candidate protocols rather than picking one, since a wrong guess spends a request against the wrong endpoint.',
-      'Signature verification, which needs a trust list Loupe does not fetch.',
+      'A statement of which protocol to use. SHLoupe reads the payload and shows both candidate protocols rather than picking one, since a wrong guess spends a request against the wrong endpoint.',
+      'Signature verification, which needs a trust list SHLoupe does not fetch.',
     ],
     protocol: 'unknown',
     citation: CITE.hcertContextId,
@@ -398,7 +398,7 @@ export const VARIANTS: Record<VariantId, Variant> = {
     ],
     support: 'partial',
     missing: [
-      'A rendering of the certificate subject. Loupe reads the CWT claims (issuer, issued at, expiry, key identifier) and names the subclaim, but does not lay out the vaccination or test detail.',
+      'A rendering of the certificate subject. SHLoupe reads the CWT claims (issuer, issued at, expiry, key identifier) and names the subclaim, but does not lay out the vaccination or test detail.',
       'Signature verification, which needs the issuing country’s document signing certificate. There is no single public, CORS-open source for every national list, so a browser page cannot resolve this in general.',
     ],
     protocol: 'self-contained',
@@ -416,8 +416,8 @@ export const VARIANTS: Record<VariantId, Variant> = {
     ],
     support: 'partial',
     missing: [
-      'A rendering of the certificate subject. Loupe reads the CWT claims and names the subclaim.',
-      'Signature verification against a GDHCN document signing certificate, which Loupe does not fetch.',
+      'A rendering of the certificate subject. SHLoupe reads the CWT claims and names the subclaim.',
+      'Signature verification against a GDHCN document signing certificate, which SHLoupe does not fetch.',
     ],
     protocol: 'self-contained',
     citation: CITE.cwt,
@@ -434,8 +434,8 @@ export const VARIANTS: Record<VariantId, Variant> = {
     ],
     support: 'partial',
     missing: [
-      'A rendering of the abbreviated record. Loupe reads the CWT claims and names the subclaim.',
-      'Signature verification against a GDHCN document signing certificate, which Loupe does not fetch.',
+      'A rendering of the abbreviated record. SHLoupe reads the CWT claims and names the subclaim.',
+      'Signature verification against a GDHCN document signing certificate, which SHLoupe does not fetch.',
     ],
     protocol: 'self-contained',
     citation: CITE.cwt,
@@ -445,15 +445,15 @@ export const VARIANTS: Record<VariantId, Variant> = {
     name: 'HC1: certificate with an unrecognised claim',
     family: 'hcert',
     summary:
-      'The HC1: carrier decoded, but the HCERT claim holds a subclaim Loupe has no profile for.',
+      'The HC1: carrier decoded, but the HCERT claim holds a subclaim SHLoupe has no profile for.',
     differences: [
       'The carrier is standard: base45, zlib, COSE_Sign1 over a CWT.',
       'The content is whatever the issuing programme put in that subclaim.',
     ],
     support: 'partial',
     missing: [
-      'A profile for this subclaim. Loupe reports the carrier, the CWT claims and the subclaim number, which is enough to ask the issuer what it is.',
-      'Signature verification, which needs a trust list Loupe does not fetch.',
+      'A profile for this subclaim. SHLoupe reports the carrier, the CWT claims and the subclaim number, which is enough to ask the issuer what it is.',
+      'Signature verification, which needs a trust list SHLoupe does not fetch.',
     ],
     protocol: 'unknown',
     citation: CITE.hcertContextId,
@@ -561,20 +561,20 @@ export const VARIANTS: Record<VariantId, Variant> = {
     name: 'Not recognised',
     family: 'unknown',
     summary:
-      'Loupe could not match this against any payload family it knows. That is a gap in Loupe, not a verdict on the content.',
+      'SHLoupe could not match this against any payload family it knows. That is a gap in SHLoupe, not a verdict on the content.',
     differences: [],
     support: 'unsupported',
     missing: [
-      'A recognisable marker. Loupe looked for an `shlink:`, `vhlink:` or `shc:` scheme, an `HC1:` certificate, an SHL payload or manifest shape, a Verifiable Credential envelope and a FHIR resource.',
+      'A recognisable marker. SHLoupe looked for an `shlink:`, `vhlink:` or `shc:` scheme, an `HC1:` certificate, an SHL payload or manifest shape, a Verifiable Credential envelope and a FHIR resource.',
     ],
     protocol: 'unknown',
   },
 };
 
 export const SUPPORT_LABEL: Record<VariantSupport, string> = {
-  full: 'Loupe processes this fully',
-  partial: 'Loupe processes part of this',
-  'decode-only': 'Loupe reads it, cannot retrieve it',
+  full: 'SHLoupe processes this fully',
+  partial: 'SHLoupe processes part of this',
+  'decode-only': 'SHLoupe reads it, cannot retrieve it',
   unsupported: 'Recognised by name only',
 };
 
@@ -715,7 +715,7 @@ class CborReader {
 
     if (info === 31) {
       throw new DecodeError(
-        'This CBOR uses an indefinite length, which Loupe does not read.',
+        'This CBOR uses an indefinite length, which SHLoupe does not read.',
         'HCERT payloads are canonical CBOR, where every length is definite. An indefinite length means this was produced by a non-canonical encoder.',
       );
     }
@@ -747,7 +747,7 @@ class CborReader {
           const key = this.read();
           if (typeof key !== 'number' && typeof key !== 'string') {
             throw new DecodeError(
-              `A CBOR map key of type ${key === null ? 'null' : typeof key} is not something Loupe indexes.`,
+              `A CBOR map key of type ${key === null ? 'null' : typeof key} is not something SHLoupe indexes.`,
               'COSE and CWT use integer labels and text keys only.',
             );
           }
@@ -977,12 +977,12 @@ export function decodeHcert(input: string): HcertReport | undefined {
     report.decodedBytes = inflated.bytes.byteLength;
     if (inflated.framing !== 'zlib') {
       report.problems.push(
-        `The certificate body is ${inflated.framing} framed. HCERT requires zlib (RFC 1950) here, so a strict verifier will reject this even though Loupe read it.`,
+        `The certificate body is ${inflated.framing} framed. HCERT requires zlib (RFC 1950) here, so a strict verifier will reject this even though SHLoupe read it.`,
       );
     }
   } catch (error) {
     report.problems.push(
-      `The Base45 decoded to ${compressed.byteLength} bytes, but they are not compressed in any framing Loupe recognises. ${describeError(error)}`,
+      `The Base45 decoded to ${compressed.byteLength} bytes, but they are not compressed in any framing SHLoupe recognises. ${describeError(error)}`,
     );
     return report;
   }
@@ -1001,7 +1001,7 @@ export function decodeHcert(input: string): HcertReport | undefined {
     signStructure = cose.value;
     if (cose.tag !== 18) {
       report.problems.push(
-        `The CBOR tag is ${cose.tag}, where a COSE_Sign1 is tag 18. Loupe read the contents anyway.`,
+        `The CBOR tag is ${cose.tag}, where a COSE_Sign1 is tag 18. SHLoupe read the contents anyway.`,
       );
     }
   }
@@ -1236,7 +1236,7 @@ const ALLOWED_CONTENT_TYPES = [
 
 /**
  * Name the family. Never a verdict: an unrecognised payload is reported as a gap
- * in Loupe's catalogue, and a different profile is reported as a different
+ * in SHLoupe's catalogue, and a different profile is reported as a different
  * profile.
  */
 export function identifyVariant(input: VariantInput): VariantIdentification {
@@ -1367,7 +1367,7 @@ function identifyHcert(hcert: HcertReport): VariantIdentification {
     signals.push({
       observation: `The context identifier is \`${hcert.contextId}\`, not \`HC1\`.`,
       meaning:
-        'HCERT reserves the whole HC1 to HCZ range, and a new identifier means a version that broke backwards compatibility. Loupe read it as HCERT anyway, so treat the result as indicative.',
+        'HCERT reserves the whole HC1 to HCZ range, and a new identifier means a version that broke backwards compatibility. SHLoupe read it as HCERT anyway, so treat the result as indicative.',
       severity: 'warning',
       citation: CITE.hcertContextId,
     });
@@ -1376,7 +1376,7 @@ function identifyHcert(hcert: HcertReport): VariantIdentification {
     signals.push({
       observation: problem,
       meaning:
-        'This is a defect in the certificate or in its encoding, not a profile difference. Everything Loupe did decode is still shown.',
+        'This is a defect in the certificate or in its encoding, not a profile difference. Everything SHLoupe did decode is still shown.',
       severity: 'error',
     });
   }
@@ -1418,7 +1418,7 @@ function identifyHcert(hcert: HcertReport): VariantIdentification {
         ? 'No COSE algorithm label was found in either header.'
         : `The COSE signature algorithm is ${hcert.cose.algorithm}.`,
     meaning:
-      'Verifying it needs the document signing certificate for this key identifier, which lives in a national or GDHCN trust list. Loupe makes no request for one, so the signature here is unchecked, not invalid. Absence from the current list is also how this ecosystem expresses revocation, so a lookup that finds nothing is a real answer rather than an error.',
+      'Verifying it needs the document signing certificate for this key identifier, which lives in a national or GDHCN trust list. SHLoupe makes no request for one, so the signature here is unchecked, not invalid. Absence from the current list is also how this ecosystem expresses revocation, so a lookup that finds nothing is a real answer rather than an error.',
     severity: 'info',
   });
 
@@ -1437,7 +1437,7 @@ function identifyHcert(hcert: HcertReport): VariantIdentification {
       observation: `HCERT subclaim ${claim} is present.`,
       meaning:
         label === undefined
-          ? 'No published profile in Loupe names this subclaim.'
+          ? 'No published profile in SHLoupe names this subclaim.'
           : `That slot carries the ${label}.`,
       severity: 'info',
     });
@@ -1560,7 +1560,7 @@ function identifyPayload(payload: ShlPayload, inherited: VariantSignal[]): Varia
     signals.push({
       observation: `An unrecognised member \`${member}\`.`,
       meaning: member.startsWith('_')
-        ? 'Underscore names are reserved for downstream implementation guides, so this is a legal extension Loupe has no profile for. The link still opens: receivers must ignore extensions they do not understand.'
+        ? 'Underscore names are reserved for downstream implementation guides, so this is a legal extension SHLoupe has no profile for. The link still opens: receivers must ignore extensions they do not understand.'
         : 'The specification defines six members and reserves `extension` plus any name starting with an underscore. This name is outside that convention, but a receiver still has to ignore it rather than fail.',
       severity: 'info',
       citation: CITE.ignoreUnknown,
@@ -1605,7 +1605,7 @@ function identifyPayload(payload: ShlPayload, inherited: VariantSignal[]): Varia
     signals.push({
       observation: `A member naming the KTC profile: \`${ktc.join('`, `')}\`.`,
       meaning:
-        'Loupe is taking the sender’s word for that. KTC constrains the server rather than the payload, so nothing in a link can prove KTC conformance: only the retrieval response can.',
+        'SHLoupe is taking the sender’s word for that. KTC constrains the server rather than the payload, so nothing in a link can prove KTC conformance: only the retrieval response can.',
       severity: 'info',
     });
   }
@@ -1643,7 +1643,7 @@ function identifyManifest(manifest: unknown): VariantIdentification {
       signals.push({
         observation: 'A file is declared as `application/pdf`.',
         meaning:
-          'PDF is not one of the three content types the SHL specification allows, but Malaysia’s national GDHCN deployment emits it, so this is a real deployment rather than a broken server. Loupe renders what it can and does not reject the manifest.',
+          'PDF is not one of the three content types the SHL specification allows, but Malaysia’s national GDHCN deployment emits it, so this is a real deployment rather than a broken server. SHLoupe renders what it can and does not reject the manifest.',
         severity: 'warning',
         citation: CITE.contentTypes,
       });
@@ -1652,7 +1652,7 @@ function identifyManifest(manifest: unknown): VariantIdentification {
     signals.push({
       observation: `A file is declared as \`${contentType}\`.`,
       meaning:
-        'The specification allows `application/smart-health-card`, `application/smart-api-access` and `application/fhir+json`. Loupe sniffs the decrypted content rather than trusting the declaration, so an unexpected type is worth reporting to the server operator but does not stop the file opening.',
+        'The specification allows `application/smart-health-card`, `application/smart-api-access` and `application/fhir+json`. SHLoupe sniffs the decrypted content rather than trusting the declaration, so an unexpected type is worth reporting to the server operator but does not stop the file opening.',
       severity: 'warning',
       citation: CITE.contentTypes,
     });
@@ -1795,7 +1795,7 @@ function identifyContent(content: unknown, declaredContentType?: string): Varian
       meaning:
         profiles.length === 0
           ? 'No profile is claimed, so what this conforms to has to be judged structurally. The HL7 IG’s own IPS example also omits `meta.profile`, so absence is not evidence that this is not an IPS.'
-          : 'None of those canonicals belongs to a family Loupe recognises, which is a gap in Loupe rather than a problem with the payload.',
+          : 'None of those canonicals belongs to a family SHLoupe recognises, which is a gap in SHLoupe rather than a problem with the payload.',
       severity: 'info',
     });
     return { variant: VARIANTS['fhir-unprofiled'], protocol: 'self-contained', signals, profiles };

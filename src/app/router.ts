@@ -48,7 +48,7 @@ export const SCREENS: Array<{ name: ScreenName; path: string; label: string; blu
     name: 'rules',
     path: '/rules',
     label: 'Checks',
-    blurb: 'Every check Loupe runs, and what each one is looking for.',
+    blurb: 'Every check SHLoupe runs, and what each one is looking for.',
   },
   { name: 'about', path: '/about', label: 'About', blurb: 'What this is, and what it never does.' },
   {

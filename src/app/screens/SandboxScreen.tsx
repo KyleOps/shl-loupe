@@ -174,14 +174,14 @@ export function describeOutcome(outcome: RunOutcome): { tone: Tone; word: string
 }
 
 /**
- * What "Open in Loupe" will actually show for a given preset, which is not the
+ * What "Open in SHLoupe" will actually show for a given preset, which is not the
  * same question for all nineteen of them.
  *
  * Two independent facts decide it. A preset whose expected outcome is `blocked`
  * is answered from the link alone, so no request is issued and the demonstration
  * is complete; that is the product thesis and worth saying out loud. Separately,
  * a preset carrying a manifest or a file has its fault in bytes a server would
- * have served, and Loupe has no server, so the fault is only reachable with
+ * have served, and SHLoupe has no server, so the fault is only reachable with
  * those bytes supplied, which is what the offline hand-off beside it does.
  *
  * Getting this wrong in either direction wastes somebody's minute: promising a
@@ -190,12 +190,12 @@ export function describeOutcome(outcome: RunOutcome): { tone: Tone; word: string
  */
 export function reachSentence(outcome: RunOutcome, artefacts: BrokenArtefacts): string {
   if (outcome === 'blocked') {
-    return 'Loupe answers this one from the link alone, with no request issued at all. That is the whole demonstration: a receiver that has to make a request to find this out is a receiver spending a round trip on a question it could already answer.';
+    return 'SHLoupe answers this one from the link alone, with no request issued at all. That is the whole demonstration: a receiver that has to make a request to find this out is a receiver spending a round trip on a question it could already answer.';
   }
   if (artefacts.manifest === undefined && artefacts.jwe === undefined) {
     return 'The fault is in the link, so it is reported before the fetch. The fetch then fails too, because the host serves nothing; both appear in the trace, in that order.';
   }
-  return 'The fault is in bytes a server would have served, and Loupe has no server, so opening the link alone stops at the failed fetch. Open it offline instead and those bytes are supplied for you.';
+  return 'The fault is in bytes a server would have served, and SHLoupe has no server, so opening the link alone stops at the failed fetch. Open it offline instead and those bytes are supplied for you.';
 }
 
 // ---------------------------------------------------------------------------
@@ -280,9 +280,9 @@ export function SandboxScreen(): ReactNode {
       <section className="sandbox-lede">
         <h1>Make links, correct and broken, to test something else.</h1>
         <p className="prose">
-          Everything here is produced in this tab, by the same encrypter Loupe uses to read a link,
-          so a defect in one direction shows up in the other rather than cancelling itself out.
-          Nothing is uploaded, and nothing is stored.
+          Everything here is produced in this tab, by the same encrypter SHLoupe uses to read a
+          link, so a defect in one direction shows up in the other rather than cancelling itself
+          out. Nothing is uploaded, and nothing is stored.
         </p>
       </section>
       <MintSection />
@@ -332,7 +332,7 @@ function MintSection(): ReactNode {
     firstSample?.contentType ?? SHL_CONTENT_TYPES.fhir,
   );
   const [url, setUrl] = useState(DEFAULT_URL);
-  const [label, setLabel] = useState('Minted by Loupe');
+  const [label, setLabel] = useState('Minted by SHLoupe');
   const [flags, setFlags] = useState<FlagChoices>({ L: true, P: false, U: false });
   const [passcode, setPasscode] = useState('');
   const [expiryId, setExpiryId] = useState('day');
@@ -400,12 +400,12 @@ function MintSection(): ReactNode {
             <p>
               A minted link carries the <code>url</code> exactly as typed below, and{' '}
               <code>example.org</code> is a reserved name that nothing answers on, here or anywhere
-              else. So no viewer, Loupe included, can fetch what one of these points at.
+              else. So no viewer, SHLoupe included, can fetch what one of these points at.
             </p>
             <p>
               They are for two jobs. Paste one into another viewer to watch how it behaves before
               any network is involved, which is most of what a receiver gets wrong. Or open it in
-              Loupe&rsquo;s own Offline mode with the manifest supplied by hand, which runs the
+              SHLoupe&rsquo;s own Offline mode with the manifest supplied by hand, which runs the
               whole pipeline end to end; there is a button for that under every minted link.
             </p>
           </div>
@@ -587,10 +587,10 @@ function MintSection(): ReactNode {
             </div>
             {conflictingFlags ? (
               <Callout tone="fail" title="P and U cannot both be set">
-                A U link is fetched with GET, and a GET has nowhere to carry a passcode. Loupe will
-                still mint it, because a vector for exactly this exists in the catalogue below, and
-                the passcode will come out with nowhere to send it, which is the contradiction made
-                visible.
+                A U link is fetched with GET, and a GET has nowhere to carry a passcode. SHLoupe
+                will still mint it, because a vector for exactly this exists in the catalogue below,
+                and the passcode will come out with nowhere to send it, which is the contradiction
+                made visible.
               </Callout>
             ) : null}
           </fieldset>
@@ -839,7 +839,7 @@ function MintedOutput({ minted }: { minted: MintResult }): ReactNode {
             </Button>
             <Button onClick={() => navigate(hashForLink(minted.shlink))}>
               <ExternalLink size={14} aria-hidden />
-              <span>Open the link alone in Loupe</span>
+              <span>Open the link alone in SHLoupe</span>
             </Button>
           </div>
           <p className="mint-note">
@@ -973,7 +973,7 @@ function PasscodeOutput({
           </p>
           <CodeBlock language="json">{PASSCODE_REJECTION_BODY}</CodeBlock>
           <p className="mint-note prose">
-            The manifest above is what a server serves once the passcode MATCHED. Loupe&rsquo;s
+            The manifest above is what a server serves once the passcode MATCHED. SHLoupe&rsquo;s
             offline transport serves the bytes it was handed without reading the request body, so an
             offline run cannot check a passcode: it shows the accepted case.
           </p>
@@ -1043,17 +1043,18 @@ function CatalogueSection(): ReactNode {
             </li>
             <li>
               <strong>Compare that against the card.</strong> Each one states what a conformant
-              receiver should do, which is the thing being tested, and separately what Loupe itself
-              raises.
+              receiver should do, which is the thing being tested, and separately what SHLoupe
+              itself raises.
             </li>
           </ol>
           <p className="catalogue-thesis-note prose">
-            Loupe&rsquo;s own reading of every entry is run through the real pipeline by{' '}
+            SHLoupe&rsquo;s own reading of every entry is run through the real pipeline by{' '}
             <code>mint.test.ts</code>, so the rule ids on the cards are what actually fires. Where
-            Loupe raises nothing, the card records that as a gap with the reason rather than
+            SHLoupe raises nothing, the card records that as a gap with the reason rather than
             dressing it up as a check. These links are test vectors like the minted ones: the hosts
-            in them serve nothing, and the outcome on each card is what Loupe reaches with the bytes
-            a server would have served supplied, which is what the offline button on the card does.
+            in them serve nothing, and the outcome on each card is what SHLoupe reaches with the
+            bytes a server would have served supplied, which is what the offline button on the card
+            does.
           </p>
         </div>
 
@@ -1104,11 +1105,11 @@ function PresetCard({
           {preset.title}
         </h3>
         {/* Labelled, because "Opens" on its own reads as a prediction about
-            the button below it. It is not: it is what Loupe reaches when the
+            the button below it. It is not: it is what SHLoupe reaches when the
             bytes a server would have served are supplied, which is how
             mint.test.ts runs every one of these. */}
         <div className="preset-verdict">
-          <span className="preset-verdict-label">Loupe reaches</span>
+          <span className="preset-verdict-label">SHLoupe reaches</span>
           <StatusIcon tone={outcome.tone} />
           <Chip tone={outcome.tone}>{outcome.word}</Chip>
         </div>
@@ -1125,7 +1126,7 @@ function PresetCard({
       </div>
 
       <dl className="preset-meta">
-        <dt>Loupe raises</dt>
+        <dt>SHLoupe raises</dt>
         <dd>
           {preset.expect.ruleIds.length === 0 ? (
             <span className="preset-gap">Nothing. {preset.expect.gap ?? ''}</span>
@@ -1187,7 +1188,7 @@ function PresetCard({
           <div className="preset-actions">
             <Button onClick={() => navigate(hashForLink(artefacts.shlink))}>
               <ExternalLink size={13} aria-hidden />
-              <span>Open the link in Loupe</span>
+              <span>Open the link in SHLoupe</span>
             </Button>
             {offline === undefined ? null : (
               <Button onClick={() => navigate(offline)}>

@@ -86,7 +86,7 @@ its JWKS therefore sits at that URL plus `/.well-known/jwks.json`.
 **Why the ciphertext is committed as well.** Most of what goes wrong in a link
 goes wrong in the decrypt step, so the decrypt path has to be exercisable with
 the network unplugged. Its IPS counterpart is deliberately not bundled: at 81 kB
-of base64url it would nearly double what Loupe ships to demonstrate the same
+of base64url it would nearly double what SHLoupe ships to demonstrate the same
 three steps, and the plaintext is what a renderer needs.
 
 **What is odd about it.** `nbf` is `1694239879.182`, a fractional number of

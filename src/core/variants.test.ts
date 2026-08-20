@@ -149,7 +149,7 @@ describe('the catalogue', () => {
       expect(variant.name.length).toBeGreaterThan(0);
       expect(variant.summary.endsWith('.'), id).toBe(true);
       expect(['full', 'partial', 'decode-only', 'unsupported']).toContain(variant.support);
-      // What is missing is named exactly when something is, so "Loupe cannot
+      // What is missing is named exactly when something is, so "SHLoupe cannot
       // finish this" never reads as "this is broken".
       expect(variant.missing.length > 0, id).toBe(variant.support !== 'full');
     }
@@ -447,12 +447,14 @@ describe('decrypted content', () => {
     expect(said(identification)).toContain('absence is not evidence that this is not an IPS');
   });
 
-  it('calls an unrecognised canonical a gap in Loupe, not a problem with the payload', () => {
+  it('calls an unrecognised canonical a gap in SHLoupe, not a problem with the payload', () => {
     const identification = expectVariant(
       profiled('http://example.org/fhir/national/StructureDefinition/summary'),
       'fhir-unprofiled',
     );
-    expect(said(identification)).toContain('a gap in Loupe rather than a problem with the payload');
+    expect(said(identification)).toContain(
+      'a gap in SHLoupe rather than a problem with the payload',
+    );
   });
 
   it('notes AU Core without treating it as a summary profile claim', () => {
@@ -642,8 +644,8 @@ describe('an HC1 certificate', () => {
     const report = decodeHcert(mintHcert({ framing: 'raw-deflate' }));
     expect(report?.compression).toBe('raw-deflate');
     expect(report?.problems[0]).toContain('HCERT requires zlib');
-    // The distinction that matters: Loupe read it, and it is still wrong.
-    expect(report?.problems[0]).toContain('Loupe read it');
+    // The distinction that matters: SHLoupe read it, and it is still wrong.
+    expect(report?.problems[0]).toContain('SHLoupe read it');
     expect(report?.cwt.issuer).toBe('AU');
   });
 
@@ -734,7 +736,7 @@ describe('an HC1 certificate', () => {
 // ---------------------------------------------------------------------------
 
 describe('a different profile is never reported as invalid', () => {
-  /** One well-formed input per family Loupe claims to recognise. */
+  /** One well-formed input per family SHLoupe claims to recognise. */
   const WELL_FORMED: Array<[VariantId, VariantInput]> = [
     ['shl-baseline', { kind: 'payload', payload: payload() }],
     ['shl-who-phw', { kind: 'payload', payload: payload({ type: 'shl' }) }],

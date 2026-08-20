@@ -1,4 +1,4 @@
-# Contributing to Loupe
+# Contributing to SHLoupe
 
 ## Running it
 
@@ -118,10 +118,10 @@ projected onto a wall.
 **A broken preset** is a deliberately invalid link, for testing somebody else's
 viewer. Add it to `BROKEN_PRESETS` in `src/core/mint.ts`. A preset is not just a
 bad payload: `wrong` says what is wrong with it, `receiverShould` says what a
-conformant receiver ought to do about it, and `expect` names the `ruleIds` Loupe
+conformant receiver ought to do about it, and `expect` names the `ruleIds` SHLoupe
 itself must raise, which file the check lives in, and the outcome. That last part
 is what stops the catalogue drifting away from the diagnosis engine, so fill it in
-even when it is obvious, and use `gap` when Loupe does not yet catch its own
+even when it is obvious, and use `gap` when SHLoupe does not yet catch its own
 preset. `build` returns canned `responses` you can hand to `OfflineTransport`, so
 every preset is reproducible with no server at all.
 
@@ -130,7 +130,7 @@ every preset is reproducible with no server at all.
 Australian English. No em dashes or en dashes. Plain and specific, and it names
 who has to act: this tool exists because the incumbent renders "TypeLoad failed"
 and the sender concludes their link is fine. A capability is never dressed up as a
-verdict, either. "Loupe cannot finish this" and "this link is broken" are
+verdict, either. "SHLoupe cannot finish this" and "this link is broken" are
 different sentences, and conflating them is the bug we are here to fix.
 
 Comments explain _why_. A comment restating the line above it is noise; one

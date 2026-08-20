@@ -129,7 +129,7 @@ export function PatientCard({ resource, context, entry }: RendererProps): ReactN
                     typeof deceased === 'string' ? (
                       <DateValue value={deceased} />
                     ) : (
-                      (primitiveText(deceased) ?? 'Stated in a shape Loupe cannot read')
+                      (primitiveText(deceased) ?? 'Stated in a shape SHLoupe cannot read')
                     ),
                   tone: 'warn' as const,
                 },
@@ -139,7 +139,7 @@ export function PatientCard({ resource, context, entry }: RendererProps): ReactN
                 {
                   key: 'other names',
                   value: otherNames.slice(1).join(' · '),
-                  note: 'Loupe shows the official or usual name in the heading, so a name marked old does not become the label for a person who no longer uses it.',
+                  note: 'SHLoupe shows the official or usual name in the heading, so a name marked old does not become the label for a person who no longer uses it.',
                 },
               ]
             : []),

@@ -109,7 +109,7 @@ export function AboutScreen(): ReactNode {
   return (
     <div className="about">
       <header className="about-head">
-        <h1>Loupe</h1>
+        <h1>SHLoupe</h1>
         <p className="about-lede">
           A SMART Health Link viewer, debugger and teaching tool that runs entirely in one browser
           tab. No backend, no upload, no account. You paste a link and it shows every step it takes,

@@ -46,7 +46,7 @@ export const IG_SHC_FILE: SmartHealthCardFile = {
  * Kept so the decrypt path can be exercised with the network unplugged, which
  * matters because most of what goes wrong in a link goes wrong here. Its IPS
  * counterpart is deliberately NOT bundled: at 81 kB of base64url it would nearly
- * double what Loupe ships to demonstrate the same three steps, and the plaintext
+ * double what SHLoupe ships to demonstrate the same three steps, and the plaintext
  * (see ips-bundle.ts) is what a renderer needs.
  */
 export const IG_SHC_JWE =
@@ -56,7 +56,7 @@ export const IG_SHC_JWE =
  * The 32-byte AES key both IG examples use, base64url, as published.
  *
  * It appears in the specification's encryption example, on the links-examples
- * page, and in every tutorial that copied either. Loupe should recognise it and
+ * page, and in every tutorial that copied either. SHLoupe should recognise it and
  * say so plainly: content encrypted under this key is not confidential, and a
  * producer that shipped a real share with it has published the share.
  */

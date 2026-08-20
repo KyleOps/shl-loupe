@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   override componentDidCatch(error: Error, info: ErrorInfo): void {
     // The console is the only sink available, and it is the one place a
     // developer standing at the laptop will look. Nothing is sent anywhere.
-    console.error(`Loupe could not render ${this.props.label}`, error, info.componentStack);
+    console.error(`SHLoupe could not render ${this.props.label}`, error, info.componentStack);
   }
 
   override render(): ReactNode {
@@ -65,7 +65,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       <div className="render-failure">
         <Callout tone="exception" title={`This ${unit} could not be rendered`}>
           <p className="render-failure-text">
-            {this.props.label} defeated the renderer, so Loupe is showing this instead of dropping
+            {this.props.label} defeated the renderer, so SHLoupe is showing this instead of dropping
             it. Everything else on this page rendered normally. The error was:{' '}
             <span className="mono">{error.message}</span>
           </p>

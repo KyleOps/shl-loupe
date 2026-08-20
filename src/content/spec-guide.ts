@@ -9,7 +9,7 @@
  *    including its typos, because a teaching tool that silently tidies a
  *    normative sentence teaches something the reader cannot then find in the
  *    spec. Where only the section is known, the citation carries no quote and
- *    the prose beside it is written in Loupe's own voice.
+ *    the prose beside it is written in SHLoupe's own voice.
  * 2. **Content is data, not JSX.** The screens render these structures. That
  *    keeps the wording greppable, lets the test below check every citation, and
  *    leaves a translation layer possible later.
@@ -146,7 +146,7 @@ export interface PayloadMember {
   name: MemberName;
   cardinality: string;
   type: string;
-  /** The constraint in Loupe's words, short enough for a table cell. */
+  /** The constraint in SHLoupe's words, short enough for a table cell. */
   constraint: string;
   /** What the member is for, in one sentence. */
   purpose: string;
@@ -632,7 +632,7 @@ const MANIFEST_RESPONSE_MEMBERS: readonly WireMember[] = [
     cardinality: '0..* or 1..*',
     type: 'array',
     purpose: 'The files this link is currently serving.',
-    note: 'The prose table says 0..* and the ShlManifest logical model says 1..*. Loupe treats an empty array as legal but suspicious, and says which document it is reading.',
+    note: 'The prose table says 0..* and the ShlManifest logical model says 1..*. SHLoupe treats an empty array as legal but suspicious, and says which document it is reading.',
     quote: CITATIONS.manifestFiles,
   },
   {
@@ -702,7 +702,7 @@ const JWE_PART_ROWS: readonly TableRow[] = [
     cells: [
       '3. Initialisation vector',
       '12 bytes, 16 base64url characters',
-      '16 bytes is a real and common interop bug: it encrypts fine and conformant receivers refuse it. Loupe reports the byte count rather than the symptom.',
+      '16 bytes is a real and common interop bug: it encrypts fine and conformant receivers refuse it. SHLoupe reports the byte count rather than the symptom.',
     ],
     tone: 'warn',
   },
@@ -833,7 +833,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
             cells: [
               'Query string',
               'https://viewer.example.org?shlink=eyJ1cmwi…',
-              'Nothing in the specification permits this. It sends the decryption key to the viewer’s own server and into its access log. Loupe accepts it and says so.',
+              'Nothing in the specification permits this. It sends the decryption key to the viewer’s own server and into its access log. SHLoupe accepts it and says so.',
             ],
             tone: 'fail',
           },
@@ -874,7 +874,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
       { kind: 'members', members: PAYLOAD_MEMBERS },
       {
         kind: 'checklist',
-        title: 'What Loupe checks on the payload alone, before any request',
+        title: 'What SHLoupe checks on the payload alone, before any request',
         items: [
           {
             label: 'The key decodes to 32 bytes',
@@ -897,7 +897,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
           {
             label: 'Unknown members are shown, not rejected',
             detail:
-              'A receiver is required to ignore properties it does not recognise. Names beginning with an underscore, and the name "extension", are reserved for downstream guides, so Loupe labels those separately from an ordinary unexpected member.',
+              'A receiver is required to ignore properties it does not recognise. Names beginning with an underscore, and the name "extension", are reserved for downstream guides, so SHLoupe labels those separately from an ordinary unexpected member.',
           },
         ],
       },
@@ -936,7 +936,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
           'content-type: application/json',
           '',
           '{',
-          '  "recipient": "Loupe (SMART Health Link debugger)",',
+          '  "recipient": "SHLoupe (SMART Health Link debugger)",',
           '  "embeddedLengthMax": 4194304',
           '}',
         ].join('\n'),
@@ -983,7 +983,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
         kind: 'callout',
         tone: 'fail',
         title: 'A location URL is single-use and expires within the hour',
-        body: 'A retry button that re-fetches a location that has already been consumed will fail and look like a server bug. The only correct retry is to request the manifest again, which on a passcode-protected link means asking for the passcode again, which can cost one of a finite number of attempts. Loupe refuses a location older than sixty minutes and says why rather than showing you an opaque 403 from a bucket.',
+        body: 'A retry button that re-fetches a location that has already been consumed will fail and look like a server bug. The only correct retry is to request the manifest again, which on a passcode-protected link means asking for the passcode again, which can cost one of a finite number of attempts. SHLoupe refuses a location older than sixty minutes and says why rather than showing you an opaque 403 from a bucket.',
       },
       {
         kind: 'quote',
@@ -1067,7 +1067,7 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
         kind: 'callout',
         tone: 'pass',
         title: 'When there is a kid, the wrong key can be named before decryption is attempted',
-        body: 'By convention a sender puts the RFC 7638 thumbprint of the symmetric key, as an oct JWK, in the JWE kid. Loupe computes that thumbprint from the link’s own key and compares. A mismatch means the file was encrypted under a different key than the link carries, which is worth saying in those words instead of showing an OperationError. It is the best single diagnostic in the format, because AES-GCM otherwise reports wrong key, wrong IV, altered ciphertext and truncated download identically.',
+        body: 'By convention a sender puts the RFC 7638 thumbprint of the symmetric key, as an oct JWK, in the JWE kid. SHLoupe computes that thumbprint from the link’s own key and compares. A mismatch means the file was encrypted under a different key than the link carries, which is worth saying in those words instead of showing an OperationError. It is the best single diagnostic in the format, because AES-GCM otherwise reports wrong key, wrong IV, altered ciphertext and truncated download identically.',
       },
       {
         kind: 'code',
@@ -1207,14 +1207,14 @@ export const GUIDE_SECTIONS: readonly GuideSection[] = [
         kind: 'callout',
         tone: 'fail',
         title: 'Never retry a passcode automatically',
-        body: 'A server is required to enforce a lifetime count of incorrect passcodes and to disable the link when it is reached. So a retry loop, a backoff, a connection test carrying a guess, or a React effect that fires twice, each spends part of a finite budget belonging to the patient. Loupe counts every attempt, requires an explicit press, and says how many the server says remain. remainingAttempts of zero means the link is now permanently dead.',
+        body: 'A server is required to enforce a lifetime count of incorrect passcodes and to disable the link when it is reached. So a retry loop, a backoff, a connection test carrying a guess, or a React effect that fires twice, each spends part of a finite budget belonging to the patient. SHLoupe counts every attempt, requires an explicit press, and says how many the server says remain. remainingAttempts of zero means the link is now permanently dead.',
       },
       { kind: 'quote', citation: CITATIONS.rateLimit },
       {
         kind: 'prose',
         paragraphs: [
           'Retry-After is not on the Fetch safelist of response headers script may read. So a cross-origin 429 gives a browser client the status and nothing else, unless the server also sends Access-Control-Expose-Headers naming it. That looks to a participant like a missing Retry-After and is in fact a missing Access-Control-Expose-Headers, which is a different conversation with a different person.',
-          'There is no defined status for an expired link, for a missing recipient, for a malformed body, for a P link fetched with no passcode, or for a U link fetched with POST. Servers return 400, 404, 405 or 500 for those. Loupe shows the status and the body verbatim rather than pretending to know what they mean.',
+          'There is no defined status for an expired link, for a missing recipient, for a malformed body, for a P link fetched with no passcode, or for a U link fetched with POST. Servers return 400, 404, 405 or 500 for those. SHLoupe shows the status and the body verbatim rather than pretending to know what they mean.',
         ],
       },
     ],
@@ -1477,7 +1477,7 @@ export const RULE_GUIDE: readonly RuleGuideEntry[] = [
     severity: 'error',
     audience: 'you',
     fires:
-      'The payload declares a protocol version above 1. The specification tells a receiver meeting a version it does not know to say so and stop, rather than make a manifest request and guess at the response, so Loupe shows what it can read statically and proceeds no further.',
+      'The payload declares a protocol version above 1. The specification tells a receiver meeting a version it does not know to say so and stop, rather than make a manifest request and guess at the response, so SHLoupe shows what it can read statically and proceeds no further.',
   },
   {
     ruleId: 'SHL-URL-USERINFO',
@@ -1548,7 +1548,7 @@ export const RULE_GUIDE: readonly RuleGuideEntry[] = [
     severity: 'info',
     audience: 'you',
     fires:
-      'The P flag is present, so a passcode is needed and it is not in the link. Attempts are counted for the life of the link, so Loupe never sends one you did not type.',
+      'The P flag is present, so a passcode is needed and it is not in the link. Attempts are counted for the life of the link, so SHLoupe never sends one you did not type.',
     tryPreset: 'SHL-FLAG-P',
   },
   {
@@ -1566,7 +1566,7 @@ export const RULE_GUIDE: readonly RuleGuideEntry[] = [
     severity: 'info',
     audience: 'nobody',
     fires:
-      'The U flag is present, so Loupe issues a GET rather than a POST, and sends no recipient string in a body and no embeddedLengthMax.',
+      'The U flag is present, so SHLoupe issues a GET rather than a POST, and sends no recipient string in a body and no embeddedLengthMax.',
     tryPreset: 'SHL-FLAG-U',
   },
   {

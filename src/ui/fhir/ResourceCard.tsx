@@ -236,7 +236,7 @@ export function AbsenceAssertionCard({
           : `This ${type} states that no information is available, which is not the same as stating there is none. Nobody has answered the question, so this row carries as much clinical information as a blank section: none.`}{' '}
         {absence.basis === 'code'
           ? `Recognised from code ${absence.code ?? ''}`.trim() + '.'
-          : 'Recognised from the wording of the concept, since the code was not one Loupe knows as a negation.'}
+          : 'Recognised from the wording of the concept, since the code was not one SHLoupe knows as a negation.'}
       </p>
       <DetailTable
         dense

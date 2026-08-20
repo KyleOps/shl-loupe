@@ -167,7 +167,7 @@ export function unsignedFileLabel(file: OpenedFile): string {
     case 'smart-health-card':
       return 'a SMART Health Card file (application/smart-health-card)';
     default:
-      return 'a file whose content type Loupe does not recognise';
+      return 'a file whose content type SHLoupe does not recognise';
   }
 }
 
@@ -307,7 +307,7 @@ export function ShcVerification({ file, transport }: ShcVerificationProps): Reac
         {parsed.extraMembers.length > 0 ? (
           <p className="shc-lede">
             The file also carries {parsed.extraMembers.join(', ')}, which the specification does not
-            define at the top level. Loupe ignored{' '}
+            define at the top level. SHLoupe ignored{' '}
             {parsed.extraMembers.length === 1 ? 'it' : 'them'}.
           </p>
         ) : null}
@@ -316,9 +316,9 @@ export function ShcVerification({ file, transport }: ShcVerificationProps): Reac
 
         {parsed.cards.length === 0 ? (
           <Callout tone="fail" title="This file carries no cards.">
-            The wrapper opened and its verifiableCredential array holds nothing Loupe could read as
-            a card, so there is no signature, no issuer and no key set to check. The findings above
-            say what the file held instead. This is the sender&rsquo;s to fix.
+            The wrapper opened and its verifiableCredential array holds nothing SHLoupe could read
+            as a card, so there is no signature, no issuer and no key set to check. The findings
+            above say what the file held instead. This is the sender&rsquo;s to fix.
           </Callout>
         ) : null}
 
@@ -470,7 +470,7 @@ type RunPhase =
   | { phase: 'idle' }
   | { phase: 'checking'; jwksUrl: string | undefined }
   | { phase: 'settled'; verification: HealthCardVerification }
-  /** Loupe itself broke. Distinct from a failed check, and it must not read as one. */
+  /** SHLoupe itself broke. Distinct from a failed check, and it must not read as one. */
   | { phase: 'error'; message: string };
 
 function CardVerification({
@@ -522,7 +522,7 @@ function CardVerification({
       },
       (error: unknown) => {
         // verifyHealthCard reports a transport failure as a finding rather than
-        // rejecting, so a rejection here is a defect in Loupe rather than
+        // rejecting, so a rejection here is a defect in SHLoupe rather than
         // anything about the card. It gets its own phase for that reason: shown
         // as a failed check it would blame the sender for our bug.
         if (!live.current) return;
@@ -555,7 +555,7 @@ function CardVerification({
       <IssuerBlock iss={iss} jwksUrl={jwksUrl} verification={verification} phase={run.phase} />
 
       {run.phase === 'error' ? (
-        <Callout tone="exception" title="Loupe could not finish the check.">
+        <Callout tone="exception" title="SHLoupe could not finish the check.">
           {run.message} This is a defect in this tool, not a finding about the card. Nothing below
           has been decided by it, and the button will try again.
         </Callout>
@@ -684,7 +684,7 @@ function IssuerBlock({
       value: name,
       mono: false,
       tone: 'info',
-      note: 'The name a trust directory publishes for this iss. It is that directory’s claim, not something the card asserts and not something Loupe verified.',
+      note: 'The name a trust directory publishes for this iss. It is that directory’s claim, not something the card asserts and not something SHLoupe verified.',
     });
   }
 
@@ -693,7 +693,7 @@ function IssuerBlock({
       key: 'Second attempt',
       value: fetched[fetched.length - 1]?.request.url ?? '',
       tone: 'warn',
-      note: 'The first URL did not return a key set, so Loupe retried with the doubled slash collapsed. A receiver that builds the URL exactly as the specification says to will fail against this issuer.',
+      note: 'The first URL did not return a key set, so SHLoupe retried with the doubled slash collapsed. A receiver that builds the URL exactly as the specification says to will fail against this issuer.',
     });
   }
 
@@ -758,7 +758,7 @@ function KeyIdentityBlock({
       tone: headerKid === undefined ? 'fail' : undefined,
       note:
         headerKid === undefined
-          ? 'The card names no key, so no key can be selected from the set. Loupe will not try each key until one verifies: that would report a card signed with a withdrawn key as valid.'
+          ? 'The card names no key, so no key can be selected from the set. SHLoupe will not try each key until one verifies: that would report a card signed with a withdrawn key as valid.'
           : 'The key this card says it was signed with.',
     },
     {
@@ -914,7 +914,7 @@ function CardClaims({ inspection }: { inspection: JwsInspection }): ReactNode {
       ...(card.nbf?.unit === 'milliseconds'
         ? {
             tone: 'warn',
-            note: 'The value is too large to be seconds, so Loupe read it as milliseconds. A verifier that reads it as seconds dates this card tens of thousands of years into the future and refuses it.',
+            note: 'The value is too large to be seconds, so SHLoupe read it as milliseconds. A verifier that reads it as seconds dates this card tens of thousands of years into the future and refuses it.',
           }
         : {}),
     },

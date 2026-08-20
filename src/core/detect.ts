@@ -54,11 +54,11 @@ export interface DetectedInput {
   kind: InputKind;
   variant: DetectedVariant;
   confidence: DetectConfidence;
-  /** One sentence: what this is, and what Loupe will do with it. */
+  /** One sentence: what this is, and what SHLoupe will do with it. */
   sentence: string;
   /** Facts worth showing beside the sentence, shortest first. */
   details: string[];
-  /** True when Loupe cannot open this without a decryption key from the user. */
+  /** True when SHLoupe cannot open this without a decryption key from the user. */
   needsKey: boolean;
   /**
    * The content to hand to the pipeline, with any wrapper peeled off: the body
@@ -138,7 +138,7 @@ function detect(
     variant: 'unrecognised',
     confidence: 'certain',
     sentence:
-      'Loupe does not recognise this. It reads SMART Health Links, manifest JSON, encrypted JWE files, health cards, FHIR resources and the raw output of a curl command.',
+      'SHLoupe does not recognise this. It reads SMART Health Links, manifest JSON, encrypted JWE files, health cards, FHIR resources and the raw output of a curl command.',
     details: [`${trimmed.length} characters pasted`],
     needsKey: false,
     content: trimmed,
@@ -193,7 +193,7 @@ function detectHttpResponse(text: string): DetectedInput {
       variant: 'unrecognised',
       confidence: 'certain',
       sentence:
-        `This is an HTTP response with no body, so Loupe can report the status and the headers a browser hid from it, and nothing more. ${
+        `This is an HTTP response with no body, so SHLoupe can report the status and the headers a browser hid from it, and nothing more. ${
           cors === undefined
             ? 'There is no access-control-allow-origin header here, which is the header a browser needs before it will hand this response to a page.'
             : ''
@@ -266,8 +266,8 @@ function describeShlink(
         : 'then request the manifest and open each file it names';
   const sentence =
     payload === undefined
-      ? 'A SMART Health Link, whose payload does not decode. Loupe will open it and show exactly where the decoding stops.'
-      : `A SMART Health Link${where === undefined ? '' : ` pointing at ${where}`}. Loupe will check every member of the payload, ${next}.`;
+      ? 'A SMART Health Link, whose payload does not decode. SHLoupe will open it and show exactly where the decoding stops.'
+      : `A SMART Health Link${where === undefined ? '' : ` pointing at ${where}`}. SHLoupe will check every member of the payload, ${next}.`;
 
   return {
     kind: 'shlink',
@@ -320,12 +320,12 @@ function detectJson(text: string): DetectedInput {
     value = undefined;
   }
   if (typeof value !== 'object' || value === null) {
-    return jsonUnrecognised(text, 'This parses as JSON, but not as an object Loupe recognises.');
+    return jsonUnrecognised(text, 'This parses as JSON, but not as an object SHLoupe recognises.');
   }
   if (Array.isArray(value)) {
     return jsonUnrecognised(
       text,
-      `This is a JSON array of ${value.length} item${value.length === 1 ? '' : 's'}. Loupe reads a manifest object, a FHIR resource or a health-card file, not a bare array.`,
+      `This is a JSON array of ${value.length} item${value.length === 1 ? '' : 's'}. SHLoupe reads a manifest object, a FHIR resource or a health-card file, not a bare array.`,
     );
   }
   const record = value as Record<string, unknown>;
@@ -340,7 +340,7 @@ function detectJson(text: string): DetectedInput {
       kind: 'manifest',
       variant: 'manifest-json',
       confidence: 'certain',
-      sentence: `A manifest response with ${files.length} file${files.length === 1 ? '' : 's'}. Loupe will decrypt everything embedded in it with the key you supply, and show a curl command for anything it can only reach by location.`,
+      sentence: `A manifest response with ${files.length} file${files.length === 1 ? '' : 's'}. SHLoupe will decrypt everything embedded in it with the key you supply, and show a curl command for anything it can only reach by location.`,
       details: [
         ...(typeof record.status === 'string' ? [`status ${record.status}`] : []),
         `${embedded} embedded`,
@@ -357,7 +357,7 @@ function detectJson(text: string): DetectedInput {
       kind: 'shc',
       variant: 'shc-file',
       confidence: 'certain',
-      sentence: `A SMART Health Card file holding ${count} signed card${count === 1 ? '' : 's'}. Loupe will read each one, check what it can offline, and render the FHIR inside it.`,
+      sentence: `A SMART Health Card file holding ${count} signed card${count === 1 ? '' : 's'}. SHLoupe will read each one, check what it can offline, and render the FHIR inside it.`,
       details: [`${count} verifiable credential${count === 1 ? '' : 's'}`],
       needsKey: false,
       content: text,
@@ -372,8 +372,8 @@ function detectJson(text: string): DetectedInput {
       variant: isBundle ? 'fhir-bundle' : 'fhir-resource',
       confidence: 'certain',
       sentence: isBundle
-        ? `A FHIR Bundle, already decrypted. Loupe will index it and render it, with no key and no network needed.`
-        : `A FHIR ${record.resourceType}, already decrypted. Loupe will render it directly.`,
+        ? `A FHIR Bundle, already decrypted. SHLoupe will index it and render it, with no key and no network needed.`
+        : `A FHIR ${record.resourceType}, already decrypted. SHLoupe will render it directly.`,
       details: [
         `resourceType ${record.resourceType}`,
         ...(typeof record.type === 'string' ? [`type ${record.type}`] : []),
@@ -422,7 +422,7 @@ function detectJwe(
     variant: 'jwe-compact',
     confidence: 'certain',
     sentence:
-      'An encrypted file in JWE compact form. Paste the key from its link and Loupe will decrypt it here, with nothing leaving the tab.',
+      'An encrypted file in JWE compact form. Paste the key from its link and SHLoupe will decrypt it here, with nothing leaving the tab.',
     details: [
       'five dot-separated parts',
       ...(alg === undefined ? [] : [`alg ${alg}`]),
@@ -453,8 +453,8 @@ function detectJws(compact: string, parts: [string, string, string]): DetectedIn
     variant: 'jws-compact',
     confidence: looksLikeCard ? 'certain' : 'likely',
     sentence: looksLikeCard
-      ? 'A signed SMART Health Card, on its own rather than inside a file wrapper. Loupe will read it, check what it can offline, and render the FHIR inside it.'
-      : 'A signed token in JWS compact form, which is three parts rather than the five an encrypted SHL file has. Loupe will read its header and payload and tell you what it is.',
+      ? 'A signed SMART Health Card, on its own rather than inside a file wrapper. SHLoupe will read it, check what it can offline, and render the FHIR inside it.'
+      : 'A signed token in JWS compact form, which is three parts rather than the five an encrypted SHL file has. SHLoupe will read its header and payload and tell you what it is.',
     details: [
       'three dot-separated parts',
       ...(alg === undefined ? [] : [`alg ${alg}`]),
@@ -493,8 +493,8 @@ function detectShcNumeric(text: string): DetectedInput {
     variant: 'shc-numeric',
     confidence: 'certain',
     sentence: odd
-      ? `A numeric SMART Health Card whose digit count is odd (${digits.length}), so at least one digit is missing. Loupe will decode as far as it can and say where it stops.`
-      : `A numeric SMART Health Card, the form a QR code carries. Loupe will decode it back to the signed card and render the FHIR inside it.`,
+      ? `A numeric SMART Health Card whose digit count is odd (${digits.length}), so at least one digit is missing. SHLoupe will decode as far as it can and say where it stops.`
+      : `A numeric SMART Health Card, the form a QR code carries. SHLoupe will decode it back to the signed card and render the FHIR inside it.`,
     details: [
       `${digits.length} digits`,
       ...(chunked ? ['split across chunks, so it came from a multi-part QR code'] : []),
@@ -510,7 +510,7 @@ function detectHcert(text: string): DetectedInput {
     variant: 'hcert-base45',
     confidence: 'certain',
     sentence:
-      'An HC1 certificate, the EU Digital COVID Certificate and WHO DDCC family. Loupe recognises it but does not decode COSE and CBOR, so it will name it and stop there rather than guess.',
+      'An HC1 certificate, the EU Digital COVID Certificate and WHO DDCC family. SHLoupe recognises it but does not decode COSE and CBOR, so it will name it and stop there rather than guess.',
     details: [`${text.length - 4} characters of base45 after the HC1: prefix`],
     needsKey: false,
     content: text.trim(),
@@ -556,7 +556,7 @@ function detectBareBase64url(compact: string, insideWrapper: boolean): DetectedI
     variant: 'base64url',
     confidence: 'unsure',
     sentence:
-      'This is base64url, and what it decodes to is not something Loupe recognises. If it is meant to be an SHL payload it should decode to a JSON object with a url and a key.',
+      'This is base64url, and what it decodes to is not something SHLoupe recognises. If it is meant to be an SHL payload it should decode to a JSON object with a url and a key.',
     details: [
       `${compact.length} characters`,
       ...(bytes === undefined ? ['does not decode as base64url'] : [`${bytes} bytes decoded`]),

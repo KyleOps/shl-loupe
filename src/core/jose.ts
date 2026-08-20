@@ -6,9 +6,9 @@
  *
  * 1. Diagnostics. A library returns "decryption operation failed" for a wrong
  *    key, a truncated ciphertext, a tampered tag and a mis-sized IV alike.
- *    Loupe has to tell those apart, so it checks each precondition itself and
+ *    SHLoupe has to tell those apart, so it checks each precondition itself and
  *    reports which one broke.
- * 2. Independence. Loupe is used to judge other implementations, including one
+ * 2. Independence. SHLoupe is used to judge other implementations, including one
  *    written by the same author (Platypus). Sharing a library with the thing
  *    under test hides exactly the class of bug an event is trying to surface.
  *

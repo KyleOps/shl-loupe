@@ -1,4 +1,4 @@
-# ArgoCD Application for Loupe. Commit this into aehrc/sparked-argo as
+# ArgoCD Application for SHLoupe. Commit this into aehrc/sparked-argo as
 # apps/shl-loupe.yaml (deploy/README.md has the exact copy commands); it lives
 # here so the deployment shape is reviewable in the repo that produces the image.
 #
@@ -13,7 +13,7 @@
 # `ref: values`, source 2 is the chart path, and the values file is addressed
 # through `$values/`.
 #
-# There is deliberately NO HTTPRoute and no hostname. Loupe is reached with
+# There is deliberately NO HTTPRoute and no hostname. SHLoupe is reached with
 #   kubectl --context sparkey -n shl-loupe port-forward svc/shl-loupe 8080:80
 # so nothing is added to apps/common/networking/gateway-infra.yaml. To give it a
 # public name later: add a listener plus a Certificate there, and flip

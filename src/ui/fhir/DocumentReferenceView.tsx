@@ -342,9 +342,9 @@ function AttachmentDetail({
           <Callout tone="warn" title="The bytes are not what the payload says they are">
             This attachment declares <span className="mono">{effectiveDeclared}</span> and its
             leading bytes are {sniffed.label} (<span className="mono">{sniffed.contentType}</span>).
-            Loupe previews it as what it actually is. A receiver that switches on the declared type
-            will fail here, and the failure will look like a corrupt file rather than a mislabelled
-            one.
+            SHLoupe previews it as what it actually is. A receiver that switches on the declared
+            type will fail here, and the failure will look like a corrupt file rather than a
+            mislabelled one.
           </Callout>
         )}
 
@@ -352,7 +352,7 @@ function AttachmentDetail({
         <Callout tone="info" title="This is a CDA document, not FHIR">
           An HL7 v3 Clinical Document Architecture document: XML with a{' '}
           <span className="mono">ClinicalDocument</span> root, structured completely differently
-          from anything else in this payload. Loupe shows the XML as it arrived rather than
+          from anything else in this payload. SHLoupe shows the XML as it arrived rather than
           transforming it, because the usual transform is HL7's own informative stylesheet and it is
           a sample rendering, not the document. Send it to a CDA viewer if you need it laid out.
         </Callout>
@@ -376,7 +376,7 @@ function AttachmentDetail({
 
       {/* Four states of data-versus-url, and the third is the one to get right: a
           url beside bytes that are already here is PROVENANCE, not a document
-          Loupe is missing. Saying "the bytes are not in the payload" over an
+          SHLoupe is missing. Saying "the bytes are not in the payload" over an
           attachment being previewed two rows down is the kind of contradiction
           that makes a reader stop trusting the whole page. */}
       {url !== undefined && binary === undefined && data === undefined && (
@@ -390,7 +390,7 @@ function AttachmentDetail({
               {
                 key: 'url',
                 value: <span className="opaque-value">{url}</span>,
-                note: 'This attachment carries its own bytes AND says where they came from. The preview below is the bytes in the payload; the URL is recorded provenance, and Loupe does not fetch it to compare.',
+                note: 'This attachment carries its own bytes AND says where they came from. The preview below is the bytes in the payload; the URL is recorded provenance, and SHLoupe does not fetch it to compare.',
               },
             ]}
           />
@@ -591,7 +591,7 @@ function ExternalAttachmentUrl({ url }: { url: string }): ReactNode {
         <div className="attachment-actions">
           <a className="btn btn-primary" href={hashForLink(shlink)}>
             <LinkIcon size={13} aria-hidden />
-            <span>Open this link in Loupe</span>
+            <span>Open this link in SHLoupe</span>
           </a>
           <CopyButton value={shlink} label="Copy the link" />
         </div>
@@ -612,7 +612,7 @@ function ExternalAttachmentUrl({ url }: { url: string }): ReactNode {
   return (
     <Callout tone={unreachable ? 'warn' : 'info'} title="This attachment lives somewhere else">
       <p>
-        The bytes are not in the payload. Loupe will not fetch them: a viewer that dereferences a
+        The bytes are not in the payload. SHLoupe will not fetch them: a viewer that dereferences a
         URL out of a payload it was handed is a beacon, and this one would run on your network, from
         your address, with your cookies for that origin.
       </p>
@@ -624,7 +624,7 @@ function ExternalAttachmentUrl({ url }: { url: string }): ReactNode {
             ? [
                 {
                   key: 'shape',
-                  value: 'Not a URL Loupe can parse',
+                  value: 'Not a URL SHLoupe can parse',
                   tone: 'warn' as Tone,
                   note: 'A url element that is not a URL cannot be dereferenced by anything.',
                 },

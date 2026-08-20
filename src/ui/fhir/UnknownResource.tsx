@@ -109,8 +109,8 @@ export function ConceptValue({ value }: { value: unknown }): ReactNode {
       <CodeChips concept={concept} />
       {concept.codeOnly && (
         <span className="concept-note">
-          Nothing in this concept carried a human label, so what is shown is the code itself. Loupe
-          does not invent a display for a code it cannot look up.
+          Nothing in this concept carried a human label, so what is shown is the code itself.
+          SHLoupe does not invent a display for a code it cannot look up.
         </span>
       )}
     </span>
@@ -350,7 +350,7 @@ export function ReferenceValue({
           <span>{fallback ?? resolution.url}</span>
         </span>
         <span className="value-note">
-          This points outside the payload. Loupe does not fetch it: a viewer that silently
+          This points outside the payload. SHLoupe does not fetch it: a viewer that silently
           dereferences a URL out of an untrusted payload is a beacon.
         </span>
         <CopyButton value={resolution.url} label="Copy URL" />
@@ -512,7 +512,7 @@ export function LeafValue({
   }
 
   const record = asRecord(value);
-  if (record === undefined) return <Absent>Not a value Loupe can read</Absent>;
+  if (record === undefined) return <Absent>Not a value SHLoupe can read</Absent>;
 
   // Shape tests, ordered so the decisive ones run first. `coding` and
   // `system`+`code` are tested BEFORE anything keying on `display`, because a
@@ -919,8 +919,8 @@ export function UnknownResource({
     <div className="unknown-resource">
       <p className="value-note">
         {type === undefined
-          ? 'This object carries no resourceType, so Loupe cannot tell what it is meant to be. Every field it does carry is below.'
-          : `Loupe has no purpose-built view for ${type}, so every field it carries is listed below, formatted by datatype. Nothing has been dropped.`}
+          ? 'This object carries no resourceType, so SHLoupe cannot tell what it is meant to be. Every field it does carry is below.'
+          : `SHLoupe has no purpose-built view for ${type}, so every field it carries is listed below, formatted by datatype. Nothing has been dropped.`}
       </p>
       <ResourceTree resource={resource} context={context} />
     </div>
@@ -961,9 +961,9 @@ export function UnhandledRow({
     >
       {empty ? (
         <p className="value-note">
-          The bundle entry is present but carries no resource, so there is nothing to render. Loupe
-          counts it anyway, because an entry that vanishes from the screen makes the count here
-          disagree with the count on the wire.
+          The bundle entry is present but carries no resource, so there is nothing to render.
+          SHLoupe counts it anyway, because an entry that vanishes from the screen makes the count
+          here disagree with the count on the wire.
         </p>
       ) : (
         <>

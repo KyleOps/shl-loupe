@@ -241,7 +241,7 @@ export function CompositionView({
         {sections.length === 0 && (
           <Callout tone="fail" title="This document has no sections">
             A Composition with no sections carries a title, a subject and nothing else. Everything
-            in the bundle is still in the payload, and Loupe lists it below, but nothing here says
+            in the bundle is still in the payload, and SHLoupe lists it below, but nothing here says
             what any of it is FOR.
           </Callout>
         )}
@@ -305,7 +305,7 @@ function SectionView({
               className="code-chip mono"
               title={
                 slice?.verifiedDisplay === undefined
-                  ? `LOINC ${loinc}. Loupe does not carry a verified display for this code, and it will not guess one.`
+                  ? `LOINC ${loinc}. SHLoupe does not carry a verified display for this code, and it will not guess one.`
                   : `LOINC ${loinc}, whose published display is "${slice.verifiedDisplay}". The heading above is the author's own title, which is what a human should read.`
               }
             >

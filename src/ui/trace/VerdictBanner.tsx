@@ -6,7 +6,7 @@
  * exactly one display-size sentence and everything else is small. Three
  * decisions are worth knowing before changing it.
  *
- * BLOCKED IS THE GOOD OUTCOME, AND THE COPY SAYS SO. "Blocked" means Loupe knew
+ * BLOCKED IS THE GOOD OUTCOME, AND THE COPY SAYS SO. "Blocked" means SHLoupe knew
  * the link could not work from the link itself and never troubled a server;
  * "failed" means it asked and did not get through. A viewer that renders both as
  * one red failure is how a sender concludes their link is fine and the viewer is
@@ -87,10 +87,10 @@ function subline(run: TraceRun, requests: number): string {
       return 'Some of what this link points at opened and some of it did not, so the trace is the part worth reading.';
     case 'blocked':
       return requests === 0
-        ? 'Loupe worked this out from the link itself and made no request, so no server was troubled and nothing timed out.'
-        : 'Loupe stopped rather than keep asking. What it already knows settles it.';
+        ? 'SHLoupe worked this out from the link itself and made no request, so no server was troubled and nothing timed out.'
+        : 'SHLoupe stopped rather than keep asking. What it already knows settles it.';
     default:
-      return 'Loupe went as far as it could get. The failing step below carries the response verbatim, including the browser’s own words.';
+      return 'SHLoupe went as far as it could get. The failing step below carries the response verbatim, including the browser’s own words.';
   }
 }
 

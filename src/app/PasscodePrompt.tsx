@@ -179,8 +179,8 @@ export function PasscodePrompt({
       </div>
 
       <p className="passcode-note">
-        Loupe sends exactly one attempt per press. It never retries, never guesses, and never sends
-        a passcode as part of a probe.
+        SHLoupe sends exactly one attempt per press. It never retries, never guesses, and never
+        sends a passcode as part of a probe.
       </p>
     </form>
   );

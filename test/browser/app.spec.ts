@@ -59,7 +59,7 @@ test.describe('the motivating incident', () => {
     await page.goto(`/#${LOOPBACK_LINK}`);
     await expect(page.locator('.verdict')).toHaveClass(/tone-fail/);
     // And the outcome chip keeps its own, gentler reading, because "blocked"
-    // describes Loupe doing well rather than the link doing badly.
+    // describes SHLoupe doing well rather than the link doing badly.
     await expect(page.locator('.verdict-facts')).toContainText('Blocked');
   });
 });
@@ -96,34 +96,53 @@ test.describe('the chrome renders', () => {
     expect(second!.x).toBeGreaterThan(first!.x + first!.width - 2);
   });
 
-  test('hides the skip link until it has focus, then shows it', async ({ page }) => {
-    /*
-     * This was flaky under parallel load, passing alone and failing about one run
-     * in seven with six workers. The cause was pressing Tab before the page had
-     * settled: the header adjusts the tab strip's scrollLeft once fonts have
-     * loaded, and a Tab arriving in that window landed somewhere other than the
-     * first stop. A flaky test is worse than no test, so the wait is explicit
-     * rather than a timeout: focus the body first, so the tab order starts from a
-     * known place, and let the fonts resolve before pressing anything.
-     */
+  /*
+   * Two claims, tested separately, because one of them has nothing to do with
+   * timing and was being asserted through something that did.
+   *
+   * The original test pressed Tab and then waited for the reveal, which flaked
+   * about one run in four under six parallel workers. Measurement (30 serial
+   * runs) showed focus landing on the skip link every single time, so the tab
+   * order was never the problem: what was fragile was pressing a key before the
+   * page had settled and then reading a transition mid-flight. Neither claim
+   * needs a keystroke to be checked.
+   */
+  test('the skip link is the first thing in the tab order', async ({ page }) => {
+    await page.goto('/');
+    // Tab order follows DOM order here, since nothing sets a positive tabindex,
+    // so this is a static check with no timing in it at all.
+    const first = await page.evaluate(() => {
+      const focusable = document.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      const positive = [...document.querySelectorAll<HTMLElement>('[tabindex]')].filter(
+        (el) => Number(el.getAttribute('tabindex')) > 0,
+      );
+      return { className: focusable[0]?.className ?? '', positiveTabindexes: positive.length };
+    });
+    expect(first.className).toContain('skip-link');
+    expect(first.positiveTabindexes, 'a positive tabindex would break DOM order').toBe(0);
+  });
+
+  test('the skip link is off screen until focused, and on screen once it is', async ({ page }) => {
     await page.goto('/');
     const skip = page.locator('.skip-link');
     await expect(skip).toBeAttached();
-    await page.evaluate(() => document.fonts.ready);
+    expect((await skip.boundingBox())!.y, 'off screen at rest').toBeLessThan(0);
 
-    await expect
-      .poll(async () => Math.round((await skip.boundingBox())!.y), { timeout: 2000 })
-      .toBeLessThan(0);
-
-    await page.evaluate(() => document.body.focus());
-    await page.keyboard.press('Tab');
+    // Focused directly rather than by pressing Tab: the claim under test is that
+    // focus reveals it, and going through the keyboard only adds a way to fail
+    // for an unrelated reason.
+    await skip.focus();
     await expect(skip).toBeFocused();
-
-    // The reveal is a transform transition, so wait for it to settle rather than
-    // reading mid-animation.
     await expect
-      .poll(async () => Math.round((await skip.boundingBox())!.y), { timeout: 2000 })
+      .poll(async () => Math.round((await skip.boundingBox())!.y), { timeout: 3000 })
       .toBeGreaterThan(0);
+
+    await page.locator('#link-field-input').focus();
+    await expect
+      .poll(async () => Math.round((await skip.boundingBox())!.y), { timeout: 3000 })
+      .toBeLessThan(0);
   });
 });
 
@@ -306,7 +325,7 @@ test.describe('the privacy promise', () => {
 test.describe('the deployment failure most likely to happen at an event', () => {
   test('says so when served from somewhere it cannot decrypt', async ({ page }) => {
     /*
-     * Loupe is reached by `kubectl port-forward`, which is http://localhost and
+     * SHLoupe is reached by `kubectl port-forward`, which is http://localhost and
      * fine. Then somebody at the same table wants a look, the forward is rebound
      * to 0.0.0.0, the LAN address is read out, and on that laptop `crypto.subtle`
      * is undefined, so every file fails at the last step for a reason that has
@@ -352,6 +371,12 @@ test.describe('the overlay layer', () => {
    */
   test('the command palette covers the page rather than joining it', async ({ page }) => {
     await page.goto('/');
+    // Both measurements have to come from a settled page. Reading the height
+    // before the web fonts swap in and again afterwards compares two different
+    // layouts, which flaked under parallel load for a reason that had nothing to
+    // do with the overlay.
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('.nav-tab').first()).toBeVisible();
     const heightBefore = await page.evaluate(() => document.documentElement.scrollHeight);
 
     await page.keyboard.press('ControlOrMeta+k');

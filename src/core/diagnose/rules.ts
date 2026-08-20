@@ -1,5 +1,5 @@
 /**
- * The static rule set: everything Loupe can tell you before it touches the
+ * The static rule set: everything SHLoupe can tell you before it touches the
  * network.
  *
  * Each rule has a stable id, because ids are what a report quotes and what a
@@ -302,7 +302,7 @@ export const STATIC_RULES: Rule[] = [
         severity: 'fatal',
         audience: 'sender',
         title: `This link expired ${relative(seconds)} ago.`,
-        detail: `The payload sets exp to ${link.exp}, which is ${new Date(link.exp * 1000).toISOString()}. A conformant sharing server refuses the manifest request from that moment on, so the link is dead regardless of everything else in it. Loupe reads this from the link itself, with no request made and no clock involved but yours.`,
+        detail: `The payload sets exp to ${link.exp}, which is ${new Date(link.exp * 1000).toISOString()}. A conformant sharing server refuses the manifest request from that moment on, so the link is dead regardless of everything else in it. SHLoupe reads this from the link itself, with no request made and no clock involved but yours.`,
         remedy:
           'Ask for a fresh link. If the sender believes it is current, compare clocks: an expiry set in the wrong timezone, or in milliseconds, is the usual cause.',
         citation: CITATIONS.payloadExp,
@@ -413,9 +413,9 @@ export const STATIC_RULES: Rule[] = [
         ruleId: 'SHL-VERSION-UNSUPPORTED',
         severity: 'error',
         audience: 'you',
-        title: `This link declares protocol version ${String(link.version)}, and Loupe implements version 1.`,
+        title: `This link declares protocol version ${String(link.version)}, and SHLoupe implements version 1.`,
         detail:
-          'The specification tells a receiver that meets a version it does not know to say so and to stop, rather than to make a manifest request and guess at the response. Loupe will show you everything it can read statically and will not proceed on assumptions.',
+          'The specification tells a receiver that meets a version it does not know to say so and to stop, rather than to make a manifest request and guess at the response. SHLoupe will show you everything it can read statically and will not proceed on assumptions.',
         citation: CITATIONS.payloadV,
       };
     },
@@ -468,7 +468,7 @@ export const STATIC_RULES: Rule[] = [
         audience: 'nobody',
         title: 'This is a direct link: one file, fetched with a GET, no manifest.',
         detail:
-          'The U flag says the url points straight at a single encrypted file rather than at a manifest endpoint. Loupe issues a GET instead of a POST, which also means no recipient string and no embeddedLengthMax are sent.',
+          'The U flag says the url points straight at a single encrypted file rather than at a manifest endpoint. SHLoupe issues a GET instead of a POST, which also means no recipient string and no embeddedLengthMax are sent.',
         citation: CITATIONS.flagU,
       };
     },

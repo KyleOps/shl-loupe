@@ -10,7 +10,7 @@
  * pipeline over bytes fetched some other way, with the network untouched from
  * the first step to the last.
  *
- * The round trip is the whole feature. Loupe cannot make the request, so it
+ * The round trip is the whole feature. SHLoupe cannot make the request, so it
  * hands over the exact command that can and takes the output back: paste the
  * link, copy the curl, run it in a shell where CORS does not exist, paste what
  * it printed into the manifest box. What comes out is the trace a live run would
@@ -255,7 +255,7 @@ export const PLAN: Record<InputKind, string> = {
   shc: 'Decode the card back to its signed token, read its payload, and check the signature if you paste the issuer key set.',
   jws: 'Read the protected header and the payload, and check the signature if you paste the issuer key set.',
   hcert:
-    'Name it and stop. Loupe reads SMART Health Links and Cards; HC1 is base45 CBOR inside COSE, which is a different stack end to end.',
+    'Name it and stop. SHLoupe reads SMART Health Links and Cards; HC1 is base45 CBOR inside COSE, which is a different stack end to end.',
   unknown:
     'Say what it saw and stop, rather than guessing. The verdict above is the whole answer in that case.',
 };
@@ -273,7 +273,7 @@ export interface AcceptedInput {
   id: string;
   /** What you have, including whatever has to come with it. */
   what: string;
-  /** One line: what Loupe does with it. */
+  /** One line: what SHLoupe does with it. */
   does: string;
   matches(detected: DetectedInput): boolean;
 }
@@ -388,7 +388,7 @@ export interface GuideFacts {
  * screen can see that it happened.
  *
  * Steps 2 and 3 of the terminal flow share their evidence, and that is the
- * honest answer rather than a bug. Loupe cannot see a terminal. What it can see
+ * honest answer rather than a bug. SHLoupe cannot see a terminal. What it can see
  * is the paste that only exists because somebody ran the command, so both steps
  * complete on it, and while the box is empty step 2 is where you are and step 3
  * is genuinely still ahead of you.
@@ -399,7 +399,7 @@ export function guideSteps(facts: GuideFacts): GuideStep[] {
         {
           title: 'Copy the command',
           detail:
-            'Put your link in the box below and Loupe fills the command in for you: the manifest URL, the POST body and the recipient, ready to run.',
+            'Put your link in the box below and SHLoupe fills the command in for you: the manifest URL, the POST body and the recipient, ready to run.',
           done: facts.hasCommand,
         },
         {
@@ -411,7 +411,7 @@ export function guideSteps(facts: GuideFacts): GuideStep[] {
         {
           title: 'Paste what came back',
           detail:
-            'Into the manifest box, headers and all. Loupe splits the headers off and reports what the server said to the shell.',
+            'Into the manifest box, headers and all. SHLoupe splits the headers off and reports what the server said to the shell.',
           done: facts.handoffFilled,
         },
       ]
@@ -419,7 +419,7 @@ export function guideSteps(facts: GuideFacts): GuideStep[] {
         {
           title: 'Paste what you have',
           detail:
-            'A manifest, an encrypted file, a health card or an already-decrypted bundle. Loupe says what it thinks it is before anything runs.',
+            'A manifest, an encrypted file, a health card or an already-decrypted bundle. SHLoupe says what it thinks it is before anything runs.',
           done: facts.recognised,
         },
         ...(facts.needsKey
@@ -526,7 +526,7 @@ export function httpRows(detected: DetectedInput): FieldRow[] {
       tone: cors === undefined ? 'warn' : 'pass',
       note:
         cors === undefined
-          ? 'This is the header a browser needs before it will hand the response to a page. A shell does not need it, which is why the command worked and Loupe did not.'
+          ? 'This is the header a browser needs before it will hand the response to a page. A shell does not need it, which is why the command worked and SHLoupe did not.'
           : 'A browser would have been allowed to read this response.',
     },
     ...Object.entries(response.headers)
@@ -700,7 +700,7 @@ export function OfflineScreen(): ReactNode {
         dropped.type !== '' &&
         !dropped.type.startsWith('text/')
       ) {
-        setError(`Loupe reads text here, and "${dropped.name}" does not look like text.`);
+        setError(`SHLoupe reads text here, and "${dropped.name}" does not look like text.`);
         return;
       }
       setError(undefined);
@@ -1022,7 +1022,7 @@ function Verdict({ detected }: { detected: DetectedInput }): ReactNode {
       {rows.length > 0 ? (
         <div className="offline-http">
           <p className="offline-http-note">
-            You pasted an HTTP response with its headers, so Loupe can also report what the server
+            You pasted an HTTP response with its headers, so SHLoupe can also report what the server
             said to the shell.
           </p>
           <FieldTable rows={rows} dense />
@@ -1082,7 +1082,7 @@ function KeyPanel({ resolution }: { resolution: KeyResolution }): ReactNode {
         <p className="offline-field-note" id="offline-key-note">
           The key is the <code>key</code> member of the SMART Health Link this content belongs to:
           43 characters of base64url, being 32 random bytes. Decryption happens in this tab, and the
-          key is never sent anywhere. A whole link works here too, and Loupe will take the key out
+          key is never sent anywhere. A whole link works here too, and SHLoupe will take the key out
           of it.
         </p>
         {resolution.note !== undefined ? (
@@ -1141,8 +1141,8 @@ function Handoff({
         <div className="offline-handoff">
           <p className="offline-handoff-lede">
             <Terminal size={14} aria-hidden />
-            Loupe cannot request the manifest from here, so run this where CORS does not exist, then
-            paste what it prints into the manifest box below.
+            SHLoupe cannot request the manifest from here, so run this where CORS does not exist,
+            then paste what it prints into the manifest box below.
           </p>
           {url === undefined ? (
             <Callout tone="info" title="The command needs the link first.">
@@ -1171,14 +1171,14 @@ function Handoff({
           {url !== undefined && !passcodeFlagged ? (
             <p className="offline-field-note">
               The command carries no key and no passcode, so it is safe to paste into a group chat:
-              a key decrypts the files rather than granting access, and Loupe never puts one in a
+              a key decrypts the files rather than granting access, and SHLoupe never puts one in a
               command.
             </p>
           ) : null}
           <Field
             id="offline-manifest"
             label="Manifest response"
-            note="The JSON the command printed. Headers and all is fine: Loupe splits them off and reports what the server said to the shell."
+            note="The JSON the command printed. Headers and all is fine: SHLoupe splits them off and reports what the server said to the shell."
             value={manifest}
             onChange={setManifest}
             placeholder='{"files":[{"contentType":"application/fhir+json","embedded":"eyJhbGciOi…"}]}'

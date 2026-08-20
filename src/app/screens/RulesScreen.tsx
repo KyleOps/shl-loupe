@@ -1,5 +1,5 @@
 /**
- * Checks: every check Loupe runs, and the differential for the one thing it
+ * Checks: every check SHLoupe runs, and the differential for the one thing it
  * cannot check.
  *
  * The list is GENERATED from `STATIC_RULES`, not typed out beside it. That is the

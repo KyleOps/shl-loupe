@@ -312,7 +312,7 @@ describe('stepToText', () => {
         method: 'POST',
         url: 'https://shl.example.org/m',
         headers: { 'content-type': 'application/json' },
-        body: '{"recipient":"Loupe"}',
+        body: '{"recipient":"SHLoupe"}',
       },
     },
     { type: 'response', response: response({ status: 0, networkError: 'Failed to fetch' }) },

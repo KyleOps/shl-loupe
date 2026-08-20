@@ -16,7 +16,7 @@
  * authentic bytes stay reachable over the network, at the link in the catalogue.
  *
  * It costs about 45 kB of the production bundle, which is the largest single
- * thing Loupe ships. That is deliberate: the offline promise is the product, and
+ * thing SHLoupe ships. That is deliberate: the offline promise is the product, and
  * a summary trimmed to five entries cannot show a viewer mis-ordering twenty.
  */
 import type { Bundle, BundleEntry, FhirResource } from 'fhir/r4';

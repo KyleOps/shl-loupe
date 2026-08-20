@@ -25,7 +25,7 @@ import { IG_IPS_BUNDLE } from '../fixtures/ips-bundle';
 import { IG_EXAMPLE_KEY, IG_SHC_FILE, IG_SHC_JWE } from '../fixtures/shc-card';
 
 const NOW = Date.parse('2026-08-20T00:00:00Z');
-const base = { viewer: HTTPS_VIEWER, recipient: 'Loupe tests', now: () => NOW };
+const base = { viewer: HTTPS_VIEWER, recipient: 'SHLoupe tests', now: () => NOW };
 
 /** The address from the motivating incident: unopenable by anyone but its author. */
 const LOOPBACK_URL = 'https://localhost:5173/api/shl-manifest?bid=4836470';
@@ -160,7 +160,7 @@ describe('a link whose manifest was fetched from a shell', () => {
     // Online this finding stops the run. Offline the step says why it did not.
     const analysis = result.run.steps.find((step) => step.kind === 'static.analyse');
     expect(analysis?.status).toBe('warn');
-    expect(JSON.stringify(analysis?.evidence)).toContain('Loupe would stop here on a live run');
+    expect(JSON.stringify(analysis?.evidence)).toContain('SHLoupe would stop here on a live run');
   });
 
   it('records the manifest request it would have sent, and says it was not sent', async () => {
@@ -173,7 +173,7 @@ describe('a link whose manifest was fetched from a shell', () => {
       // lets a reader compare it against the GET they ran by hand.
       expect(request.request.method).toBe('POST');
       expect(request.request.url).toBe(LOOPBACK_URL);
-      expect(request.request.body).toContain('"recipient":"Loupe tests"');
+      expect(request.request.body).toContain('"recipient":"SHLoupe tests"');
     }
     expect(JSON.stringify(step?.evidence)).toContain('This request was not sent');
     expect(result.run.networkUsed).toBe(false);
@@ -421,7 +421,7 @@ describe('a health card', () => {
     // rendered, and the trace says exactly what was and was not established.
     const finding = result.run.findings.find((f) => f.ruleId === 'SHC-NOT-VERIFIED');
     expect(finding?.severity).toBe('info');
-    expect(finding?.detail).toContain('not something Loupe has confirmed');
+    expect(finding?.detail).toContain('not something SHLoupe has confirmed');
     expect(finding?.detail).toContain('/.well-known/jwks.json');
     expect(result.run.steps.find((s) => s.kind === 'shc.verify')?.status).toBe('warn');
   });
@@ -504,10 +504,10 @@ describe('decodeShcNumeric', () => {
 });
 
 // ---------------------------------------------------------------------------
-// What Loupe will not pretend to open
+// What SHLoupe will not pretend to open
 // ---------------------------------------------------------------------------
 
-describe('content Loupe does not read', () => {
+describe('content SHLoupe does not read', () => {
   it('names an HC1 certificate and stops, rather than half-decoding it', async () => {
     const result = await openOffline({ ...base, kind: 'hcert', text: 'HC1:NCFOXN%TSMAHN-H' });
     expectRenderableRun(result);

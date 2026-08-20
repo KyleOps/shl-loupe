@@ -34,10 +34,10 @@ import {
 } from './trace';
 
 const TOOL_LINE =
-  'Produced by Loupe, a SMART Health Link debugger that runs entirely in one browser tab.';
+  'Produced by SHLoupe, a SMART Health Link debugger that runs entirely in one browser tab.';
 
 /** Recipient used only in a synthesised command, so it is obviously a stand-in. */
-const REPORT_RECIPIENT = 'Loupe (manual check)';
+const REPORT_RECIPIENT = 'SHLoupe (manual check)';
 
 export interface ReportOptions {
   format?: 'markdown' | 'json';
@@ -74,7 +74,7 @@ export function buildDiagnosisReport(
   if (options.format === 'json') {
     return `${JSON.stringify(
       {
-        tool: 'Loupe',
+        tool: 'SHLoupe',
         reportVersion: 1,
         secrets: secretState(redactor),
         ...(options.fingerprint === undefined ? {} : { inputFingerprint: options.fingerprint }),
@@ -196,7 +196,7 @@ function verdictSentence(run: TraceRun): string {
     case 'partial':
       return 'Some of the files opened and some did not, so the link is partly usable.';
     case 'blocked':
-      return 'Blocked before any request. Loupe could tell from the link alone that it cannot work, so it sent nothing.';
+      return 'Blocked before any request. SHLoupe could tell from the link alone that it cannot work, so it sent nothing.';
     case 'failed':
       return run.networkUsed
         ? 'Failed after a request was made. The step that broke is named below.'

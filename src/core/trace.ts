@@ -1,7 +1,7 @@
 /**
  * The trace model.
  *
- * Loupe's whole reason to exist is that opening a SMART Health Link is a
+ * SHLoupe's whole reason to exist is that opening a SMART Health Link is a
  * multi-step pipeline whose failures are, in every other viewer, collapsed into
  * one opaque message. So the pipeline here is a recorded run: every step is a
  * plain, serialisable record carrying its inputs, its evidence, its timing and

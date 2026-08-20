@@ -6,7 +6,7 @@
  * client-side code can tell which. Guessing one and stating it as fact is what
  * every other viewer does, and it is why senders conclude their link is fine.
  *
- * So Loupe does the thing a competent engineer does at a whiteboard: lists the
+ * So SHLoupe does the thing a competent engineer does at a whiteboard: lists the
  * candidate causes, ranks them by what else it knows about the URL and the
  * probes it was allowed to run, gives each a discriminating test, and says
  * plainly that the browser is withholding the answer. A ranked differential with

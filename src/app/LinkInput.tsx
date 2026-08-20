@@ -103,10 +103,10 @@ export function splitSentences(text: string): string[] {
 }
 
 /**
- * The one sentence worth the space under the field: what Loupe is about to do.
+ * The one sentence worth the space under the field: what SHLoupe is about to do.
  *
  * The detector writes identity first and consequence second ("A SMART Health
- * Link pointing at shl.example.org. Loupe will check every member of the
+ * Link pointing at shl.example.org. SHLoupe will check every member of the
  * payload, then…"), and the chip beside this already carries the identity, so
  * printing both is what made the preview read as a run-on.
  *
@@ -196,9 +196,9 @@ export function detectionFacts(details: readonly string[]): DetectionFact[] {
 
 /** What the chip's tooltip says, since "certain" and "unsure" are not the same claim. */
 const CONFIDENCE_NOTE: Record<DetectedInput['confidence'], string> = {
-  certain: 'Loupe is certain of this shape.',
-  likely: 'Loupe is fairly sure of this shape, and says so rather than guessing.',
-  unsure: 'Loupe is unsure of this shape, and says so rather than guessing.',
+  certain: 'SHLoupe is certain of this shape.',
+  likely: 'SHLoupe is fairly sure of this shape, and says so rather than guessing.',
+  unsure: 'SHLoupe is unsure of this shape, and says so rather than guessing.',
 };
 
 const DROPPABLE = /\.(txt|json|jose|jwe)$/i;

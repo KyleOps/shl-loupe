@@ -57,7 +57,7 @@ export interface Settings {
   setRevealSecrets(reveal: boolean): void;
 }
 
-export const DEFAULT_RECIPIENT = 'Loupe (SMART Health Link debugger)';
+export const DEFAULT_RECIPIENT = 'SHLoupe (SMART Health Link debugger)';
 
 export const useSettings = create<Settings>()(
   persist(

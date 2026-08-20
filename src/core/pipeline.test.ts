@@ -18,7 +18,7 @@ class SpyTransport implements Transport {
 }
 
 const NOW = Date.parse('2026-08-20T00:00:00Z');
-const base = { viewer: HTTPS_VIEWER, recipient: 'Loupe tests', now: () => NOW };
+const base = { viewer: HTTPS_VIEWER, recipient: 'SHLoupe tests', now: () => NOW };
 
 const key = () => bytesToBase64url(crypto.getRandomValues(new Uint8Array(32)));
 

@@ -9,7 +9,7 @@
 # apps/shl-loupe/ it is invisible to that Application and reached only through
 # the `$values` ref.
 #
-# Loupe is entirely client-side: the BROWSER performs every SMART Health Link
+# SHLoupe is entirely client-side: the BROWSER performs every SMART Health Link
 # manifest POST and every files[].location GET. This pod serves a static bundle
 # baked into its own image layers and nothing else.
 deployment:

@@ -46,7 +46,7 @@ async function runFor(url: string, key: string) {
   return openShl({
     input: encodeShlink({ url, key }),
     viewer: HTTPS_VIEWER,
-    recipient: 'Loupe redaction test',
+    recipient: 'SHLoupe redaction test',
     transport: dead,
   });
 }
@@ -86,7 +86,7 @@ describe('a report never carries the key, at any URL length', () => {
     const result = await openShl({
       input: encodeShlink({ url: 'https://example.org/manifest/abc', key, flag: 'P' }),
       viewer: HTTPS_VIEWER,
-      recipient: 'Loupe redaction test',
+      recipient: 'SHLoupe redaction test',
       passcode: 'correct-horse-battery-staple',
       transport: dead,
     });

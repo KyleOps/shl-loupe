@@ -184,7 +184,7 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
             audience: 'you',
             title: 'This does not contain a SMART Health Link.',
             detail:
-              'Loupe looked for a "shlink:/" token, a viewer URL carrying one in its fragment, and a bare base64url payload that decodes to an object with a url and a key. None matched. If you have a manifest, a JWE or a FHIR bundle rather than a link, use Offline mode, which runs the same pipeline over pasted content.',
+              'SHLoupe looked for a "shlink:/" token, a viewer URL carrying one in its fragment, and a bare base64url payload that decodes to an object with a url and a key. None matched. If you have a manifest, a JWE or a FHIR bundle rather than a link, use Offline mode, which runs the same pipeline over pasted content.',
           });
           throw new StepFailure('No shlink payload found');
         }
@@ -217,7 +217,7 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
             audience: 'sender',
             title: 'The URI is written "shlink://" but the specification uses one slash.',
             detail:
-              'A single slash is correct: "shlink:/" is not an authority-based URI, so there is no "//" host part. Loupe accepts both, and a strict receiver may not.',
+              'A single slash is correct: "shlink:/" is not an authority-based URI, so there is no "//" host part. SHLoupe accepts both, and a strict receiver may not.',
             citation: CITATIONS.linkUri,
           });
         }
@@ -292,7 +292,7 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
         kind: 'static.analyse',
         title: 'Inspect the manifest URL, before requesting anything',
         summary:
-          'Most links that fail at an event fail for a reason fully visible in the URL. This step is why Loupe often has an answer before the first request.',
+          'Most links that fail at an event fail for a reason fully visible in the URL. This step is why SHLoupe often has an answer before the first request.',
       },
       (step) => {
         let parsed: URL;
@@ -358,7 +358,7 @@ export async function openShl(options: PipelineOptions): Promise<PipelineResult>
         ruleId: 'LOUPE-INTERNAL',
         severity: 'error',
         audience: 'nobody',
-        title: 'Loupe itself hit an unexpected error.',
+        title: 'SHLoupe itself hit an unexpected error.',
         detail: `This is a defect in the tool, not in the link: ${
           error instanceof Error ? error.message : String(error)
         }. The trace above is still accurate up to the step that failed.`,
@@ -429,7 +429,7 @@ async function fetchManifest(
           audience: 'you',
           title: 'A passcode is needed before this request can be made.',
           detail:
-            'The link carries the P flag, so the server will reject a request without one. Loupe stops here rather than spending an attempt: every wrong passcode counts against a lifetime limit that permanently disables the link, so it never guesses and never retries on your behalf.',
+            'The link carries the P flag, so the server will reject a request without one. SHLoupe stops here rather than spending an attempt: every wrong passcode counts against a lifetime limit that permanently disables the link, so it never guesses and never retries on your behalf.',
           citation: CITATIONS.flagP,
         });
         throw new StepFailure('Passcode required', 'blocked');
@@ -474,7 +474,7 @@ async function fetchManifest(
             severity: 'info',
             audience: 'server',
             title: 'The manifest request was redirected.',
-            detail: `The response came from ${response.finalUrl}. A browser follows redirects transparently and does not expose the intermediate hops to script, so Loupe can tell you that at least one redirect happened and where you ended up, but not the chain. The curl command above, with -L -D -, prints every hop.`,
+            detail: `The response came from ${response.finalUrl}. A browser follows redirects transparently and does not expose the intermediate hops to script, so SHLoupe can tell you that at least one redirect happened and where you ended up, but not the chain. The curl command above, with -L -D -, prints every hop.`,
           });
         }
 
@@ -557,7 +557,7 @@ function interpretManifestStatus(
       detail:
         count === 0
           ? 'The server counts wrong passcodes against a lifetime limit to stop an exhaustive search. That limit is now reached, so this link is permanently disabled and further requests will return 404. Ask the sender for a new one.'
-          : 'The server counts wrong passcodes against a lifetime limit that permanently disables the link. Loupe will not retry on its own, and neither should you guess.',
+          : 'The server counts wrong passcodes against a lifetime limit that permanently disables the link. SHLoupe will not retry on its own, and neither should you guess.',
       remedy: 'Get the passcode from the person who shared the link, through a separate channel.',
       citation: CITATIONS.passcodeFailure,
     });
@@ -813,7 +813,7 @@ async function validateManifest(
       if (record.list !== undefined) {
         step.json('list (the manifest extension point)', record.list, true);
         step.note(
-          'The manifest carries a `list`, which is where the specification puts extensions relating to the manifest or to individual files, as a FHIR List with standard FHIR extensions. A client is required to ignore extensions it does not understand, so Loupe shows it and moves on rather than guessing at its meaning.',
+          'The manifest carries a `list`, which is where the specification puts extensions relating to the manifest or to individual files, as a FHIR List with standard FHIR extensions. A client is required to ignore extensions it does not understand, so SHLoupe shows it and moves on rather than guessing at its meaning.',
         );
       }
 
@@ -884,7 +884,7 @@ async function validateManifest(
                     note:
                       entry.contentType === undefined
                         ? 'contentType is required on every file entry.'
-                        : `Not one of the three defined content types. Loupe will sniff the decrypted plaintext instead.`,
+                        : `Not one of the three defined content types. SHLoupe will sniff the decrypted plaintext instead.`,
                   }),
         });
       }
@@ -905,7 +905,7 @@ async function validateManifest(
               .map((entry) => `files[${entry.index}] is ${formatBytes(entry.length)}`)
               .join(
                 ', ',
-              )}. The specification says a server shall not return an embedded payload longer than the client's stated maximum, and is expected to serve a location instead. Nothing breaks here, since Loupe reads it anyway, but a client that sized a buffer from that number would.`,
+              )}. The specification says a server shall not return an embedded payload longer than the client's stated maximum, and is expected to serve a location instead. Nothing breaks here, since SHLoupe reads it anyway, but a client that sized a buffer from that number would.`,
             citation: CITATIONS.manifestRequest,
           });
           step.end('warn');
@@ -1052,7 +1052,7 @@ async function openManifestFile(
             audience: 'you',
             title: 'This location URL is older than an hour, so it must not be used.',
             detail:
-              'A receiver is required not to dereference a location more than one hour after requesting the manifest, and to re-request the manifest for fresh links instead. Loupe stops rather than sending a request that would fail confusingly.',
+              'A receiver is required not to dereference a location more than one hour after requesting the manifest, and to re-request the manifest for fresh links instead. SHLoupe stops rather than sending a request that would fail confusingly.',
             remedy: 'Re-run the link, which fetches a new manifest and new location URLs.',
             citation: CITATIONS.manifestFiles,
           });
@@ -1156,7 +1156,7 @@ async function openFile(
             status: 'ok',
             ...(parts.header.cty === undefined
               ? {
-                  note: "The prose asks for a cty header, and in practice almost nothing sends one, including the IG's own examples. Loupe resolves the content type from the manifest first, then cty, then by sniffing the plaintext.",
+                  note: "The prose asks for a cty header, and in practice almost nothing sends one, including the IG's own examples. SHLoupe resolves the content type from the manifest first, then cty, then by sniffing the plaintext.",
                 }
               : {}),
           },
@@ -1358,7 +1358,7 @@ async function openFile(
           severity: 'warning',
           audience: 'server',
           title: 'The manifest describes this file as something other than what it is.',
-          detail: `The manifest says ${entry.contentType}, and the decrypted content is ${kind}. Loupe goes by the content, since that is what a renderer has to work with, but a receiver that trusts the manifest and filters on content type will skip this file entirely.`,
+          detail: `The manifest says ${entry.contentType}, and the decrypted content is ${kind}. SHLoupe goes by the content, since that is what a renderer has to work with, but a receiver that trusts the manifest and filters on content type will skip this file entirely.`,
           citation: CITATIONS.manifestFiles,
         });
         step.end('warn');

@@ -276,7 +276,7 @@ export const POSTURE: Record<VerificationPosture, { word: string; meaning: strin
   'not-checked': {
     word: 'Not checked yet',
     meaning:
-      "No signature check has been run. Checking one means fetching the issuer's key set, which is a request to the issuer, so Loupe waits for you to ask.",
+      "No signature check has been run. Checking one means fetching the issuer's key set, which is a request to the issuer, so SHLoupe waits for you to ask.",
   },
   'not-signed': {
     word: 'Not signed',
@@ -368,7 +368,7 @@ export function parseHealthCardFile(value: unknown): HealthCardFile {
         'error',
         'sender',
         'verifiableCredential is a single string, not an array.',
-        'The specification defines verifiableCredential as an array holding one or more card strings, so a receiver that iterates it will read one character per pass or reject the file. Loupe treated the string as an array of one and carried on.',
+        'The specification defines verifiableCredential as an array holding one or more card strings, so a receiver that iterates it will read one character per pass or reject the file. SHLoupe treated the string as an array of one and carried on.',
         {
           remedy: 'Wrap the card string in an array: "verifiableCredential": ["<jws>"].',
           citation: CITATIONS.shcFile,
@@ -426,7 +426,7 @@ export function parseHealthCardFile(value: unknown): HealthCardFile {
           'warning',
           'sender',
           `verifiableCredential[${index}] has whitespace around the card string.`,
-          'The signature covers the exact bytes of the header and payload segments, so a receiver that does not trim first will fail verification on a card that is otherwise fine. Loupe trimmed it.',
+          'The signature covers the exact bytes of the header and payload segments, so a receiver that does not trim first will fail verification on a card that is otherwise fine. SHLoupe trimmed it.',
         ),
       );
     }
@@ -1065,7 +1065,7 @@ export function inspectJws(compact: string): JwsInspection {
           'fatal',
           'sender',
           'The payload does not inflate, in raw, zlib or gzip framing.',
-          'Loupe tried all three framings rather than only the one the specification requires, so this is not a wrapper mistake. The bytes are either truncated or were never compressed, and the claims cannot be read.',
+          'SHLoupe tried all three framings rather than only the one the specification requires, so this is not a wrapper mistake. The bytes are either truncated or were never compressed, and the claims cannot be read.',
           { citation: CITATIONS.shcJws },
         ),
       );
@@ -1200,7 +1200,7 @@ function readClaims(
         'error',
         'sender',
         'The nbf claim looks like milliseconds, not seconds.',
-        `The value ${card.nbf.raw} read as seconds is a date tens of thousands of years away, and read as milliseconds it is ${new Date(card.nbf.epochMs).toISOString()}. Loupe assumed milliseconds. A verifier that does not will report this card as not yet valid forever.`,
+        `The value ${card.nbf.raw} read as seconds is a date tens of thousands of years away, and read as milliseconds it is ${new Date(card.nbf.epochMs).toISOString()}. SHLoupe assumed milliseconds. A verifier that does not will report this card as not yet valid forever.`,
         { citation: SHC_CITATIONS.expiration },
       ),
     );
@@ -1624,7 +1624,7 @@ export async function verifyHealthCard(
   let trust: TrustState = {
     state: 'not-checked',
     reason:
-      'No trust directory was consulted. A directory lookup is a request to a third party, so Loupe only makes it when you choose a directory.',
+      'No trust directory was consulted. A directory lookup is a request to a third party, so SHLoupe only makes it when you choose a directory.',
   };
 
   const settle = (extra: Partial<HealthCardVerification> = {}): HealthCardVerification => {
@@ -1772,7 +1772,7 @@ export async function verifyHealthCard(
         'error',
         'sender',
         `The card names no key, and the issuer publishes ${parsedKeySet.length}.`,
-        `Loupe will not guess. Trying every key until one verifies would report a card signed with a withdrawn key as valid, which is the exact case a kid exists to prevent. The set offers ${listOut(keySetKids)}.`,
+        `SHLoupe will not guess. Trying every key until one verifies would report a card signed with a withdrawn key as valid, which is the exact case a kid exists to prevent. The set offers ${listOut(keySetKids)}.`,
         { citation: CITATIONS.shcKid },
       ),
     );
@@ -1817,7 +1817,7 @@ export async function verifyHealthCard(
         'warning',
         'sender',
         'A key coordinate was published with its leading zero bytes stripped.',
-        'A P-256 coordinate is 32 bytes, and this one is shorter, so a leading zero was dropped by an encoder that treated it as a number rather than a fixed-width field. Loupe left-padded it and carried on, because rejecting a key the rest of the ecosystem accepts would make this tool the node that breaks. Note the thumbprint of the padded key differs from the thumbprint of the short one, so one key can end up with two identities.',
+        'A P-256 coordinate is 32 bytes, and this one is shorter, so a leading zero was dropped by an encoder that treated it as a number rather than a fixed-width field. SHLoupe left-padded it and carried on, because rejecting a key the rest of the ecosystem accepts would make this tool the node that breaks. Note the thumbprint of the padded key differs from the thumbprint of the short one, so one key can end up with two identities.',
         { citation: CITATIONS.shcKid },
       ),
     );
@@ -2065,7 +2065,7 @@ function checkKeyShape(
         'error',
         'sender',
         'The key says it must not be used for verifying this signature.',
-        `The set publishes it as the signing key for this card, and ${listOut(usage)}. A verifier that honours these members, as it is required to, refuses this key and reports the card as unverifiable. Loupe checked the signature anyway and says so here, because knowing the bytes match tells you this is a metadata defect rather than a forged card.`,
+        `The set publishes it as the signing key for this card, and ${listOut(usage)}. A verifier that honours these members, as it is required to, refuses this key and reports the card as unverifiable. SHLoupe checked the signature anyway and says so here, because knowing the bytes match tells you this is a metadata defect rather than a forged card.`,
         { citation: SHC_CITATIONS.issuerKeys },
       ),
     );

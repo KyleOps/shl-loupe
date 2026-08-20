@@ -116,7 +116,7 @@ function DosageRows({ resource }: { resource: FhirNode }): ReactNode {
         value: dosageText(dosage) ?? <Absent>Empty dosage</Absent>,
         note:
           strField(dosage, 'text') === undefined
-            ? 'Composed by Loupe from the structured dose, timing and route, because this dosage carries no text of its own.'
+            ? 'Composed by SHLoupe from the structured dose, timing and route, because this dosage carries no text of its own.'
             : "The prescriber's own wording, shown verbatim.",
       }))}
     />

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 #
-# Loupe: a SMART Health Link viewer, debugger and teaching tool. A static Vite
+# SHLoupe: a SMART Health Link viewer, debugger and teaching tool. A static Vite
 # bundle served by nginx. There is no backend, no server-side rendering and no
 # outbound call from this container: the browser makes every SHL request.
 #

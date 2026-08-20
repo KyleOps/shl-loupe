@@ -343,7 +343,7 @@ describe('a numeric health card', () => {
 });
 
 describe('an HC1 certificate', () => {
-  it('names the family and says what Loupe will not pretend to do', () => {
+  it('names the family and says what SHLoupe will not pretend to do', () => {
     const certificate = 'HC1:NCFOXN%TSMAHN-HXZSUFC*PP';
     const result = detect(certificate, 'hcert-base45');
     expect(result.kind).toBe('hcert');

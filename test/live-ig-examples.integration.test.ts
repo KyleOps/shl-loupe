@@ -32,7 +32,7 @@ const CARD_LINK =
 
 const EXAMPLE_KEY = 'rxTgYlOaKJPFtcEd0qcceN8wEU4p94SqAwIWQe6uX7Q';
 
-const base = { viewer: HTTPS_VIEWER, recipient: 'Loupe integration test' };
+const base = { viewer: HTTPS_VIEWER, recipient: 'SHLoupe integration test' };
 
 describe('the specification’s own example links', () => {
   it('opens the IPS document bundle end to end', async () => {
@@ -68,7 +68,7 @@ describe('the specification’s own example links', () => {
   }, 30_000);
 
   it('confirms the header kid really is the RFC 7638 thumbprint of the link key', async () => {
-    // This convention is what lets Loupe prove a key mismatch before decrypting,
+    // This convention is what lets SHLoupe prove a key mismatch before decrypting,
     // rather than reporting an opaque authentication failure. It is a convention
     // the examples follow and the prose never states, so it gets checked against
     // the live artefact rather than trusted.
@@ -103,7 +103,7 @@ describe('the specification’s own example links', () => {
     const step = result.run.steps.find((s) => s.kind === 'net.direct');
     const request = step?.evidence.find((e) => e.type === 'request');
     expect(request?.type === 'request' && request.request.url).toContain(
-      'recipient=Loupe+integration+test',
+      'recipient=SHLoupe+integration+test',
     );
   }, 30_000);
 

@@ -29,7 +29,7 @@ class SpyTransport implements Transport {
 }
 
 const NOW = Date.parse('2026-08-20T00:00:00Z');
-const base = { viewer: HTTPS_VIEWER, recipient: 'Loupe tests', now: () => NOW };
+const base = { viewer: HTTPS_VIEWER, recipient: 'SHLoupe tests', now: () => NOW };
 
 /** The link an event participant actually sent, believing it worked. */
 const REAL_LINK =
@@ -79,7 +79,7 @@ describe('buildDiagnosisReport', () => {
     const result = await openLocalhostLink();
     const report = buildDiagnosisReport(result.run, result.redactor);
     expect(report).toContain(
-      '**Verdict:** Blocked before any request. Loupe could tell from the link alone that it cannot work, so it sent nothing.',
+      '**Verdict:** Blocked before any request. SHLoupe could tell from the link alone that it cannot work, so it sent nothing.',
     );
     expect(report).toContain('**Requests made:** none');
     expect(report).toContain(
@@ -151,7 +151,7 @@ describe('buildDiagnosisReport', () => {
       secrets?: unknown;
       run?: unknown;
     };
-    expect(record.tool).toBe('Loupe');
+    expect(record.tool).toBe('SHLoupe');
     expect(record.reportVersion).toBe(1);
     // The machine-readable twin of the redaction sentence.
     expect(record.secrets).toBe('removed');
@@ -314,7 +314,7 @@ describe('a run that also carries a passcode', () => {
     const report = buildDiagnosisReport(result.run, result.redactor);
     // Masking is per secret, not per member: the recipient and the URL are the
     // evidence a server operator needs to find the call in their own log.
-    expect(report).toContain('Loupe tests');
+    expect(report).toContain('SHLoupe tests');
     expect(report).toContain('sharing.example.org');
   });
 });
@@ -365,7 +365,7 @@ describe('buildSenderExplanation', () => {
     expect(message).not.toContain('| pass |');
     expect(message).not.toContain('## Steps');
     expect(message).not.toContain('fatal');
-    expect(message).not.toContain('Loupe');
+    expect(message).not.toContain('SHLoupe');
 
     expect(message.length).toBeLessThan(report.length / 2);
   });

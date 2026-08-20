@@ -75,7 +75,7 @@
 /*
  * The explanation, at the shared measure. This is the load-bearing part of the
  * screen: a toggle labelled "DNS probe" with no further words would break the
- * promise that Loupe makes no request the user did not ask for, while appearing
+ * promise that SHLoupe makes no request the user did not ask for, while appearing
  * to keep it.
  */
 .setting-note {

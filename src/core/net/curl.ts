@@ -1,7 +1,7 @@
 /**
  * "Run this yourself" commands.
  *
- * A browser cannot see why a cross-origin request failed, and Loupe has no
+ * A browser cannot see why a cross-origin request failed, and SHLoupe has no
  * backend to ask on its behalf. So the honest escape hatch is to hand the user
  * the exact command that WILL see it, from a shell where CORS does not exist.
  * Getting these copy-paste correct is a feature, not a nicety: at an event
@@ -9,7 +9,7 @@
  *
  * The key is never included. A manifest request does not need it (the key
  * decrypts the files, it is not an access credential), so a copied command is
- * safe to paste into a group chat, and Loupe says so.
+ * safe to paste into a group chat, and SHLoupe says so.
  */
 
 export interface ManifestRequestShape {
@@ -74,7 +74,7 @@ export function powershellForManifest(shape: ManifestRequestShape): string {
 }
 
 /**
- * A one-liner that fetches the manifest and prints just what Loupe needs pasted
+ * A one-liner that fetches the manifest and prints just what SHLoupe needs pasted
  * back into offline mode.
  */
 export function curlForOfflineHandoff(shape: ManifestRequestShape): string {
@@ -83,7 +83,7 @@ export function curlForOfflineHandoff(shape: ManifestRequestShape): string {
     "  -H 'Content-Type: application/json' \\",
     `  -d ${shellQuote(manifestBody(shape))} | tee shl-manifest.json`,
     '',
-    '# Then paste the contents of shl-manifest.json into Loupe under "Offline".',
+    '# Then paste the contents of shl-manifest.json into SHLoupe under "Offline".',
   ].join('\n');
 }
 

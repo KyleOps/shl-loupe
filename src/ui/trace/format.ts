@@ -292,7 +292,7 @@ export interface DurationBar {
    * DNS/connect/TTFB breakdown would be fabricated.
    */
   waitingPercent: number;
-  /** False when nothing was fetched, so the bar is all Loupe's own work. */
+  /** False when nothing was fetched, so the bar is all SHLoupe's own work. */
   hasNetwork: boolean;
 }
 

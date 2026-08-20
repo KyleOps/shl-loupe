@@ -1,7 +1,7 @@
 /**
  * The one failure that makes the whole tool useless, stated before it happens.
  *
- * Loupe decrypts with Web Crypto, and `crypto.subtle` does not merely misbehave
+ * SHLoupe decrypts with Web Crypto, and `crypto.subtle` does not merely misbehave
  * outside a secure context: it is **undefined**. Measured in Chromium against
  * this app's own build:
  *
@@ -73,7 +73,7 @@ export function InsecureContextNotice({ state }: { state: SecureContextState }):
       </div>
 
       <p>
-        Loupe is served from <code>{state.origin}</code>, which the browser does not treat as a
+        SHLoupe is served from <code>{state.origin}</code>, which the browser does not treat as a
         secure context, so <code>crypto.subtle</code> is not merely restricted here, it is absent.
         Every step up to decryption will work and then every file will fail, which looks like a
         problem with the link and is not.

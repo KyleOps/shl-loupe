@@ -18,6 +18,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { AArrowUp, ALargeSmall, Command, Moon, Sun } from 'lucide-react';
 import { SCREENS, type ScreenName } from './router';
 import { useSettings } from './store';
+import { Wordmark } from './Wordmark';
 import { LinkInput } from './LinkInput';
 
 /**
@@ -92,13 +93,7 @@ export function Header({
         Skip to the trace
       </a>
 
-      <a className="wordmark" href="#" aria-label="Loupe, home">
-        <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden focusable="false">
-          <circle cx="13" cy="13" r="8.5" fill="none" stroke="currentColor" strokeWidth="2.5" />
-          <path d="M19.5 19.5 L27 27" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-        </svg>
-        <span className="wordmark-text">loupe</span>
-      </a>
+      <Wordmark />
 
       <div className="masthead-input">
         <LinkInput onSubmit={onSubmitLink} />

@@ -3,7 +3,7 @@
  * collection.
  *
  * Platypus is an Australian personal health record that mints SMART Health Links
- * from its own relay, and it is the interop counterpart Loupe is most likely to
+ * from its own relay, and it is the interop counterpart SHLoupe is most likely to
  * be pointed at during a Sparked testing event. These two bundles are not copies
  * of one of its links; they are built from its real emitted output so that every
  * renderer path a real Platypus payload takes is exercised offline, at about 12 kB

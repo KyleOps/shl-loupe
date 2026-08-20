@@ -1,5 +1,5 @@
 /**
- * What kind of link is this, and how far can Loupe take it.
+ * What kind of link is this, and how far can SHLoupe take it.
  *
  * This component exists because of one sentence in `src/core/variants.ts`: a
  * different profile is never "invalid". Four ecosystems reuse the same payload
@@ -11,8 +11,8 @@
  * So the collapsed state answers the question somebody actually asks at a table
  * ("what is this, and will this tool open it?"), and the expanded state carries
  * the four things that settle an argument: what differs from the HL7 baseline,
- * what Loupe can do with it, what Loupe cannot, and which observation licensed
- * each of those claims. A capability is never dressed up as a verdict: "Loupe
+ * what SHLoupe can do with it, what SHLoupe cannot, and which observation licensed
+ * each of those claims. A capability is never dressed up as a verdict: "SHLoupe
  * cannot finish this" and "this link is broken" are different sentences, and
  * conflating them is the incumbent viewer's whole bug.
  */
@@ -37,8 +37,8 @@ import {
 } from '../core/variants';
 
 /**
- * `unsupported` is deliberately not a failure tone. Loupe not going further is
- * a fact about Loupe, and painting it red would make this component tell the
+ * `unsupported` is deliberately not a failure tone. SHLoupe not going further is
+ * a fact about SHLoupe, and painting it red would make this component tell the
  * lie the module it renders was written to avoid.
  */
 const SUPPORT_TONE: Record<VariantSupport, Tone> = {
@@ -74,7 +74,7 @@ export function VariantBadge({ identification, defaultOpen }: VariantBadgeProps)
   const facts: FieldRow[] = [
     { key: 'Family', value: FAMILY_LABEL[variant.family], mono: false },
     { key: 'Retrieval', value: protocolValue(protocol, variant.protocol), mono: false },
-    { key: 'In Loupe', value: SUPPORT_LABEL[variant.support], mono: false, tone },
+    { key: 'In SHLoupe', value: SUPPORT_LABEL[variant.support], mono: false, tone },
     { key: 'Variant id', value: variant.id },
   ];
   if (identification.profiles !== undefined && identification.profiles.length > 0) {
@@ -145,7 +145,7 @@ export function VariantBadge({ identification, defaultOpen }: VariantBadgeProps)
 
         {signals.length > 0 && (
           <>
-            <h4 className="variant-heading">How Loupe decided</h4>
+            <h4 className="variant-heading">How SHLoupe decided</h4>
             <FieldTable
               rows={signals.map((signal) => ({
                 key: 'Saw',

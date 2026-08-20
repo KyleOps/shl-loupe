@@ -1,6 +1,6 @@
-# Deploying Loupe
+# Deploying SHLoupe
 
-Loupe is a static bundle. The container serves files and makes no outbound
+SHLoupe is a static bundle. The container serves files and makes no outbound
 request of its own: every SMART Health Link fetch is made by the browser that
 has the page open. That single fact decides most of what follows, including why
 this pod needs no egress and why running it at an event is a port-forward rather
@@ -133,7 +133,7 @@ Then, by hand:
    neighbours, so the listing does not go stale.
 
    ```
-   │   ├── shl-loupe.yaml                 # Loupe: SMART Health Link viewer/debugger (port-forward only)
+   │   ├── shl-loupe.yaml                 # SHLoupe: SMART Health Link viewer/debugger (port-forward only)
    ```
 
 Verify before pushing. Expect exactly two documents, a Deployment and a Service.
@@ -192,7 +192,7 @@ So on a port-forward:
 - **WebCrypto works.** The Web Cryptography API declares
   `[SecureContext] readonly attribute SubtleCrypto subtle`, which is why
   `crypto.subtle` is `undefined` outside a secure context rather than throwing.
-  Loupe needs it for the `A256GCM` JWE decrypt and the `ES256` health-card
+  SHLoupe needs it for the `A256GCM` JWE decrypt and the `ES256` health-card
   verify, so this is load bearing.
 - **QR scanning works**, same reason, given the `Permissions-Policy` in
   `nginx.conf` allows `camera=(self)`.

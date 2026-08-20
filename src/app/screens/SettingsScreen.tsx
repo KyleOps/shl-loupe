@@ -38,7 +38,7 @@ export function SettingsScreen(): ReactNode {
           Settings
         </h1>
         <p className="settings-lede prose">
-          Three of these change what Loupe sends to somebody else&rsquo;s server, so each one says
+          Three of these change what SHLoupe sends to somebody else&rsquo;s server, so each one says
           what it sends and who reads it. They are kept in this browser and nowhere else.
         </p>
       </header>
@@ -64,7 +64,8 @@ export function SettingsScreen(): ReactNode {
           </p>
           {settings.recipient.trim() === DEFAULT_RECIPIENT ? (
             <p className="setting-note">
-              Still the default, so a server operator will see only that some copy of Loupe called.
+              Still the default, so a server operator will see only that some copy of SHLoupe
+              called.
             </p>
           ) : null}
         </section>

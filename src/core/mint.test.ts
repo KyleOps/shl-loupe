@@ -25,7 +25,7 @@ async function open(artefacts: BrokenArtefacts): Promise<PipelineResult> {
   return openShl({
     input: artefacts.shlink,
     viewer: HTTPS_VIEWER,
-    recipient: 'Loupe test suite',
+    recipient: 'SHLoupe test suite',
     transport: new OfflineTransport(new Map(Object.entries(artefacts.responses))),
     ...(artefacts.passcode === undefined ? {} : { passcode: artefacts.passcode }),
   });
@@ -152,7 +152,7 @@ describe('mintShl', () => {
     const result = await openShl({
       input: minted.shlink,
       viewer: HTTPS_VIEWER,
-      recipient: 'Loupe test suite',
+      recipient: 'SHLoupe test suite',
       transport: new OfflineTransport(new Map(Object.entries(minted.responses))),
     });
     expect(result.outcome).toBe('opened');
@@ -229,7 +229,7 @@ describe('mintShl', () => {
     const result = await openShl({
       input: minted.shlink,
       viewer: HTTPS_VIEWER,
-      recipient: 'Loupe test suite',
+      recipient: 'SHLoupe test suite',
       transport: new OfflineTransport(new Map(Object.entries(minted.responses))),
       passcode: minted.passcode?.value ?? '',
     });

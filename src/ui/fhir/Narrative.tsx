@@ -181,7 +181,7 @@ export function Narrative({ narrative, entryCount, showStatus = true }: Narrativ
       <div className="fhir-narrative" dangerouslySetInnerHTML={{ __html: clean }} />
       {carriedActiveContent(div) && (
         <p className="narrative-note">
-          This narrative arrived carrying active content, and Loupe removed it: a script, an event
+          This narrative arrived carrying active content, and SHLoupe removed it: a script, an event
           handler, a style, an embedded object, a remote image or an unsafe link. What is above is
           what survives the allowlist, which is also all a conformant receiver is allowed to render.
           Worth telling whoever produced the payload, since the narrative invariant forbids it.
@@ -207,7 +207,7 @@ function hasXhtmlNamespace(div: string): boolean {
  *
  * Deliberately NOT `sanitised !== original`. Almost every conformant narrative
  * differs from its sanitised form, because `xmlns` is not on the attribute
- * allowlist and entities get normalised, so comparing the two would put "Loupe
+ * allowlist and entities get normalised, so comparing the two would put "SHLoupe
  * removed dangerous markup" under every payload ever rendered. A note that fires
  * on everything is a note nobody reads, and it would also libel a perfectly good
  * producer. This looks for the things the exclusion list actually names.

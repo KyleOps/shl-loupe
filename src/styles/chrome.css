@@ -62,6 +62,19 @@
   transform: translateY(0);
 }
 
+/*
+ * The wordmark: two faces meeting mid-word, because that seam IS the pun.
+ *
+ * "SHLoupe" is SHL and loupe sharing an L, and in plain text that overlap is
+ * invisible: a reader meeting the string cold sees one unfamiliar word rather
+ * than two familiar ones. The mono face carries the initialism, the text face
+ * carries the word, and the shared letter takes the accent colour so the eye
+ * stops exactly where the two meet.
+ *
+ * Everything is sized in `em` off the wordmark, so the whole lockup scales as one
+ * thing with the larger-text preference. A logo that stays put while the page
+ * grows is the tell that it was pinned in pixels.
+ */
 .wordmark {
   grid-area: brand;
   display: inline-flex;
@@ -69,21 +82,68 @@
   gap: var(--space-3);
   color: var(--fg-default);
   text-decoration: none;
+  font-size: 1.0625em;
 }
 
-.wordmark:hover {
-  color: var(--accent);
-}
-
-.wordmark svg {
+.wordmark-lens {
   color: var(--accent);
   flex: none;
+  /* Optical, not mathematical: the lens circle sits high against a lowercase
+     word, so a hair of nudge down lines its centre up with the x-height. */
+  transform: translateY(0.5px);
 }
 
 .wordmark-text {
-  font-size: 17px;
+  display: inline-flex;
+  align-items: baseline;
   font-weight: 600;
   letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+/*
+ * The initialism. Mono and tracked out, which is how an initialism wants to be
+ * set, and quiet: it is the part a reader already knows, so it does not need to
+ * shout.
+ */
+.wordmark-abbr {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  letter-spacing: 0.04em;
+  color: var(--fg-muted);
+}
+
+/*
+ * The hinge. Mono, so it still reads as the last letter of SHL, and accented, so
+ * it also reads as the first letter of loupe. One letter doing two jobs is the
+ * entire joke, and this is the only place in the app where a colour is asked to
+ * carry meaning on its own: it is decoration on a logo, not a status, so the
+ * never-colour-alone rule does not apply. The accessible name is the plain word.
+ */
+.wordmark-hinge {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+/* The word, in the text face at full contrast. */
+.wordmark-word {
+  font-family: var(--font-sans);
+  color: var(--fg-default);
+}
+
+/*
+ * Hover brings the initialism up to full contrast, so the abbreviation resolves
+ * for a moment and the reader sees SHL as a unit. Cheap, and it teaches the pun
+ * to anybody who hovers before they have worked it out.
+ */
+.wordmark:hover .wordmark-abbr {
+  color: var(--fg-default);
+}
+
+.wordmark:hover .wordmark-lens {
+  color: var(--fg-default);
 }
 
 .masthead-input {

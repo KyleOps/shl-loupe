@@ -83,7 +83,7 @@ export interface Sample {
  * to serve a five-part JWE carrying the same `kid`, and only the label is ours.
  * Both use the specification's public demo key, so nothing behind them is
  * confidential. The third is synthesised, and is the motivating case: a link
- * that can only ever open on the machine that minted it, which Loupe says
+ * that can only ever open on the machine that minted it, which SHLoupe says
  * without making a request.
  */
 export const SAMPLES: Sample[] = [
@@ -117,7 +117,7 @@ export const SAMPLES: Sample[] = [
     blurb:
       'Synthesised, and the case this tool exists for: the manifest URL points at the sender’s own laptop, so it opened for them and can open for nobody else.',
     teaches:
-      'What Loupe settles from the link alone, naming the rule it breaks before any request is made.',
+      'What SHLoupe settles from the link alone, naming the rule it breaks before any request is made.',
     ending: 'diagnosis',
     endingWord: 'Diagnosed, no request made',
     input:
@@ -237,7 +237,7 @@ export function describeFlags(flag: string | undefined): FlagNote[] {
           letter,
           name: 'Not a defined flag',
           meaning:
-            'The specification requires a receiver to ignore a flag letter it does not recognise, so Loupe shows it and carries on.',
+            'The specification requires a receiver to ignore a flag letter it does not recognise, so SHLoupe shows it and carries on.',
           recognised: false,
         }
       : { letter, name: known.name, meaning: known.meaning, recognised: true };
@@ -255,7 +255,7 @@ export function flagConflict(flag: string | undefined): string | undefined {
     return 'P and U cannot both be set. U says the url is fetched with GET, and a GET has nowhere to carry a passcode. The sender has to choose one.';
   }
   if (flag !== [...flag].sort().join('')) {
-    return `Flags are concatenated in alphabetical order, so this reads as "${[...flag].sort().join('')}". Loupe accepts either; a strict receiver may not.`;
+    return `Flags are concatenated in alphabetical order, so this reads as "${[...flag].sort().join('')}". SHLoupe accepts either; a strict receiver may not.`;
   }
   return undefined;
 }
@@ -672,7 +672,7 @@ function NoPayload({
       <p>
         {run.networkUsed
           ? 'A request was made and did not give us a file. The trace holds its status, the headers a browser let us read, and a curl that reproduces it outside the browser.'
-          : 'No request was made at all: the reason was visible in the link itself, so Loupe stopped rather than spending a request to confirm it.'}
+          : 'No request was made at all: the reason was visible in the link itself, so SHLoupe stopped rather than spending a request to confirm it.'}
       </p>
       {sample !== undefined ? (
         <Button variant="primary" onClick={() => void onRun(sample.input)}>
@@ -708,10 +708,10 @@ function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
       <section className="idle-lede">
         <h1>Open a SMART Health Link and see every step of it.</h1>
         <p className="prose">
-          Paste a link, a payload, a scanned code or a file into the field above and Loupe walks the
-          whole path: decode, judge the payload against the specification, inspect the URL, request
-          the manifest, fetch each file, decrypt, parse and render. Everything runs in this tab, so
-          the only requests made are the ones the trace lists.
+          Paste a link, a payload, a scanned code or a file into the field above and SHLoupe walks
+          the whole path: decode, judge the payload against the specification, inspect the URL,
+          request the manifest, fetch each file, decrypt, parse and render. Everything runs in this
+          tab, so the only requests made are the ones the trace lists.
         </p>
       </section>
 

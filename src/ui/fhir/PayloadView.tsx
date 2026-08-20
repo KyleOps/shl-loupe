@@ -1,7 +1,7 @@
 /**
  * What came out of the link, whatever it turned out to be.
  *
- * Five kinds of file arrive here and all five are handled, because "Loupe showed
+ * Five kinds of file arrive here and all five are handled, because "SHLoupe showed
  * nothing" must never be a possible outcome: a FHIR document, a FHIR collection
  * or single resource, a signed health card, an API access token file, and a file
  * that decrypted into something nobody recognises. A file that did not open at
@@ -116,7 +116,7 @@ function UnopenedFile({ file }: { file: OpenedFile }): ReactNode {
                   key: 'declared as',
                   value: file.declaredContentType,
                   mono: true,
-                  note: 'What the manifest said this file would be. Loupe never got far enough to check.',
+                  note: 'What the manifest said this file would be. SHLoupe never got far enough to check.',
                 },
               ]),
           ...(file.bytes === undefined ? [] : [{ key: 'size', value: formatBytes(file.bytes) }]),
@@ -270,7 +270,7 @@ function groupByType<T extends { resourceType: string }>(
  *
  * Every entry nothing has a renderer for, with its type, a one-line summary and
  * its JSON, and the count in the heading. A reader can see at a glance that the
- * payload carried three things Loupe cannot lay out nicely, which is a completely
+ * payload carried three things SHLoupe cannot lay out nicely, which is a completely
  * different statement from a page that quietly omits them.
  */
 function UnhandledList({
@@ -289,7 +289,7 @@ function UnhandledList({
         renderer
       </h2>
       <p className="payload-note">
-        {types.length === 1 ? 'The type is' : 'The types are'} {types.join(', ')}. Loupe has no
+        {types.length === 1 ? 'The type is' : 'The types are'} {types.join(', ')}. SHLoupe has no
         purpose-built view for {types.length === 1 ? 'it' : 'them'}, so each one is listed here with
         every field it carries and its raw JSON. Nothing has been dropped, and this list existing at
         all is the point: a resource that vanishes from the screen is indistinguishable from one the
@@ -396,7 +396,7 @@ function BundleHeader({
           : '.'}
         {accounted === total
           ? ' Every entry in this bundle is on this page.'
-          : ` Loupe accounts for ${accounted} of ${total}, which is a bug in Loupe rather than in the payload: please say so.`}
+          : ` SHLoupe accounts for ${accounted} of ${total}, which is a bug in SHLoupe rather than in the payload: please say so.`}
       </p>
 
       <DetailTable
@@ -440,7 +440,7 @@ function BundleHeader({
                   value: index.duplicateKeys.join(', '),
                   mono: true,
                   tone: 'warn' as const,
-                  note: 'Two or more entries claim the same key, and R4 leaves it undefined which one a reference means. Loupe resolves neither rather than picking.',
+                  note: 'Two or more entries claim the same key, and R4 leaves it undefined which one a reference means. SHLoupe resolves neither rather than picking.',
                 },
               ]),
           {
@@ -598,7 +598,7 @@ function HealthCardPayload({ file }: { file: OpenedFile }): ReactNode {
  * A `smart-api-access` file is not clinical data: it is credentials for reaching
  * an API that holds some.
  *
- * Loupe shows what it contains and does not use it. Spending somebody's token to
+ * SHLoupe shows what it contains and does not use it. Spending somebody's token to
  * fetch their record, on their behalf, without being asked, is exactly the
  * unrequested request this tool promises never to make, and a token is a secret
  * on a projected screen, so it is masked until revealed.
@@ -613,7 +613,7 @@ function ApiAccessPayload({ content }: { content: unknown }): ReactNode {
     <div className="payload payload-api">
       <Callout tone="info" title="This file is API access, not a record">
         <p>
-          It carries credentials for reaching a FHIR API rather than any clinical content. Loupe
+          It carries credentials for reaching a FHIR API rather than any clinical content. SHLoupe
           does not use them: it makes no request you did not ask for, and it never acts as you
           against somebody's API. What the file says is below.
         </p>
@@ -703,7 +703,7 @@ function ApiAccessPayload({ content }: { content: unknown }): ReactNode {
 // ---------------------------------------------------------------------------
 
 /**
- * The file decrypted and Loupe cannot say what it is.
+ * The file decrypted and SHLoupe cannot say what it is.
  *
  * This is a real outcome and it deserves better than a shrug: the bytes are
  * here, they came out of a correctly encrypted file, and the question is what
@@ -714,7 +714,7 @@ function UnrecognisedPayload({ file }: { file: OpenedFile }): ReactNode {
   const record = asRecord(file.content);
   return (
     <div className="payload payload-unknown">
-      <Callout tone="warn" title="This file opened, and Loupe cannot tell what it is">
+      <Callout tone="warn" title="This file opened, and SHLoupe cannot tell what it is">
         <p>
           Decryption and parsing both succeeded, so the key and the bytes are fine. What came out is
           not one of the three things a health link file is defined to carry.
@@ -726,7 +726,7 @@ function UnrecognisedPayload({ file }: { file: OpenedFile }): ReactNode {
             key: 'declared as',
             value: file.declaredContentType ?? 'Nothing: the manifest gave no contentType',
             mono: file.declaredContentType !== undefined,
-            note: 'Loupe goes by the content rather than the declaration, because content is what a renderer has to work with. A receiver that filters on the declared type would skip this file entirely.',
+            note: 'SHLoupe goes by the content rather than the declaration, because content is what a renderer has to work with. A receiver that filters on the declared type would skip this file entirely.',
           },
           {
             key: 'looked for',

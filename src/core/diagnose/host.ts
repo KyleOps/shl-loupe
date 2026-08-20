@@ -2,7 +2,7 @@
  * Host classification, with no network involved.
  *
  * Most links that fail at an event fail for a reason that is fully visible in
- * the URL. This module is the part of Loupe that turns "type load fail" into
+ * the URL. This module is the part of SHLoupe that turns "type load fail" into
  * "this points at your own machine".
  */
 

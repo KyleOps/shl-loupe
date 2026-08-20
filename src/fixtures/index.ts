@@ -1,5 +1,5 @@
 /**
- * The sample catalogue: everything Loupe can open without asking anybody for a
+ * The sample catalogue: everything SHLoupe can open without asking anybody for a
  * link.
  *
  * Two jobs, and they pull in different directions, which is why this is a
@@ -91,7 +91,7 @@ export const SAMPLES: Sample[] = [
     id: 'ig-ips-link',
     title: 'Live link: IPS document',
     description:
-      "The first working example on the implementation guide's links-examples page, unmodified. It carries the LU flags, so Loupe fetches one file by GET and never asks for a manifest, and the file is a static object on raw.githubusercontent.com, which is CORS-open. Opening it makes exactly one cross-origin request.",
+      "The first working example on the implementation guide's links-examples page, unmodified. It carries the LU flags, so SHLoupe fetches one file by GET and never asks for a manifest, and the file is a static object on raw.githubusercontent.com, which is CORS-open. Opening it makes exactly one cross-origin request.",
     kind: 'fhir',
     link: IG_IPS_LINK,
     teaches:

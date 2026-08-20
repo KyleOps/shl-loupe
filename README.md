@@ -1,4 +1,4 @@
-# Loupe
+# SHLoupe
 
 A SMART Health Link viewer, debugger and teaching tool that runs entirely in one
 browser tab. No backend, no upload, no account. You paste a link and it shows you
@@ -24,7 +24,7 @@ meant to tidy a prefix ate the middle of `TypeError`. So the recipient saw a bro
 viewer, the sender saw a link that worked, and the finding, which needed no network
 access at all, was never stated.
 
-Loupe states it before making any request: this link points at the sender's own
+SHLoupe states it before making any request: this link points at the sender's own
 machine, so nobody else can open it. It also notices that `?bid=4836470` carries
 nowhere near the entropy the specification requires, so other people's manifests
 can be enumerated by counting, and that port 5173 is a development server.
@@ -41,7 +41,7 @@ can be enumerated by counting, and that port 5173 is a development server.
 - **Show the whole path.** Each hop keeps its request, response, status, timing and
   the clause it was judged against, including which response headers the browser let
   script read, and copies out as a `curl` command with the key redacted.
-- **Narrow an opaque failure.** A browser will not say why a fetch failed, so Loupe
+- **Narrow an opaque failure.** A browser will not say why a fetch failed, so SHLoupe
   ranks a differential (CORS, DNS, TLS, refused, extension, mixed content) and offers
   probes that eliminate branches. Two of those talk to a third party, so they are off
   by default.
@@ -60,9 +60,9 @@ The incumbent is `the-commons-project/shc-web-reader`, deployed at viewer.tcpdev
 and as the CommonHealth viewer. Every row is a fact established by reading that
 source at commit `e61c8799`, with file and line references in
 [`research/03-shc-web-reader-teardown.md`](research/03-shc-web-reader-teardown.md).
-Its FHIR rendering work is genuinely good, which is why Loupe builds on it.
+Its FHIR rendering work is genuinely good, which is why SHLoupe builds on it.
 
-|                                 | Web Reader                                                                                 | Loupe                                                          |
+|                                 | Web Reader                                                                                 | SHLoupe                                                          |
 | ------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
 | Payload checked before fetching | No. `shlPayload.url` is never inspected                                                    | Every static rule, and a fatal one stops the run               |
 | Failure attribution             | One `try`/`catch` over six hops, then `err.toString()`                                     | Per-step status, with the hop named                            |
@@ -177,11 +177,11 @@ The tool handles other people's clinical data on borrowed laptops, so this is a
 design constraint rather than a policy page.
 
 - **Nothing is uploaded**, because there is no backend to upload to. Decryption
-  happens in the tab with WebCrypto, every request Loupe makes is in the trace, and
+  happens in the tab with WebCrypto, every request SHLoupe makes is in the trace, and
   none is made that you did not ask for: the reachability and DNS probes are opt-in,
   the DNS one because it reaches a third-party resolver.
 - **Nothing is fetched from anywhere else, ever.** No CDN, no web font, no icon
-  host, no analytics. The QR decoder's WASM is served from the same bundle. Loupe
+  host, no analytics. The QR decoder's WASM is served from the same bundle. SHLoupe
   renders identically with the network unplugged, which matters when the venue
   wifi is itself the thing under investigation.
 - **A payload cannot beacon.** The Content-Security-Policy deliberately omits

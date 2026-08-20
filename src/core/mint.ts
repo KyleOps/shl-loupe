@@ -17,9 +17,9 @@
  * The presets are the interesting half. A catalogue of broken links whose claims
  * nobody checks is worse than no catalogue: it teaches wrong things with
  * confidence. So every preset carries an {@link PresetExpectation} naming the
- * rule ids Loupe must raise and the outcome the run must reach, and
+ * rule ids SHLoupe must raise and the outcome the run must reach, and
  * `mint.test.ts` runs the real pipeline over every one of them against an
- * offline transport. When a preset says Loupe raises nothing, that is recorded
+ * offline transport. When a preset says SHLoupe raises nothing, that is recorded
  * as a gap with a reason rather than quietly dressed up as a check.
  */
 import { zlibSync } from 'fflate';
@@ -162,7 +162,7 @@ export interface MintResult {
   plaintextBytes: number;
   ciphertextBytes: number;
   compressed: boolean;
-  /** So a minted link opens in Loupe against `OfflineTransport`, with no server. */
+  /** So a minted link opens in SHLoupe against `OfflineTransport`, with no server. */
   responses: CannedResponses;
 }
 
@@ -449,13 +449,13 @@ export const SAMPLE_PAYLOADS: SamplePayload[] = [
 // ---------------------------------------------------------------------------
 
 /**
- * What Loupe must do with a preset, checked by `mint.test.ts` against the real
+ * What SHLoupe must do with a preset, checked by `mint.test.ts` against the real
  * pipeline.
  *
  * `ruleIds` is the contract. An empty `ruleIds` with a `gap` is the honest
- * record of a deviation Loupe reports in a table row but raises no finding for:
+ * record of a deviation SHLoupe reports in a table row but raises no finding for:
  * sometimes because ignoring it is what the specification requires, sometimes
- * because Loupe has no rule for it yet, and the `gap` text says which.
+ * because SHLoupe has no rule for it yet, and the `gap` text says which.
  */
 export interface PresetExpectation {
   ruleIds: string[];
@@ -638,7 +638,7 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
     wrong:
       'The url scheme is http, so the manifest and every file it names cross the network readable.',
     receiverShould:
-      'Refuse. Note that Loupe stops at the payload check (SHL-PAYLOAD-INVALID) rather than reaching its own http rule, because shlink.ts treats a non-https url as making the payload unusable, so the URL rules never run.',
+      'Refuse. Note that SHLoupe stops at the payload check (SHL-PAYLOAD-INVALID) rather than reaching its own http rule, because shlink.ts treats a non-https url as making the payload unusable, so the URL rules never run.',
     expect: {
       ruleIds: ['SHL-PAYLOAD-INVALID'],
       source: 'shlink.ts',
@@ -668,7 +668,7 @@ export const BROKEN_PRESETS: BrokenPreset[] = [
       ruleIds: [],
       source: 'none',
       outcome: 'opened',
-      gap: 'Loupe prints the length against the 128-character cap in the static analysis step but raises no finding for it, so nothing names the sender. That is a missing rule, not a design choice.',
+      gap: 'SHLoupe prints the length against the 128-character cap in the static analysis step but raises no finding for it, so nothing names the sender. That is a missing rule, not a design choice.',
     },
     build: async () => {
       const key = generateLinkKey();

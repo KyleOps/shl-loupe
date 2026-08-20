@@ -188,7 +188,7 @@ export const GLOSSARY: readonly GlossaryEntry[] = [
   },
   {
     term: 'Trace',
-    short: 'Loupe’s record of one run: every step, its evidence, its timing and its verdict.',
+    short: 'SHLoupe’s record of one run: every step, its evidence, its timing and its verdict.',
     detail:
       'It is plain data, so it serialises to JSON, exports without the key, and replays in a test with no network. It is also the answer to "what did this page actually request": everything, and nothing else.',
   },

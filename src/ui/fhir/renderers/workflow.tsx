@@ -726,7 +726,7 @@ export function QuestionnaireResponseCard({ resource, context, entry }: Renderer
                   key: 'questionnaire',
                   value: strField(resource, 'questionnaire') as string,
                   mono: true,
-                  note: 'The canonical of the form that was filled in. Loupe does not fetch it, so the question wording below is only what the response itself carried.',
+                  note: 'The canonical of the form that was filled in. SHLoupe does not fetch it, so the question wording below is only what the response itself carried.',
                 },
               ]),
         ]}

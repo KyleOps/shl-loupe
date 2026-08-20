@@ -109,7 +109,7 @@ function MaskNotice({ masked }: { masked: boolean }): ReactNode {
       <span>
         {revealed
           ? 'The link key is shown in full below.'
-          : 'The link key is masked below. Loupe holds the real value; nothing is lost.'}
+          : 'The link key is masked below. SHLoupe holds the real value; nothing is lost.'}
       </span>
       <Button
         size="sm"

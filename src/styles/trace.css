@@ -17,7 +17,7 @@
  *
  * ONE BAR, TWO NUMBERS, NO LEGEND. A step's bar is as wide as its share of the
  * longest step, and the portion spent waiting on the network is washed back
- * toward the track. Solid is Loupe's own work, washed is waiting. It is
+ * toward the track. Solid is SHLoupe's own work, washed is waiting. It is
  * aria-hidden because the millisecond count sits beside it.
  *
  * MOTION COMES FROM THE --motion-* CUSTOM PROPERTIES, never from a
