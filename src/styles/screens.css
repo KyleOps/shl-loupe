@@ -76,9 +76,15 @@
  * strip that had not moved. One left edge everywhere is worth more than a
  * perfectly balanced column on any single screen.
  */
+/*
+ * These two are no longer capped at a card. They carry a rail and a column now
+ * (`.page-body`), which is where their width comes from: capping the SCREEN as
+ * well left the rail 220px of a 592px page and squeezed the reading column to
+ * 340px, which is 48 characters. One owner for one width.
+ */
 .rules,
 .about {
-  max-width: var(--card-max);
+  min-width: 0;
 }
 
 /*
@@ -141,27 +147,58 @@
  * Bounding the column alone would leave the whole page hanging off the left edge,
  * which looks as unintentional as the wrap it was meant to fix.
  */
+/*
+ * A rail, a gap, and ONE reading column.
+ *
+ * The column is --card-max rather than --figure-max, and that is the whole
+ * lesson of this file's history: the column has to be the width a card is, or
+ * the cards inside it are wider than the measure and every paragraph in them
+ * ends short of a border. One width, and prose fills whatever it is put in.
+ *
+ * A figure that genuinely needs more room (a wide table, a code block) says so
+ * itself and scrolls inside its own container, which is the rule in tokens.css.
+ */
 .learn-head,
-.learn-body {
+.learn-body,
+.page-head,
+.page-body {
   width: 100%;
-  max-width: calc(var(--toc-width) + var(--space-9) + var(--figure-max));
+  max-width: calc(var(--toc-width) + var(--space-9) + var(--card-max));
 }
 
-.learn-body {
+.learn-body,
+.page-body {
   display: grid;
-  grid-template-columns: minmax(160px, var(--toc-width)) minmax(0, 1fr);
+  grid-template-columns: minmax(160px, var(--toc-width)) minmax(0, var(--card-max));
   gap: var(--space-9);
   align-items: start;
   min-width: 0;
 }
 
-.learn-toc {
+/* The column beside the rail. It carries no width of its own: the blocks inside
+   it are already bounded, and a second cap here would be a third opinion about
+   where the column ends. */
+.page-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-9);
+  min-width: 0;
+}
+
+/* A section that the rail scrolls to takes focus, so it must not draw a ring
+   when it is scrolled to by mouse. The heading inside it is what a reader sees
+   arrive. */
+.page-column > section:focus-visible {
+  outline: none;
+}
+
+.page-rail {
   position: sticky;
   top: var(--space-6);
   min-width: 0;
 }
 
-.learn-toc-title {
+.page-rail-title {
   margin: 0 0 var(--space-4);
   font-size: 11px;
   font-weight: 600;
@@ -170,7 +207,7 @@
   color: var(--fg-muted);
 }
 
-.learn-toc ol {
+.page-rail ol {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -180,7 +217,7 @@
   border-left: var(--hairline-width) solid var(--border-hairline);
 }
 
-.learn-toc-link {
+.page-rail-link {
   display: block;
   width: 100%;
   padding: var(--space-3) var(--space-5);
@@ -194,7 +231,7 @@
   cursor: pointer;
 }
 
-.learn-toc-link:hover {
+.page-rail-link:hover {
   color: var(--fg-default);
   background: var(--bg-hover);
 }
@@ -202,7 +239,7 @@
 /* The active entry is marked by the rail, the weight and the colour together:
    a rail alone is a hairline, and tokens.css forbids a hairline carrying
    meaning on its own. `aria-current` carries it for a screen reader. */
-.learn-toc-link.is-active {
+.page-rail-link.is-active {
   border-left-color: var(--accent);
   color: var(--fg-default);
   font-weight: 600;
@@ -1284,7 +1321,10 @@
    About
    ========================================================================== */
 
+/* A row of chips in a paragraph. It takes the column like everything else, so it
+   wraps inside it rather than running the width of the page. */
 .about-version {
+  max-width: var(--measure);
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
@@ -1460,27 +1500,28 @@
 }
 
 @media (max-width: 900px) {
-  .learn-body {
+  .learn-body,
+  .page-body {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-6);
   }
 
   /* The contents becomes a scrolling strip across the top. It keeps its rail
      as a bottom edge, so the active entry is still marked by more than colour. */
-  .learn-toc {
+  .page-rail {
     position: static;
     padding-bottom: var(--space-4);
     border-bottom: var(--hairline-width) solid var(--border-hairline);
   }
 
-  .learn-toc ol {
+  .page-rail ol {
     flex-direction: row;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     border-left: 0;
   }
 
-  .learn-toc-link {
+  .page-rail-link {
     width: auto;
     margin-left: 0;
     border-left: 0;
@@ -1488,7 +1529,7 @@
     white-space: nowrap;
   }
 
-  .learn-toc-link.is-active {
+  .page-rail-link.is-active {
     border-bottom-color: var(--accent);
   }
 
@@ -1664,6 +1705,40 @@
 }
 
 /*
+ * The landing hero, on a wide display: the pitch on the left, the three samples
+ * beside it rather than under it.
+ *
+ * The maintainer's note was "still feels like the text is trapped inside a box",
+ * with an arrow drawn at the empty half of the row beside the opening paragraph.
+ * The paragraph is the right width to read; the problem is that nothing was
+ * beside it, and a page whose first screenful is half empty reads as unfinished
+ * however well the type is set. What belongs there is the thing a first-time
+ * visitor is looking for, which is something to press.
+ *
+ * So the samples move up into that space and stack, which also means the whole
+ * of "here is what this does, here is something to try" is above the fold rather
+ * than one scroll apart.
+ *
+ * 1180px, matching the app's own wide breakpoint: below it the hero goes back to
+ * one column and the cards go back to a row, which is what the sample grid
+ * already does on its own.
+ */
+@media (min-width: 1180px) {
+  .idle-hero {
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure)) minmax(0, 1fr);
+    gap: var(--space-9) var(--space-11);
+    align-items: start;
+  }
+
+  /* One card under another in the right-hand column: three cards side by side in
+     half a row would each be too narrow to say what they end in. */
+  .idle-hero .sample-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
  * Bare prose on the page ground takes the measure, and takes it on the BLOCK so
  * the text fills it exactly.
  *
@@ -1814,10 +1889,14 @@
   transform: translateX(2px);
 }
 
+/* 14px and capped: in the hero's right-hand column a card is up to 900px wide,
+   and 13px prose filling that is 134 characters. Nothing that is a sentence goes
+   below 14px, and every sentence takes the measure. */
 .sample-blurb {
+  max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 /* What pressing it ends in, which is the difference between the three cards and
@@ -1837,9 +1916,10 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
+  max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 12.5px;
-  line-height: 19px;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 .sample-teaches > svg {

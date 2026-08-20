@@ -25,7 +25,7 @@
  *    section boundary crosses the line, and the negative bottom margin is what
  *    stops the last long section claiming the highlight the whole way down.
  */
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Check, ExternalLink, Quote as QuoteIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { Citation } from '../../core/trace';
@@ -55,6 +55,7 @@ import {
 } from '../../ui/primitives';
 import { SegmentMap } from '../../ui/SegmentMap';
 import { useSettings } from '../store';
+import { PageNav, useFollow } from '../PageNav';
 
 // ---------------------------------------------------------------------------
 // The worked example
@@ -81,8 +82,6 @@ const NAV_ITEMS: ReadonlyArray<{ anchor: string; label: string }> = [
   { anchor: GLOSSARY_ANCHOR, label: 'Vocabulary' },
 ];
 
-const NAV_ANCHORS: readonly string[] = NAV_ITEMS.map((item) => item.anchor);
-
 const termAnchor = (term: string): string =>
   `term-${term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
@@ -92,7 +91,6 @@ const termAnchor = (term: string): string =>
 
 export function LearnScreen(): ReactNode {
   const recipient = useSettings((state) => state.recipient);
-  const active = useActiveAnchor(NAV_ANCHORS);
   const follow = useFollow();
 
   // A page served from `file://` has no origin to name, and the Origin header in
@@ -115,23 +113,7 @@ export function LearnScreen(): ReactNode {
       </header>
 
       <div className="learn-body">
-        <nav className="learn-toc" aria-label="Sections of this guide">
-          <p className="learn-toc-title">On this page</p>
-          <ol>
-            {NAV_ITEMS.map((item) => (
-              <li key={item.anchor}>
-                <button
-                  type="button"
-                  className={clsx('learn-toc-link', active === item.anchor && 'is-active')}
-                  {...(active === item.anchor ? { 'aria-current': 'true' as const } : {})}
-                  onClick={() => follow(item.anchor)}
-                >
-                  {item.label}
-                </button>
-              </li>
-            ))}
-          </ol>
-        </nav>
+        <PageNav items={NAV_ITEMS} label="Sections of this guide" />
 
         <div className="learn-sections">
           {GUIDE_SECTIONS.map((section) => (
@@ -153,46 +135,6 @@ export function LearnScreen(): ReactNode {
 // ---------------------------------------------------------------------------
 // Scroll tracking, and following a target
 // ---------------------------------------------------------------------------
-
-function useActiveAnchor(anchors: readonly string[]): string | undefined {
-  const [active, setActive] = useState<string | undefined>(anchors[0]);
-
-  useEffect(() => {
-    const visible = new Set<string>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) visible.add(entry.target.id);
-          else visible.delete(entry.target.id);
-        }
-        // The first visible section in document order, not the largest: while
-        // two are on screen the one you are reading down from is the earlier.
-        const first = anchors.find((anchor) => visible.has(anchor));
-        if (first !== undefined) setActive(first);
-      },
-      { rootMargin: '-96px 0px -55% 0px', threshold: 0 },
-    );
-    for (const anchor of anchors) {
-      const element = document.getElementById(anchor);
-      if (element !== null) observer.observe(element);
-    }
-    return () => observer.disconnect();
-  }, [anchors]);
-
-  return active;
-}
-
-function useFollow(): (anchor: string) => void {
-  return useCallback((anchor: string) => {
-    const element = document.getElementById(anchor);
-    if (element === null) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    element.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
-    // Focus follows the scroll, or a keyboard user is left reading one place and
-    // tabbing from another. Every anchored element carries tabIndex={-1} for it.
-    element.focus({ preventScroll: true });
-  }, []);
-}
 
 // ---------------------------------------------------------------------------
 // Sections and blocks

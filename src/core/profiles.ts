@@ -153,7 +153,6 @@ export interface ProfileObservations {
 // ---------------------------------------------------------------------------
 
 const KTC_URL = 'https://ktc-spec.github.io/';
-const KTC_VECTORS = 'https://ktc-spec.github.io/test-vectors';
 
 const ktc = (section: string, quote: string): Citation => ({
   spec: 'Patient-Shared Health Documents via SMART Health Links (KTC)',
@@ -304,8 +303,6 @@ const WHO_PHW: Profile = {
 };
 
 export const PROFILES: Profile[] = [KTC, WHO_PHW];
-
-export const VECTOR_SUITE_URL = KTC_VECTORS;
 
 // ---------------------------------------------------------------------------
 // Checking

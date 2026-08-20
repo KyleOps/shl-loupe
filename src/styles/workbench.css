@@ -64,38 +64,48 @@
 }
 
 /*
- * Wide: two columns, three panes.
+ * Wide: the link and the trace share the top row, the payload has the second row
+ * to itself.
  *
- * The link and the trace stack in one column because they are read in that
- * order and the link is short; the payload takes the other column whole, so a
- * document is read as a document rather than in a 400px slot under a trace.
+ * What the link and the trace have in common is that they are both about the
+ * REQUEST: what was in the payload, and what happened when it was fetched. They
+ * are read together, they are similar heights, and they are both narrow enough
+ * for half a row. The document is a different kind of thing and takes the full
+ * width, which is what a page of clinical content wants.
+ *
+ * There was a version where the payload spanned both rows of a two-column grid,
+ * and it had a defect worth remembering: a spanning item contributes its height
+ * to the rows it spans, so row one grew to a share of a payload thousands of
+ * pixels tall and the trace started halfway down the page. Nothing spans rows
+ * here, so that cannot happen.
+ *
  * `align-items: start` keeps each pane its own height instead of stretching the
- * short one to match the long one, which is what draws a 2000px empty box.
+ * shorter one, which is what draws a tall empty box beside a short trace.
  */
 .workbench[data-mode='wide'] .workbench-panes {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  grid-template-areas:
+    'link trace'
+    'payload payload';
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
 }
 
-/*
- * The link and the trace, stacked, as ONE grid item.
- *
- * This was two rows of a grid with the payload spanning both, and that put a gap
- * above the trace: a spanning item contributes its height to the rows it spans,
- * so row one grew to a share of a payload that can be thousands of pixels tall,
- * and the trace began halfway down the page. Nesting a flex column inside a
- * single cell takes the payload's height out of the question entirely.
- */
-.workbench-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  min-width: 0;
+.workbench[data-mode='wide'] .pane-link {
+  grid-area: link;
 }
 
-/* Nothing opened, so the trace is the hero and the payload pane is explaining
-   what it is missing. It needs enough room to be read and no more. */
+.workbench[data-mode='wide'] .pane-trace {
+  grid-area: trace;
+}
+
+.workbench[data-mode='wide'] .pane-payload {
+  grid-area: payload;
+}
+
+/* Nothing opened, so the trace is the hero: it takes more of the top row, and
+   the payload pane below it is a short explanation of what is missing rather
+   than a document. */
 .workbench[data-mode='wide'][data-layout='trace-first'] .workbench-panes {
-  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr);
 }
 
 /* Tabs and stack are both one column; what differs is whether the trace and the

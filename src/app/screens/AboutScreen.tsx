@@ -19,6 +19,7 @@ import { GUIDE_SECTIONS } from '../../content/spec-guide';
 import { STATIC_RULES } from '../../core/diagnose/rules';
 import { GLOSSARY } from '../../content/glossary';
 import { Callout, Chip } from '../../ui/primitives';
+import { PageNav, type PageNavItem } from '../PageNav';
 
 const SHL_SPEC =
   'https://build.fhir.org/ig/HL7/smart-health-cards-and-links/links-specification.html';
@@ -105,6 +106,14 @@ const LIMITS: readonly Limit[] = [
   },
 ];
 
+const NAV_ITEMS: readonly PageNavItem[] = [
+  { anchor: 'about-why', label: 'Why it exists' },
+  { anchor: 'about-who', label: 'Who it is for' },
+  { anchor: 'about-privacy', label: 'What it never does' },
+  { anchor: 'about-limits', label: 'What it cannot do' },
+  { anchor: 'about-credits', label: 'Credits and specs' },
+];
+
 export function AboutScreen(): ReactNode {
   return (
     <div className="about">
@@ -123,136 +132,142 @@ export function AboutScreen(): ReactNode {
         </p>
       </header>
 
-      <section className="about-section" aria-labelledby="about-why">
-        <h2 id="about-why">Why it exists</h2>
-        <p>
-          A link sent in good faith at a testing event pointed at{' '}
-          <code>https://localhost:5173/api/shl-manifest?bid=4836470</code>. The sender had tested
-          it, and it worked, because localhost names the machine doing the asking: that link can
-          only ever open on the machine that minted it. The viewer everyone reached for reported
-          “TypeLoad failed”, which is not a protocol error at all but a browser’s TypeError with the
-          middle of a word eaten by a careless string replacement. So the recipient saw a broken
-          viewer, the sender saw a working link, and the finding, which needed no network access to
-          reach, was never stated.
-        </p>
-        <p>
-          This tool says it in one sentence before making any request, and names two more true
-          things about the same URL at the same time: it is a development server port, and{' '}
-          <code>?bid=4836470</code> carries nowhere near the entropy the specification requires, so
-          that server’s links can be enumerated by anybody who has seen one.
-        </p>
-      </section>
+      <div className="page-body">
+        <PageNav items={NAV_ITEMS} label="Sections of this page" />
 
-      <section className="about-section" aria-labelledby="about-who">
-        <h2 id="about-who">Who it is for</h2>
-        <ul className="about-list">
-          <li>
-            <strong>Anyone handed a link that will not open.</strong> The trace says which step
-            stopped, what it observed, and whose problem it is, in words you can repeat to the
-            person who has to fix it.
-          </li>
-          <li>
-            <strong>Whoever built the sharing server.</strong> Every hop copies out as a curl or
-            PowerShell command, with the key redacted, so a server operator can reproduce a
-            browser’s failure from a shell where CORS does not exist.
-          </li>
-          <li>
-            <strong>Whoever is writing a viewer.</strong> The sandbox mints links that are wrong in
-            one specific way each, which is a better test suite for a receiving application than a
-            handful of correct links.
-          </li>
-          <li>
-            <strong>Anyone learning the format.</strong> The Learn screen is the specification laid
-            out as the life of one link, with every normative sentence quoted verbatim and linked
-            back to its own section.
-          </li>
-        </ul>
-      </section>
+        <div className="page-column">
+          <section className="about-section" aria-labelledby="about-why" tabIndex={-1}>
+            <h2 id="about-why">Why it exists</h2>
+            <p>
+              A link sent in good faith at a testing event pointed at{' '}
+              <code>https://localhost:5173/api/shl-manifest?bid=4836470</code>. The sender had
+              tested it, and it worked, because localhost names the machine doing the asking: that
+              link can only ever open on the machine that minted it. The viewer everyone reached for
+              reported “TypeLoad failed”, which is not a protocol error at all but a browser’s
+              TypeError with the middle of a word eaten by a careless string replacement. So the
+              recipient saw a broken viewer, the sender saw a working link, and the finding, which
+              needed no network access to reach, was never stated.
+            </p>
+            <p>
+              This tool says it in one sentence before making any request, and names two more true
+              things about the same URL at the same time: it is a development server port, and{' '}
+              <code>?bid=4836470</code> carries nowhere near the entropy the specification requires,
+              so that server’s links can be enumerated by anybody who has seen one.
+            </p>
+          </section>
 
-      <section className="about-section" aria-labelledby="about-privacy">
-        <h2 id="about-privacy">
-          <ShieldCheck size={16} aria-hidden />
-          <span>Privacy, as claims you can check</span>
-        </h2>
-        <p>
-          This tool handles other people’s clinical data on borrowed laptops at events, so the
-          posture is a design constraint rather than a policy page. Each claim below is written so
-          you can falsify it from this page, without reading the source.
-        </p>
-        <ol className="about-claims">
-          {CLAIMS.map((claim) => (
-            <li key={claim.claim}>
-              <h3>{claim.claim}</h3>
-              <p>{claim.detail}</p>
-              <p className="about-check">
-                <span className="about-check-label">How to check it</span>
-                <span>{claim.check}</span>
-              </p>
-            </li>
-          ))}
-        </ol>
-      </section>
+          <section className="about-section" aria-labelledby="about-who" tabIndex={-1}>
+            <h2 id="about-who">Who it is for</h2>
+            <ul className="about-list">
+              <li>
+                <strong>Anyone handed a link that will not open.</strong> The trace says which step
+                stopped, what it observed, and whose problem it is, in words you can repeat to the
+                person who has to fix it.
+              </li>
+              <li>
+                <strong>Whoever built the sharing server.</strong> Every hop copies out as a curl or
+                PowerShell command, with the key redacted, so a server operator can reproduce a
+                browser’s failure from a shell where CORS does not exist.
+              </li>
+              <li>
+                <strong>Whoever is writing a viewer.</strong> The sandbox mints links that are wrong
+                in one specific way each, which is a better test suite for a receiving application
+                than a handful of correct links.
+              </li>
+              <li>
+                <strong>Anyone learning the format.</strong> The Learn screen is the specification
+                laid out as the life of one link, with every normative sentence quoted verbatim and
+                linked back to its own section.
+              </li>
+            </ul>
+          </section>
 
-      <section className="about-section" aria-labelledby="about-limits">
-        <h2 id="about-limits">
-          <WifiOff size={16} aria-hidden />
-          <span>What it cannot do</span>
-        </h2>
-        <dl className="about-limits">
-          {LIMITS.map((limit) => (
-            <div key={limit.title}>
-              <dt>{limit.title}</dt>
-              <dd>{limit.detail}</dd>
-            </div>
-          ))}
-        </dl>
-        <Callout tone="info" title="Offline mode is the answer to most of these">
-          Paste a manifest response, a JWE or a bundle you already have, and the same pipeline runs
-          over it with no network at all: the same steps, the same evidence, the same findings. It
-          is also how a link on a server with no CORS headers gets read at all.
-        </Callout>
-      </section>
+          <section className="about-section" aria-labelledby="about-privacy" tabIndex={-1}>
+            <h2 id="about-privacy">
+              <ShieldCheck size={16} aria-hidden />
+              <span>Privacy, as claims you can check</span>
+            </h2>
+            <p>
+              This tool handles other people’s clinical data on borrowed laptops at events, so the
+              posture is a design constraint rather than a policy page. Each claim below is written
+              so you can falsify it from this page, without reading the source.
+            </p>
+            <ol className="about-claims">
+              {CLAIMS.map((claim) => (
+                <li key={claim.claim}>
+                  <h3>{claim.claim}</h3>
+                  <p>{claim.detail}</p>
+                  <p className="about-check">
+                    <span className="about-check-label">How to check it</span>
+                    <span>{claim.check}</span>
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </section>
 
-      <section className="about-section" aria-labelledby="about-credits">
-        <h2 id="about-credits">
-          <Landmark size={16} aria-hidden />
-          <span>Credits and specifications</span>
-        </h2>
-        <p>
-          FHIR display groundwork comes from{' '}
-          <a href={SHC_WEB_READER} target="_blank" rel="noreferrer noopener">
-            the-commons-project/shc-web-reader
-            <ExternalLink size={12} aria-hidden />
-          </a>{' '}
-          (MIT, copyright 2023 The Commons Project): the shape of its per-resource renderer
-          registry, and the set of display primitives it accumulated over years of real payloads,
-          including date-precision handling, the effective[x] choice-element mess, and quantity,
-          range, dosage and timing rendering. The equivalents here are written fresh in TypeScript
-          rather than copied line for line, and its notice is retained accordingly in
-          THIRD-PARTY-NOTICES.md alongside every other component shipped in the bundle.
-        </p>
-        <ul className="about-links">
-          <li>
-            <BookOpen size={13} aria-hidden />
-            <a href={SHL_SPEC} target="_blank" rel="noreferrer noopener">
-              SMART Health Links specification
-              <ExternalLink size={12} aria-hidden />
-            </a>
-          </li>
-          <li>
-            <BookOpen size={13} aria-hidden />
-            <a href={SHC_SPEC} target="_blank" rel="noreferrer noopener">
-              SMART Health Cards specification
-              <ExternalLink size={12} aria-hidden />
-            </a>
-          </li>
-        </ul>
-        <p className="about-disclaimer">
-          Not affiliated with HL7, with The Commons Project, or with any implementer whose link it
-          opens. Where it disagrees with the specification, the specification is right: that is why
-          every quote on the Learn screen carries a link to the section it came from.
-        </p>
-      </section>
+          <section className="about-section" aria-labelledby="about-limits" tabIndex={-1}>
+            <h2 id="about-limits">
+              <WifiOff size={16} aria-hidden />
+              <span>What it cannot do</span>
+            </h2>
+            <dl className="about-limits">
+              {LIMITS.map((limit) => (
+                <div key={limit.title}>
+                  <dt>{limit.title}</dt>
+                  <dd>{limit.detail}</dd>
+                </div>
+              ))}
+            </dl>
+            <Callout tone="info" title="Offline mode is the answer to most of these">
+              Paste a manifest response, a JWE or a bundle you already have, and the same pipeline
+              runs over it with no network at all: the same steps, the same evidence, the same
+              findings. It is also how a link on a server with no CORS headers gets read at all.
+            </Callout>
+          </section>
+
+          <section className="about-section" aria-labelledby="about-credits" tabIndex={-1}>
+            <h2 id="about-credits">
+              <Landmark size={16} aria-hidden />
+              <span>Credits and specifications</span>
+            </h2>
+            <p>
+              FHIR display groundwork comes from{' '}
+              <a href={SHC_WEB_READER} target="_blank" rel="noreferrer noopener">
+                the-commons-project/shc-web-reader
+                <ExternalLink size={12} aria-hidden />
+              </a>{' '}
+              (MIT, copyright 2023 The Commons Project): the shape of its per-resource renderer
+              registry, and the set of display primitives it accumulated over years of real
+              payloads, including date-precision handling, the effective[x] choice-element mess, and
+              quantity, range, dosage and timing rendering. The equivalents here are written fresh
+              in TypeScript rather than copied line for line, and its notice is retained accordingly
+              in THIRD-PARTY-NOTICES.md alongside every other component shipped in the bundle.
+            </p>
+            <ul className="about-links">
+              <li>
+                <BookOpen size={13} aria-hidden />
+                <a href={SHL_SPEC} target="_blank" rel="noreferrer noopener">
+                  SMART Health Links specification
+                  <ExternalLink size={12} aria-hidden />
+                </a>
+              </li>
+              <li>
+                <BookOpen size={13} aria-hidden />
+                <a href={SHC_SPEC} target="_blank" rel="noreferrer noopener">
+                  SMART Health Cards specification
+                  <ExternalLink size={12} aria-hidden />
+                </a>
+              </li>
+            </ul>
+            <p className="about-disclaimer">
+              Not affiliated with HL7, with The Commons Project, or with any implementer whose link
+              it opens. Where it disagrees with the specification, the specification is right: that
+              is why every quote on the Learn screen carries a link to the section it came from.
+            </p>
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

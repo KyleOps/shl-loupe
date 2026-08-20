@@ -288,7 +288,7 @@ test.describe('reflow', () => {
 });
 
 test.describe('every screen renders without throwing', () => {
-  for (const path of ['', '/offline', '/sandbox', '/vectors', '/learn', '/rules', '/about']) {
+  for (const path of ['', '/offline', '/sandbox', '/learn', '/rules', '/about']) {
     test(`#${path || ' (home)'}`, async ({ page }) => {
       const errors = await watchForErrors(page);
       await page.goto(`/#${path}`);
@@ -418,15 +418,7 @@ test.describe('the masthead is the same height on every screen', () => {
     await expect(page.locator('.masthead')).toBeVisible();
     const baseline = (await page.locator('.masthead').boundingBox())!.height;
 
-    for (const path of [
-      '/settings',
-      '/offline',
-      '/sandbox',
-      '/vectors',
-      '/learn',
-      '/rules',
-      '/about',
-    ]) {
+    for (const path of ['/settings', '/offline', '/sandbox', '/learn', '/rules', '/about']) {
       await page.goto(`/#${path}`);
       await expect(page.locator('main')).not.toBeEmpty();
       const height = (await page.locator('.masthead').boundingBox())!.height;
@@ -445,51 +437,6 @@ test.describe('the masthead is the same height on every screen', () => {
   });
 });
 
-test.describe('the vectors runner, at the foot of the checks page', () => {
-  test('fetches nothing until it is asked to', async ({ page }) => {
-    // The one thing in the app that reaches a third party. Its whole claim is
-    // that it does so only on request, and that claim is worth a test rather
-    // than a sentence.
-    const outbound: string[] = [];
-    page.on('request', (request) => {
-      if (!request.url().startsWith('http://localhost:4173/')) outbound.push(request.url());
-    });
-
-    await page.goto('/#/rules');
-    await expect(page.locator('.vectors')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Load and run/ })).toBeVisible();
-    expect(outbound, 'the vectors runner fetched something before being asked').toEqual([]);
-
-    // And it names the host it will reach, before the button rather than after.
-    await expect(page.locator('.vectors-run')).toContainText('ktc-spec.github.io');
-  });
-
-  test('explains all three verdicts, including the one that is not a failure', async ({ page }) => {
-    await page.goto('/#/rules');
-    const legend = page.locator('.vectors-legend');
-    await expect(legend).toContainText('Agrees via the profile');
-    // The sentence this project exists for. If the legend ever loses it, the
-    // middle verdict reads as a fudge rather than as the point.
-    await expect(legend).toContainText('conformant SMART Health Link');
-    await expect(legend).toContainText('Disagrees');
-  });
-
-  test('keeps the old #/vectors URL working', async ({ page }) => {
-    // Somebody pasted it into a thread at an event; it lands on Checks now.
-    await page.goto('/#/vectors');
-    await expect(page.locator('.rules')).toBeVisible();
-    await expect(page.locator('.vectors')).toBeVisible();
-    // And it is not a tab any more, so the strip is back to seven jobs. Scoped to
-    // the nav and exact, because `getByRole` matches an accessible name by
-    // substring: the sentence above the checks links to "KTC conformance
-    // vectors", which an unscoped, inexact query happily counted as the tab.
-    await expect(
-      page.locator('.masthead-nav').getByRole('link', { name: 'Vectors', exact: true }),
-    ).toHaveCount(0);
-    await expect(page.locator('.masthead-nav').getByRole('link')).toHaveCount(7);
-  });
-});
-
 test.describe('the workbench lays out as three panes', () => {
   /*
    * The layout `OpenScreen` computes is the layout that renders.
@@ -502,7 +449,7 @@ test.describe('the workbench lays out as three panes', () => {
    * what the screen was designed around: two columns wide, one column narrow, and
    * the pane that earns the space getting it.
    */
-  test('puts the payload beside the trace on a wide display', async ({ page }) => {
+  test('puts the link beside the trace, with the payload below both', async ({ page }) => {
     await page.setViewportSize({ width: 1500, height: 1000 });
     await page.goto(`/#${WORKING_LINK}`);
     // The payload pane exists from the first frame (it explains what it is
@@ -512,28 +459,34 @@ test.describe('the workbench lays out as three panes', () => {
       timeout: 30_000,
     });
 
+    const link = await page.locator('.pane-link').boundingBox();
     const trace = await page.locator('.pane-trace').boundingBox();
     const payload = await page.locator('.pane-payload').boundingBox();
-    if (trace === null || payload === null) throw new Error('a pane did not render');
+    if (link === null || trace === null || payload === null) {
+      throw new Error('a pane did not render');
+    }
 
-    // Side by side, not stacked.
-    expect(payload.x).toBeGreaterThan(trace.x + trace.width - 1);
-    // Something opened, so the payload is the one that earns the room.
-    expect(payload.width).toBeGreaterThan(trace.width);
-    // And the whole row is used: a two-column grid that leaves a third of the
-    // display empty is the single-column bug wearing a grid.
-    expect(payload.x + payload.width).toBeGreaterThan(1300);
+    // The link and the trace share the top row: both are about the request.
+    expect(trace.x).toBeGreaterThan(link.x + link.width - 1);
+    expect(trace.y).toBeCloseTo(link.y, 0);
+
+    // The document has the next row to itself, and all of it. A page of clinical
+    // content in half a row is the thing this layout exists to stop.
+    expect(payload.y).toBeGreaterThan(link.y + link.height - 1);
+    expect(payload.x).toBeCloseTo(link.x, 0);
+    expect(payload.width).toBeGreaterThan(trace.x + trace.width - link.x - 4);
   });
 
-  test('gives the trace the room while nothing has opened', async ({ page }) => {
+  test('gives the trace the wider half while nothing has opened', async ({ page }) => {
     await page.setViewportSize({ width: 1500, height: 1000 });
     await page.goto(`/#${LOOPBACK_LINK}`);
     await expect(page.locator('.pane-trace')).toBeVisible({ timeout: 20_000 });
 
+    const link = await page.locator('.pane-link').boundingBox();
     const trace = await page.locator('.pane-trace').boundingBox();
-    const payload = await page.locator('.pane-payload').boundingBox();
-    if (trace === null || payload === null) throw new Error('a pane did not render');
-    expect(trace.width).toBeGreaterThan(payload.width);
+    if (link === null || trace === null) throw new Error('a pane did not render');
+    // Nothing opened, so the trace is what is being read.
+    expect(trace.width).toBeGreaterThan(link.width);
   });
 
   test('collapses to one pane at a time between 700 and 1100', async ({ page }) => {
@@ -605,7 +558,12 @@ test.describe('every screen has one column', () => {
           ...document.querySelectorAll<HTMLElement>('main h1, main h2, main h3, main p, main dd'),
         ].filter(
           (el) =>
-            (el.textContent ?? '').trim().length >= 40 && el.getBoundingClientRect().width > 0,
+            (el.textContent ?? '').trim().length >= 40 &&
+            el.getBoundingClientRect().width > 0 &&
+            // The workbench is a two-column data layout, not a reading page: its
+            // panes have their own widths on purpose, and prose in two different
+            // panes shares a left edge without sharing a column.
+            el.closest('.workbench') === null,
         );
         if (blocks.length < 2) return { spread: 0, widest: '', narrowest: '' };
         const pageLeft = Math.min(...blocks.map((el) => el.getBoundingClientRect().left));
@@ -718,9 +676,14 @@ test.describe('no paragraph is cut short inside a wider box', () => {
           // The defect is a paragraph contradicting an edge the reader can SEE.
           // A transparent, borderless section is not an edge: prose taking the
           // measure inside one is a column, which is the whole point.
+          //
+          // A background, or a LEFT or RIGHT border. Not a top one: `.evidence +
+          // .evidence` draws a separator rule above each block after the first,
+          // and counting that as a box reported a note as cut short when the
+          // thing it supposedly fell short of was a horizontal line.
           const bounded =
-            style.borderTopWidth !== '0px' ||
             style.borderLeftWidth !== '0px' ||
+            style.borderRightWidth !== '0px' ||
             !['rgba(0, 0, 0, 0)', 'transparent'].includes(style.backgroundColor);
           if (!bounded) continue;
           // Across the inline axis, the track sizes the item. Down a column, the

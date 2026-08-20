@@ -98,7 +98,10 @@ function measureInPage() {
     return cache.get(key);
   };
 
-  const PROSE = 'main p, main li, main dd, main dt, main blockquote, main figcaption';
+  // Block-level spans included: the sample cards set their text in
+  // `<span class="sample-blurb">`, and a selector listing only paragraph-ish tags
+  // missed a 134-character line sitting on the landing page.
+  const PROSE = 'main p, main li, main dd, main dt, main blockquote, main figcaption, main span';
 
   // Inside this function on purpose: `page.evaluate` ships one function to the
   // page, so a helper declared outside it is simply not there at run time.
@@ -114,6 +117,8 @@ function measureInPage() {
   for (const el of document.querySelectorAll(PROSE)) {
     const style = getComputedStyle(el);
     if (style.fontFamily.includes('Mono')) continue;
+    // An inline span is part of a line rather than a line of its own.
+    if (el.tagName === 'SPAN' && !style.display.startsWith('block')) continue;
     const text = (el.textContent ?? '').trim();
     if (text.length < 40) continue;
 
@@ -139,8 +144,8 @@ function measureInPage() {
     if (parent === null) continue;
     const parentStyle = getComputedStyle(parent);
     const bounded =
-      parentStyle.borderTopWidth !== '0px' ||
       parentStyle.borderLeftWidth !== '0px' ||
+      parentStyle.borderRightWidth !== '0px' ||
       !['rgba(0, 0, 0, 0)', 'transparent'].includes(parentStyle.backgroundColor);
     if (!bounded) continue;
     const across =
@@ -188,7 +193,13 @@ function measureInPage() {
   const inColumn = [
     ...document.querySelectorAll('main h1, main h2, main h3, main p, main dd'),
   ].filter(
-    (el) => (el.textContent ?? '').trim().length >= 40 && el.getBoundingClientRect().width > 0,
+    (el) =>
+      (el.textContent ?? '').trim().length >= 40 &&
+      el.getBoundingClientRect().width > 0 &&
+      // The workbench is a two-column data layout, not a reading page: its panes
+      // have their own widths on purpose, and prose in two different panes shares
+      // a left edge without sharing a column.
+      el.closest('.workbench') === null,
   );
   const lefts = inColumn.map((el) => Math.round(el.getBoundingClientRect().left));
   const pageLeft = Math.min(...lefts);

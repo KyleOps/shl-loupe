@@ -407,19 +407,8 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
 
       {layout === 'wide' ? (
         <div className="workbench-panes">
-          {/*
-            The link and the trace are one column, in a wrapper, rather than two
-            rows of a grid the payload spans.
-            
-            With grid areas, the payload spanning both rows contributed its height
-            to the row sizing, so row one grew to a share of a very tall payload
-            and the trace started halfway down the page with a gap above it. A
-            spanning item cannot do that to a nested flex column.
-          */}
-          <div className="workbench-column">
-            {linkPane}
-            {tracePane}
-          </div>
+          {linkPane}
+          {tracePane}
           {payloadPane}
         </div>
       ) : layout === 'tabs' ? (
@@ -760,61 +749,65 @@ const ENDING_ICON = {
 function IdleSurface({ onRun }: { onRun: Runner }): ReactNode {
   return (
     <div className="idle">
-      <section className="idle-lede">
-        <h1>Open a SMART Health Link and see every step of it.</h1>
-        <p className="prose">
-          Paste a link, a payload, a scanned code or a file into the field above and SHLoupe walks
-          the whole path: decode, judge the payload against the specification, inspect the URL,
-          request the manifest, fetch each file, decrypt, parse and render. Everything runs in this
-          tab, so the only requests made are the ones the trace lists.
-        </p>
-      </section>
+      {/* The pitch and the samples are one row on a wide display: see the
+          `.idle-hero` rule in screens.css for why they belong side by side. */}
+      <div className="idle-hero">
+        <section className="idle-lede">
+          <h1>Open a SMART Health Link and see every step of it.</h1>
+          <p className="prose">
+            Paste a link, a payload, a scanned code or a file into the field above and SHLoupe walks
+            the whole path: decode, judge the payload against the specification, inspect the URL,
+            request the manifest, fetch each file, decrypt, parse and render. Everything runs in
+            this tab, so the only requests made are the ones the trace lists.
+          </p>
+        </section>
 
-      <section className="idle-samples" aria-labelledby="idle-samples-title">
-        <h2 id="idle-samples-title">Start with one of these</h2>
-        {/* The review's question, and it was fair: why start with one of these,
+        <section className="idle-samples" aria-labelledby="idle-samples-title">
+          <h2 id="idle-samples-title">Start with one of these</h2>
+          {/* The review's question, and it was fair: why start with one of these,
             and what is the difference? Both answers belong above the cards, not
             in the cards, because the reason to press any of them is the same. */}
-        <p className="idle-samples-lede prose">
-          Because they cost nothing and they prove the tool rather than describing it. The first two
-          are the implementation guide’s own examples: they really resolve, over the real network,
-          and they carry the key the specification publishes, so there is nothing confidential
-          behind either. The third is synthesised and cannot work at all. Each one ends somewhere
-          different, which is the whole reason there are three.
-        </p>
-        <ul className="sample-grid">
-          {SAMPLES.map((sample) => {
-            const Icon = ENDING_ICON[sample.ending];
-            return (
-              <li key={sample.id}>
-                <button type="button" className="sample" onClick={() => void onRun(sample.input)}>
-                  <span className="sample-head">
-                    <Icon size={15} aria-hidden className="sample-icon" />
-                    <span className="sample-name">{sample.name}</span>
-                    <ArrowRight size={14} aria-hidden className="sample-go" />
-                  </span>
-                  <span className="sample-blurb">{sample.blurb}</span>
-                  {/* The one card that ends in a diagnosis is tinted as well as
+          <p className="idle-samples-lede prose">
+            Because they cost nothing and they prove the tool rather than describing it. The first
+            two are the implementation guide’s own examples: they really resolve, over the real
+            network, and they carry the key the specification publishes, so there is nothing
+            confidential behind either. The third is synthesised and cannot work at all. Each one
+            ends somewhere different, which is the whole reason there are three.
+          </p>
+          <ul className="sample-grid">
+            {SAMPLES.map((sample) => {
+              const Icon = ENDING_ICON[sample.ending];
+              return (
+                <li key={sample.id}>
+                  <button type="button" className="sample" onClick={() => void onRun(sample.input)}>
+                    <span className="sample-head">
+                      <Icon size={15} aria-hidden className="sample-icon" />
+                      <span className="sample-name">{sample.name}</span>
+                      <ArrowRight size={14} aria-hidden className="sample-go" />
+                    </span>
+                    <span className="sample-blurb">{sample.blurb}</span>
+                    {/* The one card that ends in a diagnosis is tinted as well as
                       iconed: tone-* keeps the colour and its surface together,
                       and the words say it too, so nothing here rests on colour. */}
-                  <span
-                    className={clsx(
-                      'sample-ending',
-                      sample.ending === 'diagnosis' && 'tone tone-warn',
-                    )}
-                  >
-                    {sample.endingWord}
-                  </span>
-                  <span className="sample-teaches">
-                    <GraduationCap size={13} aria-hidden />
-                    <span>{sample.teaches}</span>
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+                    <span
+                      className={clsx(
+                        'sample-ending',
+                        sample.ending === 'diagnosis' && 'tone tone-warn',
+                      )}
+                    >
+                      {sample.endingWord}
+                    </span>
+                    <span className="sample-teaches">
+                      <GraduationCap size={13} aria-hidden />
+                      <span>{sample.teaches}</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      </div>
 
       <section className="idle-claims" aria-label="What this does differently">
         <h2>Three things this does that the usual viewer does not</h2>

@@ -109,7 +109,17 @@
    * line it is returning to. Panels are as wide as their content needs; the
    * paragraphs inside them are not.
    */
-  --content-max: 1560px;
+  /*
+   * 1180px, down from 1560.
+   *
+   * A tool is not a poster. At 1560 the app filled a large display edge to edge,
+   * which put a reading column at the far left of a very wide page with several
+   * hundred pixels of nothing beside it: the "text trapped in a box" this was
+   * reported as. Narrower is what makes it read as a page, and every layout in
+   * the app still fits inside it (a rail plus a reading column, a two-column
+   * hero, the link and trace side by side above the payload).
+   */
+  --content-max: 1180px;
 
   /*
    * 35rem, and the unit is the whole point. Twice.

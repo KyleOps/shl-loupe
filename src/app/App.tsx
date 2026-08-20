@@ -114,7 +114,7 @@ export function App(): React.ReactNode {
           {route.screen === 'offline' && <OfflineScreen />}
           {route.screen === 'sandbox' && <SandboxScreen />}
           {route.screen === 'learn' && <LearnScreen />}
-          {route.screen === 'rules' && <RulesScreen scrollTo={route.section} />}
+          {route.screen === 'rules' && <RulesScreen />}
           {route.screen === 'about' && <AboutScreen />}
           {route.screen === 'settings' && <SettingsScreen />}
         </Suspense>

@@ -17,7 +17,7 @@
  * offering is a ranked differential with a discriminating test per branch, which
  * is what the second half of this page is.
  */
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Network, ScanSearch, Terminal } from 'lucide-react';
 import type { Audience, Severity } from '../../core/trace';
 import { STATIC_RULES, type Rule } from '../../core/diagnose/rules';
@@ -37,11 +37,22 @@ import {
   toneForSeverity,
   type Tone,
 } from '../../ui/primitives';
-import { VectorRunner } from '../VectorRunner';
+import { PageNav, type PageNavItem } from '../PageNav';
 
 // ---------------------------------------------------------------------------
 // Vocabulary
 // ---------------------------------------------------------------------------
+
+/*
+ * The rail. Two sections, which is few enough that the rail is really doing the
+ * other half of its job on this page: giving a long column of prose something to
+ * sit beside, so the page reads as a page rather than as text pushed against the
+ * left edge of a very wide window.
+ */
+const NAV_ITEMS: readonly PageNavItem[] = [
+  { anchor: 'rules-static', label: 'Checks before a request' },
+  { anchor: 'rules-differential', label: 'The differential' },
+];
 
 /** Who has to act, in words a reader can use in a sentence to somebody else. */
 const AUDIENCE_WORDS: Record<Audience, string> = {
@@ -132,19 +143,8 @@ function groupRules(): readonly RuleGroupView[] {
 // Screen
 // ---------------------------------------------------------------------------
 
-export function RulesScreen({ scrollTo }: { scrollTo?: string | undefined }): ReactNode {
+export function RulesScreen(): ReactNode {
   const groups = useMemo(() => groupRules(), []);
-  /*
-   * `#/vectors` was a screen of its own before the runner moved down here, and a
-   * URL somebody pasted into a thread at an event has to keep working. The router
-   * turns that path into this screen plus a section name, and this is where the
-   * page acts on it. `scrollIntoView` rather than a real anchor, because the hash
-   * is the app's own routing state and cannot also be a fragment identifier.
-   */
-  useEffect(() => {
-    if (scrollTo === undefined) return;
-    document.getElementById(scrollTo)?.scrollIntoView({ block: 'start' });
-  }, [scrollTo]);
   const causes = useMemo(
     () => Object.entries(DIFFERENTIAL_NOTES) as ReadonlyArray<[CauseId, DifferentialNote]>,
     [],
@@ -163,124 +163,125 @@ export function RulesScreen({ scrollTo }: { scrollTo?: string | undefined }): Re
         <p className="rules-lede">
           These are checks against the base specification. A downstream profile adds requirements of
           its own, and failing one of those is a different statement from being invalid: those are
-          reported per link, beside the payload, and the published{' '}
-          <a href="#/vectors">KTC conformance vectors</a> can be run against this engine, at the
-          foot of this page, to see where the two disagree.
+          reported per link, beside the payload, against the profile that adds them.
         </p>
       </header>
 
-      <Callout tone="info" title="What a browser will not tell this page, and why">
-        When a cross-origin request fails, the browser hands JavaScript a bare TypeError. It knows
-        whether the name failed to resolve, the connection was refused, the certificate was
-        rejected, or the response arrived without the header that would let this page read it, and
-        it withholds all four on purpose: a page that could tell those apart would be a port
-        scanner, usable from any site you visited to map the machine and the network you are sitting
-        on. So no client-side tool can name the cause, this one included. What it can do is list the
-        candidates, rank them by everything else it knows, and give each one a test that settles it
-        from a shell, where CORS does not exist.
-      </Callout>
+      <div className="page-body">
+        <PageNav items={NAV_ITEMS} label="Sections of this page" />
 
-      <section className="rules-section" aria-labelledby="rules-static">
-        <h2 id="rules-static">
-          <ScanSearch size={16} aria-hidden />
-          <span>Checks made before any request</span>
-        </h2>
-        {groups.map((group) => (
-          <section
-            className="rules-group"
-            key={group.id}
-            aria-labelledby={`rules-group-${group.id}`}
-          >
-            <h3 id={`rules-group-${group.id}`}>{group.title}</h3>
-            <p className="rules-group-blurb">{group.blurb}</p>
-            {group.rules.length === 0 ? (
-              <p className="rules-empty">No checks in this group.</p>
-            ) : (
-              <ul className="rules-list">
-                {group.rules.map(({ rule, entry }) => (
-                  <li className="rules-rule" key={rule.id}>
-                    <div className="rules-rule-head">
-                      <code className="rules-id">{rule.id}</code>
-                      <CopyButton value={rule.id} label="Copy id" />
-                      {entry !== undefined && <SeverityTag severity={entry.severity} />}
-                    </div>
-                    <p className="rules-about">{rule.about}</p>
-                    {entry !== undefined && (
-                      <>
-                        <dl className="rules-facts">
-                          <dt>Who has to act</dt>
-                          <dd>{AUDIENCE_WORDS[entry.audience]}</dd>
-                          <dt>What makes it fire</dt>
-                          <dd>{entry.fires}</dd>
-                        </dl>
-                        {entry.severityVaries !== undefined && (
-                          <p className="rules-varies">
-                            <Chip tone="warn">Severity varies</Chip>
-                            <span>{entry.severityVaries}</span>
-                          </p>
+        <div className="page-column">
+          <Callout tone="info" title="What a browser will not tell this page, and why">
+            When a cross-origin request fails, the browser hands JavaScript a bare TypeError. It
+            knows whether the name failed to resolve, the connection was refused, the certificate
+            was rejected, or the response arrived without the header that would let this page read
+            it, and it withholds all four on purpose: a page that could tell those apart would be a
+            port scanner, usable from any site you visited to map the machine and the network you
+            are sitting on. So no client-side tool can name the cause, this one included. What it
+            can do is list the candidates, rank them by everything else it knows, and give each one
+            a test that settles it from a shell, where CORS does not exist.
+          </Callout>
+
+          <section className="rules-section" aria-labelledby="rules-static" tabIndex={-1}>
+            <h2 id="rules-static">
+              <ScanSearch size={16} aria-hidden />
+              <span>Checks made before any request</span>
+            </h2>
+            {groups.map((group) => (
+              <section
+                className="rules-group"
+                key={group.id}
+                aria-labelledby={`rules-group-${group.id}`}
+              >
+                <h3 id={`rules-group-${group.id}`}>{group.title}</h3>
+                <p className="rules-group-blurb">{group.blurb}</p>
+                {group.rules.length === 0 ? (
+                  <p className="rules-empty">No checks in this group.</p>
+                ) : (
+                  <ul className="rules-list">
+                    {group.rules.map(({ rule, entry }) => (
+                      <li className="rules-rule" key={rule.id}>
+                        <div className="rules-rule-head">
+                          <code className="rules-id">{rule.id}</code>
+                          <CopyButton value={rule.id} label="Copy id" />
+                          {entry !== undefined && <SeverityTag severity={entry.severity} />}
+                        </div>
+                        <p className="rules-about">{rule.about}</p>
+                        {entry !== undefined && (
+                          <>
+                            <dl className="rules-facts">
+                              <dt>Who has to act</dt>
+                              <dd>{AUDIENCE_WORDS[entry.audience]}</dd>
+                              <dt>What makes it fire</dt>
+                              <dd>{entry.fires}</dd>
+                            </dl>
+                            {entry.severityVaries !== undefined && (
+                              <p className="rules-varies">
+                                <Chip tone="warn">Severity varies</Chip>
+                                <span>{entry.severityVaries}</span>
+                              </p>
+                            )}
+                            {entry.tryPreset !== undefined && (
+                              <p className="rules-preset">
+                                <a
+                                  className="btn btn-ghost btn-sm"
+                                  href={`#/sandbox?preset=${entry.tryPreset}`}
+                                >
+                                  <Terminal size={13} aria-hidden />
+                                  <span>Mint a link that trips this</span>
+                                </a>
+                              </p>
+                            )}
+                          </>
                         )}
-                        {entry.tryPreset !== undefined && (
-                          <p className="rules-preset">
-                            <a
-                              className="btn btn-ghost btn-sm"
-                              href={`#/sandbox?preset=${entry.tryPreset}`}
-                            >
-                              <Terminal size={13} aria-hidden />
-                              <span>Mint a link that trips this</span>
-                            </a>
-                          </p>
-                        )}
-                      </>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ))}
           </section>
-        ))}
-      </section>
 
-      <section className="rules-section" aria-labelledby="rules-differential">
-        <h2 id="rules-differential">
-          <Network size={16} aria-hidden />
-          <span>The differential for a failed request</span>
-        </h2>
-        <p className="rules-group-blurb">
-          {causes.length} candidate causes. On a real run they are ranked by what else is known: the
-          URL itself, how long the request took before it gave up, and whatever the opt-in probes
-          were allowed to establish. The descriptions below are the standing ones, independent of
-          any particular link, and each carries the cheapest test that confirms or eliminates it.
-        </p>
-        <ul className="rules-list">
-          {causes.map(([id, note]) => (
-            <li className="rules-cause" key={id}>
-              <div className="rules-rule-head">
-                <code className="rules-id">{id}</code>
-                <CopyButton value={id} label="Copy id" />
-              </div>
-              <h3>{note.title}</h3>
-              <p>{note.what}</p>
-              <dl className="rules-facts">
-                <dt>How to settle it</dt>
-                <dd>{note.discriminator}</dd>
-                <dt>Who has to act</dt>
-                <dd>{OWNER_WORDS[note.owner]}</dd>
-              </dl>
-            </li>
-          ))}
-        </ul>
-        <Callout tone="warn" title="A green curl proves nothing about a browser">
-          CORS is enforced by browsers and by nothing else, so a server with no CORS headers answers
-          curl perfectly. That is why a sender who tested with curl is genuinely, reasonably
-          confident their link is fine. Run the preflight from the Learn screen and read the
-          response headers rather than the status: a 200 carrying no Access-Control-Allow-Origin is
-          the failure.
-        </Callout>
-      </section>
-
-      {/* The outside check, last: everything above is what this tool believes,
-          and this is whether anybody else agrees. */}
-      <VectorRunner />
+          <section className="rules-section" aria-labelledby="rules-differential" tabIndex={-1}>
+            <h2 id="rules-differential">
+              <Network size={16} aria-hidden />
+              <span>The differential for a failed request</span>
+            </h2>
+            <p className="rules-group-blurb">
+              {causes.length} candidate causes. On a real run they are ranked by what else is known:
+              the URL itself, how long the request took before it gave up, and whatever the opt-in
+              probes were allowed to establish. The descriptions below are the standing ones,
+              independent of any particular link, and each carries the cheapest test that confirms
+              or eliminates it.
+            </p>
+            <ul className="rules-list">
+              {causes.map(([id, note]) => (
+                <li className="rules-cause" key={id}>
+                  <div className="rules-rule-head">
+                    <code className="rules-id">{id}</code>
+                    <CopyButton value={id} label="Copy id" />
+                  </div>
+                  <h3>{note.title}</h3>
+                  <p>{note.what}</p>
+                  <dl className="rules-facts">
+                    <dt>How to settle it</dt>
+                    <dd>{note.discriminator}</dd>
+                    <dt>Who has to act</dt>
+                    <dd>{OWNER_WORDS[note.owner]}</dd>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+            <Callout tone="warn" title="A green curl proves nothing about a browser">
+              CORS is enforced by browsers and by nothing else, so a server with no CORS headers
+              answers curl perfectly. That is why a sender who tested with curl is genuinely,
+              reasonably confident their link is fine. Run the preflight from the Learn screen and
+              read the response headers rather than the status: a 200 carrying no
+              Access-Control-Allow-Origin is the failure.
+            </Callout>
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,19 @@
 /**
- * Run somebody else's conformance suite against this engine.
+ * Run somebody else's conformance suite against this engine. In CI, not on screen.
+ *
+ * THIS IS A TEST HARNESS, and the note is here because it was briefly a screen.
+ * A page reporting "18 agree, 5 via the profile, 0 disagree" is a scorecard for
+ * this engine, and this is a site for opening somebody's link, not for justifying
+ * the tool that opens it. The visitor's link is not in the suite and their
+ * implementation is not what the run exercises, so the page cost them a tab and
+ * told them nothing. Worse, it could not do the thing that WOULD have helped
+ * them: run the vectors against their own code, which is what the suite's own
+ * harness is for.
+ *
+ * So the value is real and it belongs where an engine check belongs:
+ * `test/ktc-vectors.integration.test.ts`, run deliberately, costing the product
+ * nothing. If a screen for this ever seems like a good idea again, the question
+ * to answer first is which visitor it serves.
  *
  * The KTC specification publishes 23 machine-readable test vectors: an input (a
  * SHLink, bare and viewer-prefixed), the outcome a conformant receiver should
@@ -15,6 +29,11 @@
  * outcomes decided before this tool existed, is the one thing that can catch
  * that. (The live-IG test does the same job for the crypto, against real bytes.)
  *
+ * THE VECTORS ARE NOT VENDORED, and should not be without asking. Their repository
+ * carries no licence, so fetching published URLs at run time is using the suite
+ * the way its own page invites; committing copies of it here would be copying
+ * unlicensed content to save a network call in one test.
+ *
  * DISAGREEMENT IS THE OUTPUT, not failure. Eleven of the 23 vectors expect a
  * REJECTION, and for four of those the correct behaviour for a base-specification
  * viewer is to open the link: `ktc-d6-no-exp` and `ktc-d7-flag-p` are conformant
@@ -25,10 +44,10 @@
  * requirement as unmet. Collapsing that into a pass or a fail would throw away
  * the distinction this whole tool is built on.
  *
- * NOTHING IS FETCHED WITHOUT BEING ASKED. The suite lives on a third party's
- * site, so loading it is an explicit action, the URLs are shown before the button
- * is pressed, and the transport used for the runs themselves serves the vectors'
- * own canned responses rather than reaching out again.
+ * NOTHING IS FETCHED BY THE APP. Loading the suite happens only in the
+ * integration test, which is excluded from the default run; the app itself never
+ * reaches this host. The runs are offline even then, because each vector carries
+ * its own responses and they are served through the transport seam.
  */
 import { openShl } from './pipeline';
 import { BrowserTransport } from './net/browser';
@@ -38,15 +57,14 @@ import type { Transport, TransportRequest, TransportResponse } from './net/trans
 import type { RunOutcome, TraceRun } from './trace';
 
 /** Where the suite lives. Its own pages call this the canonical location. */
-export const SUITE_BASE = 'https://ktc-spec.github.io/vectors';
-export const SUITE_INDEX = `${SUITE_BASE}/index.json`;
-export const SUITE_PAGE = 'https://ktc-spec.github.io/test-vectors';
+const SUITE_BASE = 'https://ktc-spec.github.io/vectors';
+const SUITE_INDEX = `${SUITE_BASE}/index.json`;
 
 // ---------------------------------------------------------------------------
 // The published shape, parsed defensively
 // ---------------------------------------------------------------------------
 
-export type VectorTier = 'decode' | 'retrieve' | 'decrypt' | 'bundle';
+type VectorTier = 'decode' | 'retrieve' | 'decrypt' | 'bundle';
 
 /** The stages the suite names when it expects a rejection. */
 export type FailStage = 'decode' | 'payload' | 'retrieve' | 'decrypt' | 'bundle';
