@@ -866,6 +866,53 @@ export function elementAbsentReason(node: unknown): string | undefined {
  * The lists are Platypus's written and recognised sets, which are the ones these
  * events will carry.
  */
+
+/**
+ * The IPS absent-and-unknown code system, read from the published CodeSystem
+ * (http://hl7.org/fhir/uv/ips/CodeSystem/absent-unknown-uv-ips, version 1.1.0)
+ * rather than from memory.
+ *
+ * This exists because a SNOMED-only check misses the way the International
+ * Patient Summary actually says it, including in the IG's own example bundle,
+ * where the resource then renders as a bare system#code URL. That is the exact
+ * shape of the failure this module is meant to prevent.
+ *
+ * The `no-*-info` codes carry the opposite meaning to the `no-known-*` ones and
+ * are deliberately kept apart: see AbsenceStatement.meaning.
+ */
+const IPS_ABSENT_SYSTEM = 'http://hl7.org/fhir/uv/ips/CodeSystem/absent-unknown-uv-ips';
+
+const IPS_ABSENT_CODES: Record<string, { text: string; meaning: AbsenceStatement['meaning'] }> = {
+  'no-allergy-info': { text: 'No information about allergies', meaning: 'no-information' },
+  'no-known-allergies': { text: 'No known allergies', meaning: 'asserted-none' },
+  'no-device-info': { text: 'No information about devices', meaning: 'no-information' },
+  'no-known-devices': { text: 'No known devices in use', meaning: 'asserted-none' },
+  'no-immunization-info': { text: 'No information about immunizations', meaning: 'no-information' },
+  'no-known-immunizations': { text: 'No known immunizations', meaning: 'asserted-none' },
+  'no-medication-info': { text: 'No information about medications', meaning: 'no-information' },
+  'no-known-medications': { text: 'No known medications', meaning: 'asserted-none' },
+  'no-problem-info': { text: 'No information about problems', meaning: 'no-information' },
+  'no-known-problems': { text: 'No known problems', meaning: 'asserted-none' },
+  'no-procedure-info': {
+    text: 'No information about past history of procedures',
+    meaning: 'no-information',
+  },
+  'no-known-procedures': { text: 'No known procedures', meaning: 'asserted-none' },
+};
+
+/**
+ * Codes that appear in real payloads, including the IPS IG's own example bundle,
+ * and are NOT in version 1.1.0 of the code system. They are recognised anyway,
+ * because refusing to read a payload the specification itself publishes makes
+ * this tool the thing that is wrong, and reported, because a producer sending
+ * one is sending a code no current terminology server will validate.
+ */
+const IPS_ABSENT_RETIRED_CODES: Record<string, string> = {
+  'no-known-food-allergies': 'No known food allergies',
+  'no-known-medication-allergies': 'No known medication allergies',
+  'no-known-environmental-allergies': 'No known environmental allergies',
+};
+
 const ABSENCE_CODES: Record<string, Record<string, string>> = {
   AllergyIntolerance: {
     '716186003': 'No known allergies',
@@ -902,6 +949,18 @@ export interface AbsenceStatement {
   /** How we recognised it, so the UI can say the source stated this explicitly. */
   basis: 'code' | 'text';
   code?: string;
+  /**
+   * The distinction the whole absence contract turns on.
+   *
+   * `asserted-none` is a positive clinical statement: somebody asked and the
+   * answer was none. `no-information` says only that nobody asked, which is the
+   * same information an empty section carries and must not be rendered as though
+   * it were a clean bill of health. The IPS code system names both, and a viewer
+   * that collapses them into "None" tells the reader something nobody said.
+   */
+  meaning: 'asserted-none' | 'no-information';
+  /** Set when the code is not in the current version of its code system. */
+  deprecatedCode?: string;
 }
 
 /**
@@ -917,20 +976,52 @@ export interface AbsenceStatement {
 export function absenceAssertion(resource: unknown): AbsenceStatement | undefined {
   const type = resourceTypeOf(resource);
   if (type === undefined) return undefined;
-  const codes = ABSENCE_CODES[type];
-  if (codes === undefined) return undefined;
   const concept =
     field(resource, 'code') ?? field(resource, 'medicationCodeableConcept') ?? undefined;
   const parsed = codeableConcept(concept);
+
+  // The IPS code system first, and independently of the resource type: it is
+  // keyed by what is absent rather than by which resource carries the statement,
+  // and it is checked for every type because a producer may hang
+  // "no-known-medications" on a MedicationStatement or a List.
+  for (const code of parsed?.codes ?? []) {
+    if (code.system !== IPS_ABSENT_SYSTEM) continue;
+    const current = IPS_ABSENT_CODES[code.code];
+    if (current !== undefined) {
+      return {
+        text: code.display ?? current.text,
+        basis: 'code',
+        code: code.code,
+        meaning: current.meaning,
+      };
+    }
+    const retired = IPS_ABSENT_RETIRED_CODES[code.code];
+    if (retired !== undefined) {
+      return {
+        text: code.display ?? retired,
+        basis: 'code',
+        code: code.code,
+        meaning: 'asserted-none',
+        deprecatedCode: `"${code.code}" is not in version 1.1.0 of the IPS absent-and-unknown code system, so a terminology-aware validator will reject it. It is read here because the IPS implementation guide's own example bundle still uses it.`,
+      };
+    }
+  }
+
+  const codes = ABSENCE_CODES[type];
+  if (codes === undefined) return undefined;
   for (const code of parsed?.codes ?? []) {
     if (code.system !== 'http://snomed.info/sct') continue;
     const known = codes[code.code];
     if (known === undefined) continue;
-    return { text: code.display ?? known, basis: 'code', code: code.code };
+    // Every SNOMED code in that table is a positive "none" assertion; the
+    // "no information" sense has no SNOMED equivalent in use here.
+    return { text: code.display ?? known, basis: 'code', code: code.code, meaning: 'asserted-none' };
   }
   const pattern = ABSENCE_TEXT[type];
   if (parsed !== undefined && pattern !== undefined && pattern.test(parsed.text)) {
-    return { text: parsed.text, basis: 'text' };
+    // Recognised from wording alone, so the claim is weaker: say so rather than
+    // presenting a text match with the confidence of a coded assertion.
+    return { text: parsed.text, basis: 'text', meaning: 'asserted-none' };
   }
   return undefined;
 }
