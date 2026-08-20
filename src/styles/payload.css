@@ -61,10 +61,13 @@
 }
 
 .payload-note,
+/* The header takes the figure width because a document title and its status row
+   are wide; the sentences under it are prose and take the measure. */
 .payload-caveat,
 .payload-hint,
 .payload-reconciliation {
   margin: 0;
+  max-width: var(--measure);
   font-size: 13px;
   line-height: 20px;
   color: var(--fg-muted);
@@ -391,8 +394,9 @@
 .value-note {
   display: block;
   margin-top: var(--space-2);
-  font-size: 12px;
-  line-height: 18px;
+  max-width: var(--measure);
+  font-size: 12.5px;
+  line-height: 19px;
   color: var(--fg-muted);
   overflow-wrap: anywhere;
 }
@@ -439,10 +443,13 @@
   overflow-wrap: anywhere;
 }
 
+/* A sentence about a coding, inside a table cell that is as wide as the table
+   needs. The cell's width is not an argument for a 140-character line. */
 .concept-note {
   flex-basis: 100%;
-  font-size: 12px;
-  line-height: 18px;
+  max-width: var(--measure);
+  font-size: 12.5px;
+  line-height: 19px;
   color: var(--fg-muted);
 }
 
@@ -578,6 +585,7 @@ button.ref-chip:hover {
 
 .absence-explainer {
   margin: 0;
+  max-width: var(--measure);
   font-size: 13.5px;
   line-height: 21px;
 }

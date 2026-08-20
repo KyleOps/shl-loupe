@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:live": "vitest run --config vitest.integration.config.ts",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "measure": "node scripts/measure-typography.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

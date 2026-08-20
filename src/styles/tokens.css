@@ -110,8 +110,28 @@
    * paragraphs inside them are not.
    */
   --content-max: 1560px;
-  --measure: 74ch;
-  --measure-tight: 62ch;
+
+  /*
+   * 35em, and the unit is the whole point.
+   *
+   * These were 74ch and 62ch, written in the belief that `ch` is a character. It
+   * is not: `ch` is the advance of the digit zero, and in this face a zero is
+   * about 1.4 times the average letter. So `74ch` set every column in the app to
+   * roughly 105 characters, and the entire design was then tuned around a measure
+   * three quarters too wide. Text that filled its container read as a wall, and
+   * any block narrow enough to read comfortably looked cut short beside it. Both
+   * of the complaints this file has been edited for came from that one number,
+   * which is why two rounds of fixing containers only moved the symptom around.
+   *
+   * Measured, not assumed: the average advance in Geist over a representative
+   * lowercase sample is 0.47em, and it holds within a character across every size
+   * the app uses (12.5px to 16px). So the measure is stated in em, where 35em is
+   * 74 characters at any size. A note set smaller than the base then keeps its
+   * character count instead of inheriting a pixel width chosen for 16px, which is
+   * the trap the container comment below used to have to warn about.
+   */
+  --measure: 35em;
+  --measure-tight: 29em;
 
   /*
    * Container widths, both derived from --measure so the design still holds one
@@ -128,18 +148,19 @@
    * is deliberately wider than a card so a figure reads as an interruption of the
    * column rather than as one more card in it.
    *
-   * The trap in both: --measure is in `ch`, so it resolves against the font size
-   * of the element that USES it. A card sized from it fits text at the base size
-   * only, which is why the main sentence of a card is base size and only
-   * genuinely secondary text goes smaller. A 14px paragraph in a card sized for
-   * 16px stops short of the border, which is the same defect one scale down.
+   * Both are font-relative, because --measure is in em: a card that sets a
+   * smaller size for its own text is sized in that size, so the text still ends
+   * at the border. What does NOT work is a card at the base size holding a
+   * smaller paragraph, since the paragraph then fills a box measured for 16px
+   * and runs long. So the main sentence of a card is the card's own size, and
+   * only genuinely secondary text (labels, timings, rule ids) goes smaller.
    */
   --card-max: calc(var(--measure) + var(--space-6) * 2);
-  --figure-max: calc(var(--card-max) + var(--space-12) * 2);
+  --figure-max: calc(var(--card-max) + var(--space-12) * 3);
   /* A centred caption under an icon, in an empty state or a camera overlay. A
      short line is right there: the eye is not reading a column, it is reading a
      label, and 74 characters centred looks like a mistake. */
-  --measure-caption: 46ch;
+  --measure-caption: 21em;
   --micro-tracking: 0.06em;
 }
 

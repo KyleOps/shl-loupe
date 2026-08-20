@@ -287,18 +287,25 @@
 .about-claims .about-check,
 .about-disclaimer {
   font-size: 0.875em;
+  /* The measure, in the note's OWN size. A container sized for 16px holds 88
+     characters of 14px text, so inheriting the container's width here is how a
+     note ends up a fifth longer than the paragraph above it. */
+  max-width: var(--measure);
 }
 
-/* A step away from the fact list above it, so it reads as a sentence about the
-   example rather than as another row of the list that lost its label.
-
-   It fills its figure rather than taking the measure. A figure is bordered, so a
-   caption stopping short of that border looks cut off, and these are
-   single-sentence captions where the line length matters far less than it would
-   in a paragraph. Filling costs one exception fewer in the rule, which is worth
-   more than the few characters it buys back. */
+/*
+ * A step away from the fact list above it, so it reads as a sentence about the
+ * example rather than as another row of the list that lost its label.
+ *
+ * It used to FILL its figure, on the argument that a caption stopping short of a
+ * border looks cut off. That was true, and it was still the wrong trade, because
+ * the figure is as wide as a code sample needs and the caption came out at 121
+ * characters. A caption is prose; the code above it is not. So the caption takes
+ * the measure, and the figure keeps its width from the thing that needed it.
+ */
 .learn-note {
   margin: var(--space-5) 0 0;
+  max-width: var(--measure);
   line-height: 1.5;
   color: var(--fg-muted);
 }

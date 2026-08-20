@@ -456,7 +456,7 @@ export function SegmentMap({ link, recipient, onFollow }: SegmentMapProps): Reac
         </aside>
       </div>
 
-      <section className="segmap-tier segmap-usage" aria-labelledby="segmap-tier-usage">
+      <section className="segmap-tier" aria-labelledby="segmap-tier-usage">
         <h4 className="segmap-tier-title" id="segmap-tier-usage">
           3. Where the two required members are used
         </h4>

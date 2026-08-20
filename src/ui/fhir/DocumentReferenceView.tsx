@@ -481,7 +481,7 @@ function AttachmentBody({
   const download =
     objectUrl === undefined ? null : (
       <a
-        className="btn btn-default attachment-download"
+        className="btn attachment-download"
         href={objectUrl}
         download={fileNameFor(title, contentType)}
       >

@@ -8,6 +8,7 @@
 @import './chrome.css';
 @import './overlay.css';
 @import './settings.css';
+@import './workbench.css';
 @import './trace.css';
 @import './payload.css';
 @import './shc.css';
@@ -259,6 +260,50 @@
  * page. Both are satisfied by sizing the BOX from the measure. A callout stretched
  * across a wide screen was running to about 200 characters a line.
  */
+/*
+ * The link's flags, one row each.
+ *
+ * These class names existed in the markup with no stylesheet behind them, which
+ * is the quietest defect in the app: nothing errors, and a chip, a name and a
+ * sentence just stack as default block content. The row is a chip beside a
+ * two-line explanation, and the explanation is prose, so it takes the measure
+ * rather than the width of whichever pane it lands in.
+ */
+.flag-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.flag {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.flag > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: var(--measure);
+  min-width: 0;
+}
+
+.flag strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+.flag p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 21px;
+  color: var(--fg-muted);
+}
+
 .callout {
   max-width: calc(var(--measure) + var(--space-11));
   display: flex;
@@ -400,10 +445,14 @@ table.fields.is-dense td {
   color: var(--fg-default);
 }
 
+/* A sentence under a value in a wide table. The cell is as wide as the table
+   needs, which is no argument for a 196-character line, so the note takes the
+   measure on its own block. */
 .field-note {
   margin: var(--space-3) 0 0;
-  font-size: 12.5px;
-  line-height: 19px;
+  max-width: var(--measure);
+  font-size: 13px;
+  line-height: 20px;
   /* fg-subtle is 3.52:1 on bg-raised, so metadata inside an expanded body steps
      up to fg-muted. See the ratio table in tokens.css. */
   color: var(--fg-muted);

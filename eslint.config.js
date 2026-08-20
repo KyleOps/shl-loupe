@@ -95,6 +95,11 @@ export default defineConfig(
     // verbatim as the record of what a browser actually did, so reformatting
     // them to this project's rules would falsify them.
     'research/**',
+    // Development tools that drive a browser from Node. They are outside the
+    // app's tsconfig program, so the type-aware rules cannot parse them at all,
+    // and naming each one in allowDefaultProject would be a list to maintain
+    // for no benefit: nothing here ships.
+    'scripts/**',
   ]),
 
   // Type-aware from the start. `strictTypeChecked` is the point of using

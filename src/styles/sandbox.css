@@ -127,8 +127,11 @@ fieldset.mint-field > * + * {
   margin-bottom: var(--space-4);
 }
 
+/* Same as the settings note: below base size, so the measure comes from the
+   note rather than from the field it sits under. */
 .mint-note {
   margin: 0;
+  max-width: var(--measure);
   font-size: 12.5px;
   line-height: 19px;
   color: var(--fg-muted);

@@ -425,13 +425,22 @@ ol.trace-children {
   padding: var(--space-5) var(--space-6);
   background: var(--bg-raised);
   border-radius: var(--radius-card);
+  /* A panel of mixed content: a sentence, then a table, then a finding. It takes
+     the figure width because the widest thing in it is data, and the prose
+     inside takes its own measure rather than the panel's width. Unbounded, this
+     panel was 1464px on a large display and its opening sentence ran to 137
+     characters. */
+  max-width: var(--figure-max);
   min-width: 0;
 }
 
+/* The panel's own size, so the sentence ends where the measure says and not
+   where the table below it happens to end. */
 .step-summary {
   margin: 0;
+  max-width: var(--measure);
   color: var(--fg-default);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .trace-orphans {
@@ -494,8 +503,11 @@ ol.trace-children {
   color: var(--fg-muted);
 }
 
+/* Prose explaining the evidence above it, on the panel ground: the measure on
+   its own block, or it inherits the width of a table. */
 .evidence-note p {
   margin: 0;
+  max-width: var(--measure);
   color: var(--fg-default);
   font-size: 14px;
 }
@@ -526,11 +538,14 @@ ol.trace-children {
   min-width: 0;
 }
 
+/* Bare prose on the panel ground, under a wire dump that is wider than any
+   sentence should be. It takes the measure on its own block. */
 .wire-note {
   margin: 0;
+  max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 12.5px;
-  line-height: 19px;
+  font-size: 13px;
+  line-height: 20px;
 }
 
 /* The browser's message, quoted rather than paraphrased, so a participant can
@@ -664,6 +679,10 @@ ol.trace-children {
   background: var(--bg-surface);
   border-left: var(--rail-width) solid var(--border-meaningful);
   border-radius: var(--radius-card);
+  /* Quoted prose in a bordered box: the box carries the width, in the size the
+     quotation is set at, and the blockquote fills it. */
+  font-size: 14px;
+  max-width: calc(var(--measure) + var(--space-6) * 2);
   min-width: 0;
 }
 
@@ -689,9 +708,7 @@ ol.trace-children {
 .citation blockquote {
   margin: 0;
   color: var(--fg-default);
-  font-size: 14px;
   line-height: 22px;
-  max-width: var(--measure);
 }
 
 .citation a {
@@ -705,6 +722,16 @@ ol.trace-children {
    Findings
    -------------------------------------------------------------------------- */
 
+/*
+ * A tinted box holding nothing but prose, which makes it the one shape where
+ * getting the width wrong is unmissable: the tint draws the box's edge, so a
+ * paragraph stopping short of it reads as truncation rather than as a column.
+ * This was the reported defect, at 662px of text in a 1432px box.
+ *
+ * So the BOX carries the width, in the size of the text inside it (--measure is
+ * em, so declaring the size here is what makes the two agree), and no paragraph
+ * below sets a width of its own.
+ */
 .finding {
   display: flex;
   flex-direction: column;
@@ -713,6 +740,8 @@ ol.trace-children {
   background: var(--tone-bg);
   border-left: var(--rail-width) solid var(--tone-fg);
   border-radius: var(--radius-card);
+  font-size: 13.5px;
+  max-width: calc(var(--measure) + var(--space-6) * 2);
   min-width: 0;
 }
 
@@ -736,9 +765,7 @@ ol.trace-children {
 .finding-remedy,
 .finding-audience {
   margin: 0;
-  max-width: var(--measure);
   color: var(--fg-default);
-  font-size: 13.5px;
   line-height: 21px;
 }
 

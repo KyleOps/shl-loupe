@@ -437,6 +437,76 @@ test.describe('the masthead is the same height on every screen', () => {
   });
 });
 
+test.describe('the workbench lays out as three panes', () => {
+  /*
+   * The layout `OpenScreen` computes is the layout that renders.
+   *
+   * `workbench.css` did not exist for the first weeks of this project, so every
+   * one of those class names matched nothing and the screen rendered as a single
+   * column of full-width panels on every display. The class-coverage unit test
+   * (src/styles/styles-cover-markup.test.ts) now catches a missing stylesheet,
+   * but it can only prove that somebody wrote a rule. This proves the rule does
+   * what the screen was designed around: two columns wide, one column narrow, and
+   * the pane that earns the space getting it.
+   */
+  test('puts the payload beside the trace on a wide display', async ({ page }) => {
+    await page.setViewportSize({ width: 1500, height: 1000 });
+    await page.goto(`/#${WORKING_LINK}`);
+    // The payload pane exists from the first frame (it explains what it is
+    // waiting for), and while the run is in flight the trace is still the hero.
+    // Measuring before the run settles measures the wrong layout.
+    await expect(page.locator('.workbench[data-layout="payload-first"]')).toBeVisible({
+      timeout: 30_000,
+    });
+
+    const trace = await page.locator('.pane-trace').boundingBox();
+    const payload = await page.locator('.pane-payload').boundingBox();
+    if (trace === null || payload === null) throw new Error('a pane did not render');
+
+    // Side by side, not stacked.
+    expect(payload.x).toBeGreaterThan(trace.x + trace.width - 1);
+    // Something opened, so the payload is the one that earns the room.
+    expect(payload.width).toBeGreaterThan(trace.width);
+    // And the whole row is used: a two-column grid that leaves a third of the
+    // display empty is the single-column bug wearing a grid.
+    expect(payload.x + payload.width).toBeGreaterThan(1300);
+  });
+
+  test('gives the trace the room while nothing has opened', async ({ page }) => {
+    await page.setViewportSize({ width: 1500, height: 1000 });
+    await page.goto(`/#${LOOPBACK_LINK}`);
+    await expect(page.locator('.pane-trace')).toBeVisible({ timeout: 20_000 });
+
+    const trace = await page.locator('.pane-trace').boundingBox();
+    const payload = await page.locator('.pane-payload').boundingBox();
+    if (trace === null || payload === null) throw new Error('a pane did not render');
+    expect(trace.width).toBeGreaterThan(payload.width);
+  });
+
+  test('collapses to one pane at a time between 700 and 1100', async ({ page }) => {
+    await page.setViewportSize({ width: 900, height: 1000 });
+    await page.goto(`/#${WORKING_LINK}`);
+    await expect(page.locator('.pane-tabs')).toBeVisible({ timeout: 20_000 });
+
+    // Wait for the run to settle before touching the tabs. Opening a payload
+    // switches the tab once, per run, from an effect: clicking Trace while that
+    // is still pending gets undone a frame later. It only shows up when the
+    // machine is loaded and the fetch is slow, which is how it passed alone and
+    // failed in the parallel pass.
+    await expect(page.locator('.workbench[data-layout="payload-first"]')).toBeVisible({
+      timeout: 30_000,
+    });
+
+    // One of the two, never both, and the tab bar says which.
+    expect(await page.locator('.pane-trace, .pane-payload').count()).toBe(1);
+    await expect(page.locator('.pane-payload')).toBeVisible();
+
+    await page.getByRole('tab', { name: 'Trace' }).click();
+    await expect(page.locator('.pane-trace')).toBeVisible();
+    await expect(page.locator('.pane-payload')).toHaveCount(0);
+  });
+});
+
 test.describe('no paragraph is cut short inside a wider box', () => {
   /*
    * The defect this guards, in the maintainer's words: "a lot of textboxes look
@@ -458,8 +528,29 @@ test.describe('no paragraph is cut short inside a wider box', () => {
    *  - A standfirst (`.learn-lede`, `.rules-lede`, `.about-lede`) is MEANT to be a
    *    tighter column than the prose beneath it. It is the one case where ending
    *    early is a choice.
-   *  - A grid or flex item is sized by its track, not by its parent's box, so
-   *    comparing the two measures nothing.
+   *  - A container laid out ACROSS the inline axis sizes its items by their track
+   *    rather than by its own box, so comparing the two measures nothing.
+   *
+   * That second exclusion was written as "any grid or flex parent", and it is why
+   * this test passed for a fortnight while the defect it was written for sat on
+   * the busiest screen in the app. Almost every container here is a flex COLUMN,
+   * and in a column the item's width IS the parent's content width, so the
+   * comparison is exactly valid. Excluding by `display` instead of by axis skipped
+   * the whole trace area: the verdict, every step body, every finding, every
+   * citation. The finding boxes were 662px of text in a 1432px tinted box, which
+   * is the screenshot that reopened this.
+   *
+   * Two further conditions, which together are the rule as it is actually written
+   * in tokens.css rather than an approximation of it:
+   *  - The container has to have a VISIBLE edge (a border, or a background of its
+   *    own). A paragraph taking the measure inside a transparent section is a
+   *    column, not a truncation; there is no edge for it to disagree with.
+   *  - The container must not hold anything WIDER than the prose. A table, a code
+   *    block or a row of cards is what set that width, and prose beside one is
+   *    entitled to stop at the measure.
+   * What is never allowed is the case this was reported for: a box whose only
+   * content is prose, three times the width of the prose, so that the box's own
+   * edge is the thing contradicting the text.
    */
   const screens: Array<[string, string]> = [
     ['home', ''],
@@ -495,11 +586,40 @@ test.describe('no paragraph is cut short inside a wider box', () => {
           if (STANDFIRST.some((name) => el.classList.contains(name))) continue;
           const parent = el.parentElement;
           if (!parent) continue;
-          const laidOutByTrack = ['grid', 'inline-grid', 'flex', 'inline-flex'].includes(
-            getComputedStyle(parent).display,
-          );
-          if (laidOutByTrack) continue;
           const style = getComputedStyle(parent);
+          // The defect is a paragraph contradicting an edge the reader can SEE.
+          // A transparent, borderless section is not an edge: prose taking the
+          // measure inside one is a column, which is the whole point.
+          const bounded =
+            style.borderTopWidth !== '0px' ||
+            style.borderLeftWidth !== '0px' ||
+            !['rgba(0, 0, 0, 0)', 'transparent'].includes(style.backgroundColor);
+          if (!bounded) continue;
+          // Across the inline axis, the track sizes the item. Down a column, the
+          // parent's content width does, and that is the case worth checking.
+          const laidOutAcross =
+            (style.display === 'flex' || style.display === 'inline-flex'
+              ? style.flexDirection.startsWith('row')
+              : false) ||
+            (style.display === 'grid' || style.display === 'inline-grid'
+              ? style.gridTemplateColumns.split(' ').filter(Boolean).length > 1
+              : false);
+          if (laidOutAcross) continue;
+          // Something intrinsically wide is setting this container's width, so
+          // the prose in it is entitled to be narrower than the box.
+          //
+          // "Wider sibling" is NOT the test, and the first version of this line
+          // used it: a block-level sibling stretches to the container by
+          // default, so a finding's own title row made every finding look
+          // justified and the mutation test walked straight through. What
+          // counts is content that is wide in itself.
+          const proseWidth = el.getBoundingClientRect().width;
+          const holdsWideContent = [
+            ...parent.querySelectorAll<HTMLElement>(
+              'table, pre, code, svg, img, canvas, .scroll-x',
+            ),
+          ].some((wide) => wide.getBoundingClientRect().width > proseWidth + 80);
+          if (holdsWideContent) continue;
           const available =
             parent.getBoundingClientRect().width -
             parseFloat(style.paddingLeft) -

@@ -97,8 +97,12 @@
  * promise that SHLoupe makes no request the user did not ask for, while appearing
  * to keep it.
  */
+/* The explanation of one setting, and the main thing in the card. It is set
+   below the base size, so it takes the measure in its own size rather than the
+   card's: at 13.5px the card's width is 93 characters. */
 .setting-note {
   margin: 0;
+  max-width: var(--measure);
   font-size: 13.5px;
   line-height: 21px;
   color: var(--fg-muted);

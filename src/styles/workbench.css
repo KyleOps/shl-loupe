@@ -1,0 +1,413 @@
+/*
+ * The workbench: the three panes of the Open screen, and the four small
+ * components that live inside them.
+ *
+ * THIS STYLESHEET DID NOT EXIST, and nothing errored. `OpenScreen` renders a
+ * `.workbench` holding a `.workbench-panes` grid of `.pane-link`, `.pane-trace`
+ * and `.pane-payload`, chooses between three layout modes at two breakpoints,
+ * and marks which pane earns the space with `data-layout`. Every one of those
+ * class names and both data attributes matched nothing, so on a large display
+ * the "three-pane grid" the file's own comment describes rendered as one column
+ * of full-width panels: a table of link members 1500px wide, a trace step whose
+ * metrics sat a thousand pixels from the step it measured, and no payload beside
+ * anything. The layout mode was computed, stored and never used.
+ *
+ * It is the third missing stylesheet in this app (after the overlay layer and the
+ * chrome), and the most expensive, because the missing thing here is the layout
+ * the screen was designed around rather than the look of one component. There is
+ * now a test that fails on the fourth: `styles-cover-markup.test.ts` asserts that
+ * every class name written in JSX has a rule somewhere in the CSS.
+ *
+ * Two rules from OpenScreen.tsx are load bearing here, and both are its comments
+ * rather than mine:
+ *
+ * THE WIDTHS FOLLOW THE VERDICT. `data-layout` is `trace-first` until something
+ * opens, because "a fixed three-pane grid puts a large empty payload pane next to
+ * a failed trace, and an empty pane reads as the tool having failed rather than
+ * as the link having failed". So the trace takes the majority of the row while it
+ * is the thing being read, and hands it to the payload the moment there is one.
+ *
+ * THE BREAKPOINTS ARE DUPLICATED IN TYPESCRIPT, in `layoutModeForWidth`, because
+ * CSS cannot read a constant out of a module. 700px and 1100px, in both places:
+ * a tab bar rendered while the grid is still two columns wide is the failure that
+ * pairing guards against. The grid here keys off `data-mode` rather than a media
+ * query for exactly that reason, so there is one decision, made in one place, and
+ * the CSS follows it.
+ */
+
+/* --------------------------------------------------------------------------
+   The grid
+   -------------------------------------------------------------------------- */
+
+.workbench {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-width: 0;
+}
+
+/* The verdict, the way out, and the passcode prompt: one column, always, and
+   never beside a pane. This is the part of the screen that says what happened. */
+.workbench-top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.workbench-panes {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+}
+
+/*
+ * Wide: two columns, three panes.
+ *
+ * The link and the trace stack in one column because they are read in that
+ * order and the link is short; the payload takes the other column whole, so a
+ * document is read as a document rather than in a 400px slot under a trace.
+ * `align-items: start` keeps each pane its own height instead of stretching the
+ * short one to match the long one, which is what draws a 2000px empty box.
+ */
+.workbench[data-mode='wide'] .workbench-panes {
+  grid-template-areas:
+    'link payload'
+    'trace payload';
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+}
+
+/* Nothing opened, so the trace is the hero and the payload pane is explaining
+   what it is missing. It needs enough room to be read and no more. */
+.workbench[data-mode='wide'][data-layout='trace-first'] .workbench-panes {
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
+}
+
+.workbench[data-mode='wide'] .pane-link {
+  grid-area: link;
+}
+
+.workbench[data-mode='wide'] .pane-trace {
+  grid-area: trace;
+}
+
+.workbench[data-mode='wide'] .pane-payload {
+  grid-area: payload;
+}
+
+/* Tabs and stack are both one column; what differs is whether the trace and the
+   payload share a slot, and that is decided in the markup. */
+.pane {
+  min-width: 0;
+}
+
+/* A pane's body is a column of blocks with air between them. Without this every
+   pane inherited `.panel-body`'s padding and nothing else, so a field table sat
+   directly on a flag list. */
+.pane > .panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+/* Populated from the first step onwards, so this line is what stands in for the
+   members before the decode step has run. Quiet, and it holds its line rather
+   than collapsing the pane to a header. */
+.pane-waiting {
+  margin: 0;
+  min-height: 21px;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   The trace and payload tabs, between 700px and 1100px
+   -------------------------------------------------------------------------- */
+
+/*
+ * Same shape as the masthead's section tabs (chrome.css): a rail under the
+ * current one, heavier type, brighter text, and never colour alone. Two
+ * components that both mean "choose which view is on screen" should not be two
+ * different components, and the rail is what a projector keeps.
+ */
+.pane-tabs {
+  display: flex;
+  gap: var(--space-2);
+  border-bottom: var(--hairline-width) solid var(--border-hairline);
+  min-width: 0;
+}
+
+.pane-tab {
+  padding: var(--space-4) var(--space-6);
+  background: none;
+  border: 0;
+  border-bottom: var(--rail-width) solid transparent;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+  color: var(--fg-muted);
+  font-size: 0.9375em;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pane-tab:hover {
+  background: var(--bg-hover);
+  color: var(--fg-default);
+}
+
+.pane-tab[aria-selected='true'] {
+  border-bottom-color: var(--accent);
+  color: var(--fg-default);
+  font-weight: 650;
+}
+
+/* --------------------------------------------------------------------------
+   Which file, when a manifest carries several
+   -------------------------------------------------------------------------- */
+
+.file-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   The key row
+   -------------------------------------------------------------------------- */
+
+/*
+ * The decryption key, on its own row above the member table.
+ *
+ * It is out of the table on purpose: it is the one member that is a secret, it
+ * has its own reveal control and its own confirmation, and a table row cannot
+ * carry a callout. The confirmation wraps to its own line rather than squeezing
+ * the buttons in beside the value.
+ */
+.key-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  min-width: 0;
+}
+
+.key-row-label {
+  flex: none;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.key-row-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+/* The callout is a sibling of the value, and it belongs on its own line. */
+.key-row > .callout {
+  flex-basis: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   The passcode prompt
+   -------------------------------------------------------------------------- */
+
+/*
+ * A P-flag link needs a passcode, and this is the one form in the app that
+ * appears in the middle of a run. It is a form, so it is bounded like a form:
+ * the field and the button on one row, the two sentences around them on the
+ * measure, and the whole block sized from that rather than from the width of
+ * the screen it interrupts.
+ */
+.passcode {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-7);
+  max-width: calc(var(--measure) + var(--space-7) * 2);
+  background: var(--bg-surface);
+  border: var(--hairline-width) solid var(--border-hairline);
+  border-left: var(--rail-width) solid var(--accent);
+  border-radius: var(--radius-pane);
+  min-width: 0;
+}
+
+.passcode-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.passcode-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+/*
+ * Full strength, not the muted tier.
+ *
+ * This sentence is the one that stops somebody burning an attempt: a relay
+ * counts a wrong passcode, and enough of them can retire the link for everyone.
+ * The warning tone carries it, the icon beside it carries it for anybody who
+ * cannot see the colour, and it is never the small print.
+ */
+.passcode-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0;
+  color: var(--status-warn);
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+.passcode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  min-width: 0;
+}
+
+.passcode-row .text-field {
+  flex: 1 1 16ch;
+  min-width: 0;
+}
+
+.passcode-note {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   The variant badge
+   -------------------------------------------------------------------------- */
+
+/*
+ * What kind of link this is, and how far SHLoupe can take it.
+ *
+ * The component's own comment says why it exists: a different profile is never
+ * "invalid". Unstyled, it said that in a stack of undifferentiated paragraphs,
+ * which is the presentation of an afterthought rather than of the first question
+ * anybody asks at a table.
+ */
+.variant-badge {
+  min-width: 0;
+}
+
+.variant-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.variant-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-default);
+}
+
+/* The body of a disclosure is a column of blocks, and each of them is prose. */
+.variant-badge .disclosure-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.variant-heading {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--micro-tracking);
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.variant-blurb {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--fg-default);
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+.variant-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding-left: var(--space-7);
+  max-width: var(--measure);
+  color: var(--fg-default);
+  font-size: 13.5px;
+  line-height: 21px;
+}
+
+/* The profile canonicals a payload claims. They are URLs, so they go mono and
+   they wrap: truncating an identifier is how two profiles look like one. */
+.variant-profiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.variant-source {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/* Quoted, so it is visibly the specification's sentence and not ours. */
+.variant-quote {
+  color: var(--fg-default);
+}
+
+.variant-aside {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Two wrappers that were carrying content with no rule of their own
+   -------------------------------------------------------------------------- */
+
+/* One health card inside a file that may hold several. */
+.card-payload {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+/* The parts of an artefact, taken apart, on the Learn screen. */
+.anatomy-strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
