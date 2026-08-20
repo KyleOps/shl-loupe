@@ -61,6 +61,15 @@ const SCREENS = [
 /** Comfortable is 45 to 85; this is the line at which a report says so. */
 const LONG_LINE = 90;
 
+/**
+ * How far apart the right edges of the page's own column may be.
+ *
+ * Not zero: a heading with `text-wrap: balance` and a list item with a marker
+ * legitimately land a few pixels apart. Eighty is comfortably below the point at
+ * which a reader sees two columns instead of one.
+ */
+const COLUMN_SPREAD = 80;
+
 /*
  * Everything below runs inside the page, so it is written as one self-contained
  * function per measurement rather than importing anything.
@@ -90,6 +99,14 @@ function measureInPage() {
   };
 
   const PROSE = 'main p, main li, main dd, main dt, main blockquote, main figcaption';
+
+  // Inside this function on purpose: `page.evaluate` ships one function to the
+  // page, so a helper declared outside it is simply not there at run time.
+  const describe = (el) => {
+    if (!el) return '';
+    const cls = (el.className || '').toString().split(' ')[0];
+    return `${el.tagName.toLowerCase()}${cls ? '.' + cls : ''} @${getComputedStyle(el).fontSize}`;
+  };
   const range = document.createRange();
   const lines = [];
   const short = [];
@@ -153,13 +170,47 @@ function measureInPage() {
   }
 
   lines.sort((a, b) => b.chars - a.chars);
-  return { lines: lines.slice(0, 5), short };
+
+  /*
+   * The third question, and the one the eye actually asks first: is there a
+   * column at all?
+   *
+   * Every block that starts at the page's own left edge is in the one column, so
+   * their right edges should agree. When they do not, the page reads as text that
+   * has been cut short even though every individual line is a comfortable length,
+   * which is what happened when the measure was in `em`: a 28px heading resolved
+   * 35em to 1244px and the 15px standfirst under it to 451px. Same rule, same
+   * column, two edges 800px apart.
+   */
+  // Headings and paragraphs only. A list ITEM is often a row rather than prose (a
+  // trace step, a card in a guide), and it is legitimately as wide as its
+  // container, so including `li` here reported a column where there was none.
+  const inColumn = [
+    ...document.querySelectorAll('main h1, main h2, main h3, main p, main dd'),
+  ].filter(
+    (el) => (el.textContent ?? '').trim().length >= 40 && el.getBoundingClientRect().width > 0,
+  );
+  const lefts = inColumn.map((el) => Math.round(el.getBoundingClientRect().left));
+  const pageLeft = Math.min(...lefts);
+  const column = inColumn.filter((el) => Math.abs(el.getBoundingClientRect().left - pageLeft) <= 4);
+  const rights = column.map((el) => Math.round(el.getBoundingClientRect().right));
+  const edges =
+    rights.length < 2
+      ? { spread: 0, widest: '', narrowest: '' }
+      : {
+          spread: Math.max(...rights) - Math.min(...rights),
+          widest: describe(column[rights.indexOf(Math.max(...rights))]),
+          narrowest: describe(column[rights.indexOf(Math.min(...rights))]),
+        };
+
+  return { lines: lines.slice(0, 5), short, edges };
 }
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1800, height: 1000 } });
 let worst = 0;
 let offenders = 0;
+let misaligned = 0;
 
 for (const [label, path] of SCREENS) {
   await page.goto(`${BASE}/${path}`);
@@ -174,7 +225,7 @@ for (const [label, path] of SCREENS) {
   }
   await page.evaluate(() => document.fonts.ready);
 
-  const { lines, short } = await page.evaluate(measureInPage);
+  const { lines, short, edges } = await page.evaluate(measureInPage);
   const longest = lines[0]?.chars ?? 0;
   worst = Math.max(worst, longest);
   offenders += short.length;
@@ -190,11 +241,18 @@ for (const [label, path] of SCREENS) {
   for (const cut of short) {
     console.log(`    CUT SHORT  ${cut.what}: ${cut.own}px of ${cut.available}px in .${cut.parent}`);
   }
+  if (edges.spread > COLUMN_SPREAD) {
+    misaligned += 1;
+    console.log(
+      `    NO COLUMN  right edges differ by ${edges.spread}px: ${edges.widest} is widest, ${edges.narrowest} narrowest`,
+    );
+  }
 }
 
 console.log(
-  `\nWorst line on any screen: ${worst} characters. Blocks cut short: ${offenders}.\n` +
+  `\nWorst line on any screen: ${worst} characters. Blocks cut short: ${offenders}. ` +
+    `Screens with no single column: ${misaligned}.\n` +
     `Comfortable reading is 45 to 85 characters; past about ${LONG_LINE} a reader loses the line.`,
 );
 await browser.close();
-process.exitCode = worst > LONG_LINE || offenders > 0 ? 1 : 0;
+process.exitCode = worst > LONG_LINE || offenders > 0 || misaligned > 0 ? 1 : 0;

@@ -38,9 +38,6 @@ const OfflineScreen = lazy(async () => ({
 const SandboxScreen = lazy(async () => ({
   default: (await import('./screens/SandboxScreen')).SandboxScreen,
 }));
-const VectorsScreen = lazy(async () => ({
-  default: (await import('./screens/VectorsScreen')).VectorsScreen,
-}));
 const LearnScreen = lazy(async () => ({
   default: (await import('./screens/LearnScreen')).LearnScreen,
 }));
@@ -116,9 +113,8 @@ export function App(): React.ReactNode {
         <Suspense fallback={null}>
           {route.screen === 'offline' && <OfflineScreen />}
           {route.screen === 'sandbox' && <SandboxScreen />}
-          {route.screen === 'vectors' && <VectorsScreen />}
           {route.screen === 'learn' && <LearnScreen />}
-          {route.screen === 'rules' && <RulesScreen />}
+          {route.screen === 'rules' && <RulesScreen scrollTo={route.section} />}
           {route.screen === 'about' && <AboutScreen />}
           {route.screen === 'settings' && <SettingsScreen />}
         </Suspense>

@@ -73,28 +73,29 @@
  * short one to match the long one, which is what draws a 2000px empty box.
  */
 .workbench[data-mode='wide'] .workbench-panes {
-  grid-template-areas:
-    'link payload'
-    'trace payload';
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+}
+
+/*
+ * The link and the trace, stacked, as ONE grid item.
+ *
+ * This was two rows of a grid with the payload spanning both, and that put a gap
+ * above the trace: a spanning item contributes its height to the rows it spans,
+ * so row one grew to a share of a payload that can be thousands of pixels tall,
+ * and the trace began halfway down the page. Nesting a flex column inside a
+ * single cell takes the payload's height out of the question entirely.
+ */
+.workbench-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
 }
 
 /* Nothing opened, so the trace is the hero and the payload pane is explaining
    what it is missing. It needs enough room to be read and no more. */
 .workbench[data-mode='wide'][data-layout='trace-first'] .workbench-panes {
   grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr);
-}
-
-.workbench[data-mode='wide'] .pane-link {
-  grid-area: link;
-}
-
-.workbench[data-mode='wide'] .pane-trace {
-  grid-area: trace;
-}
-
-.workbench[data-mode='wide'] .pane-payload {
-  grid-area: payload;
 }
 
 /* Tabs and stack are both one column; what differs is whether the trace and the
@@ -343,7 +344,7 @@
   margin: 0;
   max-width: var(--measure);
   color: var(--fg-default);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 21px;
 }
 
@@ -355,7 +356,7 @@
   padding-left: var(--space-7);
   max-width: var(--measure);
   color: var(--fg-default);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 21px;
 }
 
@@ -375,8 +376,8 @@
   margin: 0;
   max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 /* Quoted, so it is visibly the specification's sentence and not ours. */
@@ -388,8 +389,8 @@
   margin: 0;
   max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 /* --------------------------------------------------------------------------
@@ -447,7 +448,7 @@
   margin: 0;
   max-width: var(--measure);
   color: var(--fg-default);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 21px;
 }
 
@@ -486,19 +487,22 @@
   margin: 0;
   max-width: var(--measure);
   color: var(--fg-default);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 21px;
   font-weight: 500;
 }
 
+/* 14px, like every other sentence in the app. The column is one width now, so
+   a smaller size buys nothing but a longer line: 13px came out at 92 characters
+   in the same box where 14px comes out at 85. */
 .profile-blurb,
 .profile-declaration,
 .profile-source {
   margin: 0;
   max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 .profile-source a {

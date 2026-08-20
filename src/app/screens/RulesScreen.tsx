@@ -17,7 +17,7 @@
  * offering is a ranked differential with a discriminating test per branch, which
  * is what the second half of this page is.
  */
-import { useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { Network, ScanSearch, Terminal } from 'lucide-react';
 import type { Audience, Severity } from '../../core/trace';
 import { STATIC_RULES, type Rule } from '../../core/diagnose/rules';
@@ -37,6 +37,7 @@ import {
   toneForSeverity,
   type Tone,
 } from '../../ui/primitives';
+import { VectorRunner } from '../VectorRunner';
 
 // ---------------------------------------------------------------------------
 // Vocabulary
@@ -131,8 +132,19 @@ function groupRules(): readonly RuleGroupView[] {
 // Screen
 // ---------------------------------------------------------------------------
 
-export function RulesScreen(): ReactNode {
+export function RulesScreen({ scrollTo }: { scrollTo?: string | undefined }): ReactNode {
   const groups = useMemo(() => groupRules(), []);
+  /*
+   * `#/vectors` was a screen of its own before the runner moved down here, and a
+   * URL somebody pasted into a thread at an event has to keep working. The router
+   * turns that path into this screen plus a section name, and this is where the
+   * page acts on it. `scrollIntoView` rather than a real anchor, because the hash
+   * is the app's own routing state and cannot also be a fragment identifier.
+   */
+  useEffect(() => {
+    if (scrollTo === undefined) return;
+    document.getElementById(scrollTo)?.scrollIntoView({ block: 'start' });
+  }, [scrollTo]);
   const causes = useMemo(
     () => Object.entries(DIFFERENTIAL_NOTES) as ReadonlyArray<[CauseId, DifferentialNote]>,
     [],
@@ -152,8 +164,8 @@ export function RulesScreen(): ReactNode {
           These are checks against the base specification. A downstream profile adds requirements of
           its own, and failing one of those is a different statement from being invalid: those are
           reported per link, beside the payload, and the published{' '}
-          <a href="#/vectors">KTC conformance vectors</a> can be run against this engine to see
-          where the two disagree.
+          <a href="#/vectors">KTC conformance vectors</a> can be run against this engine, at the
+          foot of this page, to see where the two disagree.
         </p>
       </header>
 
@@ -265,6 +277,10 @@ export function RulesScreen(): ReactNode {
           the failure.
         </Callout>
       </section>
+
+      {/* The outside check, last: everything above is what this tool believes,
+          and this is whether anybody else agrees. */}
+      <VectorRunner />
     </div>
   );
 }

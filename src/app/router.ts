@@ -17,8 +17,7 @@
  * the home screen does.
  */
 
-export type ScreenName =
-  'open' | 'offline' | 'sandbox' | 'vectors' | 'learn' | 'rules' | 'about' | 'settings';
+export type ScreenName = 'open' | 'offline' | 'sandbox' | 'learn' | 'rules' | 'about' | 'settings';
 
 export const SCREENS: Array<{ name: ScreenName; path: string; label: string; blurb: string }> = [
   {
@@ -38,12 +37,6 @@ export const SCREENS: Array<{ name: ScreenName; path: string; label: string; blu
     path: '/sandbox',
     label: 'Sandbox',
     blurb: 'Mint links, including deliberately broken ones, to test another viewer.',
-  },
-  {
-    name: 'vectors',
-    path: '/vectors',
-    label: 'Vectors',
-    blurb: 'Run the published KTC conformance vectors against this engine.',
   },
   {
     name: 'learn',
@@ -70,6 +63,8 @@ export interface Route {
   screen: ScreenName;
   /** Present when the hash carries a link rather than a screen path. */
   link?: string;
+  /** A section of the screen to scroll to, for a path that used to be a screen. */
+  section?: string;
 }
 
 const SHLINK = /(shlink:\/{1,2}[A-Za-z0-9_-]+)/;
@@ -86,6 +81,10 @@ export function parseHash(hash: string): Route {
   if (link !== undefined) return { screen: 'open', link };
 
   const path = raw.split('?')[0] ?? '';
+  // `/vectors` was a screen of its own and is now the last section of Checks. The
+  // old path keeps working, because a URL somebody pasted into a thread at an
+  // event has to keep working: it lands on Checks, which scrolls to the runner.
+  if (path === '/vectors' || path === 'vectors') return { screen: 'rules', section: 'vectors' };
   const match = SCREENS.find((screen) => screen.path === path || screen.path === `/${path}`);
   return { screen: match?.name ?? 'open' };
 }

@@ -1,5 +1,11 @@
 /**
- * Vectors: run somebody else's conformance suite against this engine, here, now.
+ * The vectors runner: somebody else's conformance suite, run against this engine.
+ *
+ * It sits at the bottom of the Checks screen rather than in a tab of its own.
+ * Checks answers "what does this tool verify", and this answers "and does that
+ * agree with anybody outside this repository", which is the same question one
+ * step further out. It was briefly a tab, and eight tabs to reach seven jobs is
+ * one too many. `#/vectors` still resolves, to Checks, scrolled here.
  *
  * The KTC specification publishes 23 machine-readable test vectors. Its own page
  * lists them, with a copy button and a QR wall, and leaves running them to you.
@@ -44,9 +50,9 @@ import {
   type VectorSuite,
   type VectorTier,
   type VectorVerdict,
-} from '../../core/vectors';
-import { Button, Callout, Chip, Disclosure, StatusIcon, type Tone } from '../../ui/primitives';
-import { QrCode } from '../../ui/QrCode';
+} from '../core/vectors';
+import { Button, Callout, Chip, Disclosure, StatusIcon, type Tone } from '../ui/primitives';
+import { QrCode } from '../ui/QrCode';
 
 const TIERS: Array<{ tier: VectorTier; title: string; blurb: string }> = [
   {
@@ -85,7 +91,7 @@ const VERDICT_WORD: Record<VectorVerdict, string> = {
 
 type Phase = 'idle' | 'loading' | 'running' | 'done' | 'error';
 
-export function VectorsScreen(): ReactNode {
+export function VectorRunner(): ReactNode {
   const [phase, setPhase] = useState<Phase>('idle');
   const [suite, setSuite] = useState<VectorSuite | undefined>(undefined);
   const [runs, setRuns] = useState<VectorRun[]>([]);
@@ -119,9 +125,9 @@ export function VectorsScreen(): ReactNode {
   const tally = tallyRuns(runs);
 
   return (
-    <div className="vectors">
+    <section className="vectors" id="vectors">
       <header className="vectors-head">
-        <h1>Somebody else&rsquo;s conformance suite, run against this engine</h1>
+        <h2>Somebody else&rsquo;s conformance suite, run against this engine</h2>
         <p className="vectors-lede">
           The KTC specification publishes machine-readable test vectors: an input, the outcome a
           conformant receiver should reach, and every HTTP response the run needs. This page runs
@@ -139,7 +145,7 @@ export function VectorsScreen(): ReactNode {
       </Callout>
 
       <section className="vectors-verdicts">
-        <h2>Three outcomes, and the middle one is the interesting one</h2>
+        <h3>Three outcomes, and the middle one is the interesting one</h3>
         <dl className="vectors-legend">
           <div>
             <dt>
@@ -185,7 +191,7 @@ export function VectorsScreen(): ReactNode {
       </section>
 
       <section className="vectors-run">
-        <h2>Run it</h2>
+        <h3>Run it</h3>
         <p className="vectors-note">
           Pressing this fetches the suite from <code>{new URL(SUITE_INDEX).host}</code>, which is
           the only third-party request any screen in SHLoupe makes. Each vector carries its own HTTP
@@ -250,7 +256,7 @@ export function VectorsScreen(): ReactNode {
             if (inTier.length === 0) return null;
             return (
               <section key={tier} className="vectors-tier">
-                <h2>{title}</h2>
+                <h3>{title}</h3>
                 <p className="vectors-note">{blurb}</p>
                 <div className="vectors-list">
                   {inTier.map((run) => (
@@ -271,7 +277,7 @@ export function VectorsScreen(): ReactNode {
           </p>
         </section>
       ) : null}
-    </div>
+    </section>
   );
 }
 

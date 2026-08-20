@@ -20,19 +20,22 @@
   min-width: 0;
 }
 
+/* No width of its own: it takes the column with everything else (tokens.css),
+   because a title that runs 250px past the paragraph under it is the exact shape
+   the reader reads as "the text has been cut short". */
 .vectors-head h1 {
   margin: 0 0 var(--space-5);
   font-size: 28px;
   line-height: 36px;
   letter-spacing: -0.015em;
   text-wrap: balance;
-  max-width: var(--figure-max);
 }
 
-/* A standfirst is meant to be a tighter column than the prose under it. */
+/* Same column as everything else. A standfirst is distinguished by being larger
+   and quieter, not by stopping 55px short of the paragraph below it: that reads
+   as an accident, because there is nothing on the page to explain it. */
 .vectors-lede {
   margin: 0;
-  max-width: var(--measure-tight);
   color: var(--fg-muted);
   font-size: 15px;
   line-height: 24px;

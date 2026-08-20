@@ -457,8 +457,19 @@ table.fields th {
    wondering why a container query "did not apply". */
 @container (max-width: 560px) {
   table.fields th {
+    /*
+     * `white-space: normal` and NOTHING else. A hyphen is already a wrap
+     * opportunity, so `KTC-FLAG-U` breaks to `KTC-` / `FLAG-` / `U`, which is
+     * what this column needs.
+     *
+     * The first version added `overflow-wrap: anywhere`, which allows a break
+     * between any two characters. The cell is `width: 1%`, so the browser sizes
+     * it to its min-content width, and min-content with `anywhere` is ONE
+     * CHARACTER: the ids rendered as a vertical stack of single letters. Belt
+     * and braces, on a shrink-to-fit column, is how you get a column one letter
+     * wide.
+     */
     white-space: normal;
-    overflow-wrap: anywhere;
   }
 }
 
@@ -478,8 +489,8 @@ table.fields.is-dense td {
 .field-note {
   margin: var(--space-3) 0 0;
   max-width: var(--measure);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 21px;
   /* fg-subtle is 3.52:1 on bg-raised, so metadata inside an expanded body steps
      up to fg-muted. See the ratio table in tokens.css. */
   color: var(--fg-muted);

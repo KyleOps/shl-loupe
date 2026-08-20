@@ -91,6 +91,15 @@
  * at the 16px base, and now it scales with it.
  */
 .learn-head h1,
+/* Two ledes in a row need a paragraph break between them: with `margin: 0` on
+   each (so a single lede sits tight under its heading) they ran together into one
+   block of text with no gap, which reads as one paragraph that lost its full
+   stop. */
+.rules-head .rules-lede + .rules-lede,
+.about-head .about-lede + .about-lede {
+  margin-top: var(--space-5);
+}
+
 .rules-head h1,
 .about-head h1 {
   margin: 0 0 var(--space-5);
@@ -101,23 +110,22 @@
 
 /*
  * The lede is the one paragraph set larger than the body, which is what makes an
- * opening read as an opening. It takes the TIGHT measure for that reason: at
- * 17px the full measure would come out wider in pixels than the body column
- * below it, and the widest line on the page arriving first is what makes
- * everything after it look truncated. Narrower and larger reads as a standfirst.
+ * opening read as an opening.
+ *
+ * It used to take the TIGHT measure, and the reason was sound while the measure
+ * was in `em`: at 17px, 35em came out wider in pixels than the body column below
+ * it, and the widest line on the page arriving first makes everything after it
+ * look truncated. In `rem` that cannot happen, because the column is one width at
+ * every size. So the reason is gone and the exception with it: the lede sits in
+ * the same column as the body, and reads as a standfirst by being larger and
+ * quieter. Stopping 96px short of the paragraph below it was the last piece of
+ * the "why is the text cut off" complaint.
  */
 .learn-lede,
 .rules-lede,
 .about-lede {
   margin: 0;
-  /*
-   * Deliberately narrower than the body, and deliberately left short of its
-   * container: a standfirst is meant to be a tighter column than the prose under
-   * it. This is the one place where text ending before its container does NOT
-   * mean the width was forgotten, so it is called out rather than left to look
-   * like the defect it resembles.
-   */
-  max-width: var(--measure-tight);
+  max-width: var(--measure);
   color: var(--fg-muted);
   font-size: 1.0625em;
   line-height: 1.6;

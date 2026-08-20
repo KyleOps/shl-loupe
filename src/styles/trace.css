@@ -679,10 +679,11 @@ ol.trace-children {
   background: var(--bg-surface);
   border-left: var(--rail-width) solid var(--border-meaningful);
   border-radius: var(--radius-card);
-  /* Quoted prose in a bordered box: the box carries the width, in the size the
-     quotation is set at, and the blockquote fills it. */
+  /* Quoted prose in a bordered box: the box carries the width and the
+     blockquote fills it. The tighter measure, because a citation sits inside a
+     step body beside a finding and the two should agree. */
   font-size: 14px;
-  max-width: calc(var(--measure) + var(--space-6) * 2);
+  max-width: calc(var(--measure-tight) + var(--space-6) * 2);
   min-width: 0;
 }
 
@@ -740,8 +741,8 @@ ol.trace-children {
   background: var(--tone-bg);
   border-left: var(--rail-width) solid var(--tone-fg);
   border-radius: var(--radius-card);
-  font-size: 13.5px;
-  max-width: calc(var(--measure) + var(--space-6) * 2);
+  font-size: 14px;
+  max-width: calc(var(--measure-tight) + var(--space-6) * 2);
   min-width: 0;
 }
 

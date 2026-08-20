@@ -41,6 +41,7 @@
  * package. Implying otherwise would be worse than staying quiet.
  */
 import { useMemo, useState, type ReactNode } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { Button, Callout, Chip, Disclosure } from '../primitives';
 import type { BundleIndex, IndexedEntry } from './BundleIndex';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -105,6 +106,23 @@ export function CompositionView({
 }): ReactNode {
   const composition = entry.resource;
   const [order, setOrder] = useState<SectionOrder>('profile');
+  /*
+   * Sections are CLOSED to begin with, and there is one control for all of them.
+   *
+   * A patient summary has a dozen sections and a hundred entries; opening all of
+   * it at once produces a page nobody can navigate, where the document's own
+   * shape (what sections exist, how many entries each holds, which are empty) is
+   * buried under the contents. Closed, that shape is the first thing on screen
+   * and it fits on one screen, which is what a reader at a table is actually
+   * asking. The header of a closed section still carries the title, the LOINC
+   * code and the entry count, so nothing is hidden that answers "what is in
+   * here".
+   *
+   * Open sections are tracked by their document index, and "expand all" stores
+   * every index rather than a flag, so opening all and then closing one behaves
+   * the way a reader expects.
+   */
+  const [openSections, setOpenSections] = useState<ReadonlySet<number>>(new Set());
   const context: RenderContext = { index, from: entry };
   const auPs = claimsAuPs(composition) || claimsAuPs(index.root);
 
@@ -212,6 +230,22 @@ export function CompositionView({
           <Button size="sm" onClick={() => setOrder(order === 'profile' ? 'document' : 'profile')}>
             Show {order === 'profile' ? 'document order' : 'profile order'}
           </Button>
+          {/* Same idiom as the trace's own toolbar, deliberately: two controls
+              that both mean "open everything" should not look like two different
+              components. The word "sections" is in the label because the trace's
+              pair is on the same page, and two buttons called "Expand all" is a
+              screen reader announcing the same name for two different actions. */}
+          <Button
+            size="sm"
+            onClick={() =>
+              setOpenSections(new Set(sections.map(({ documentIndex }) => documentIndex)))
+            }
+          >
+            Expand all sections
+          </Button>
+          <Button size="sm" onClick={() => setOpenSections(new Set())}>
+            Collapse all sections
+          </Button>
         </div>
       </header>
 
@@ -235,6 +269,15 @@ export function CompositionView({
               from={entry}
               auPs={auPs}
               documentIndex={documentIndex}
+              open={openSections.has(documentIndex)}
+              onToggle={() => {
+                setOpenSections((current) => {
+                  const next = new Set(current);
+                  if (next.has(documentIndex)) next.delete(documentIndex);
+                  else next.add(documentIndex);
+                  return next;
+                });
+              }}
             />
           </ErrorBoundary>
         ))}
@@ -262,12 +305,17 @@ function SectionView({
   from,
   auPs,
   documentIndex,
+  open = true,
+  onToggle,
 }: {
   section: FhirNode;
   index: BundleIndex;
   from: IndexedEntry;
   auPs: boolean;
   documentIndex: number;
+  /** Nested subsections have no toggle of their own, so they default to open. */
+  open?: boolean;
+  onToggle?: () => void;
 }): ReactNode {
   const context: RenderContext = { index, from };
   const loinc = sectionLoinc(section);
@@ -291,13 +339,37 @@ function SectionView({
     (item) => item.resolution.kind !== 'resolved' && item.resolution.kind !== 'contained',
   );
 
+  const heading = title ?? slice?.verifiedDisplay ?? `Section ${documentIndex + 1}`;
+  const bodyId = `section-body-${String(documentIndex)}`;
+
   return (
-    <section className="doc-section">
+    <section className={open ? 'doc-section is-open' : 'doc-section'}>
       <header className="doc-section-head">
         {/* The heading is the author's own wording. The code is identity and sits
-            beside it, never in place of it. */}
+            beside it, never in place of it.
+
+            When the section can be collapsed, the heading IS the control: one
+            hit target the width of the row, carrying aria-expanded, rather than a
+            chevron somebody has to aim at. */}
         <h3 className="doc-section-title">
-          {title ?? slice?.verifiedDisplay ?? `Section ${documentIndex + 1}`}
+          {onToggle === undefined ? (
+            heading
+          ) : (
+            <button
+              type="button"
+              className="doc-section-toggle"
+              aria-expanded={open}
+              aria-controls={bodyId}
+              onClick={onToggle}
+            >
+              <ChevronRight
+                size={14}
+                className={open ? 'doc-section-chevron is-open' : 'doc-section-chevron'}
+                aria-hidden
+              />
+              <span>{heading}</span>
+            </button>
+          )}
         </h3>
         <div className="doc-section-meta">
           {loinc !== undefined && (
@@ -328,6 +400,7 @@ function SectionView({
           className="doc-section-tabs"
           role="group"
           aria-label={`How to read ${title ?? 'this section'}`}
+          hidden={!open}
         >
           {(['structured', 'narrative'] as const).map((option) => (
             <button
@@ -343,87 +416,95 @@ function SectionView({
         </div>
       </header>
 
-      {narrativeFirst && (
-        <Callout tone="warn" title="This section opens on its narrative on purpose">
-          Its <span className="mono">text.status</span> is <span className="mono">{status}</span>,
-          which is the author stating that the narrative carries content the entries do not. Reading
-          only the entries here loses part of what was sent.
-        </Callout>
-      )}
+      {/* Everything below the header is the body, hidden as one block rather than
+          per element: `hidden` is what carries "not on screen" to assistive
+          technology, and the reset in tokens.css makes it beat `display: flex`. */}
+      <div className="doc-section-body" id={bodyId} hidden={!open}>
+        {narrativeFirst && (
+          <Callout tone="warn" title="This section opens on its narrative on purpose">
+            Its <span className="mono">text.status</span> is <span className="mono">{status}</span>,
+            which is the author stating that the narrative carries content the entries do not.
+            Reading only the entries here loses part of what was sent.
+          </Callout>
+        )}
 
-      {notes.map((note, position) => (
-        <Callout key={position} tone="info" title="A note on this section">
-          {strField(note, 'valueString') ?? strField(note, 'valueMarkdown') ?? 'Empty note'}
-        </Callout>
-      ))}
+        {notes.map((note, position) => (
+          <Callout key={position} tone="info" title="A note on this section">
+            {strField(note, 'valueString') ?? strField(note, 'valueMarkdown') ?? 'Empty note'}
+          </Callout>
+        ))}
 
-      {nested.length > 0 && auPs && (
-        <Callout tone="fail" title="Subsections are not allowed here">
-          This payload claims AU PS, which sets <span className="mono">section.section</span> to
-          ..0, and this section has {nested.length} of them. Their content is rendered below so
-          nothing is lost, but a conformant receiver would reject the document.
-        </Callout>
-      )}
+        {nested.length > 0 && auPs && (
+          <Callout tone="fail" title="Subsections are not allowed here">
+            This payload claims AU PS, which sets <span className="mono">section.section</span> to
+            ..0, and this section has {nested.length} of them. Their content is rendered below so
+            nothing is lost, but a conformant receiver would reject the document.
+          </Callout>
+        )}
 
-      {tab === 'narrative' ? (
-        <Narrative narrative={section['text']} entryCount={references.length} />
-      ) : (
-        <div className="section-entries">
-          {references.length === 0 ? (
-            <EmptySection emptyReason={emptyReason} hasNarrative={section['text'] !== undefined} />
-          ) : (
-            resolved.map(({ reference, resolution }, position) => {
-              if (resolution.kind === 'resolved') {
+        {tab === 'narrative' ? (
+          <Narrative narrative={section['text']} entryCount={references.length} />
+        ) : (
+          <div className="section-entries">
+            {references.length === 0 ? (
+              <EmptySection
+                emptyReason={emptyReason}
+                hasNarrative={section['text'] !== undefined}
+              />
+            ) : (
+              resolved.map(({ reference, resolution }, position) => {
+                if (resolution.kind === 'resolved') {
+                  return (
+                    <RenderedResource
+                      key={position}
+                      resource={resolution.entry.resource}
+                      context={context}
+                      entry={resolution.entry}
+                    />
+                  );
+                }
+                if (resolution.kind === 'contained') {
+                  return (
+                    <RenderedResource
+                      key={position}
+                      resource={resolution.resource}
+                      context={context}
+                    />
+                  );
+                }
                 return (
-                  <RenderedResource
-                    key={position}
-                    resource={resolution.entry.resource}
-                    context={context}
-                    entry={resolution.entry}
-                  />
+                  <div key={position} className="section-entry-missing">
+                    <ReferenceValue value={reference} context={context} />
+                  </div>
                 );
-              }
-              if (resolution.kind === 'contained') {
-                return (
-                  <RenderedResource
-                    key={position}
-                    resource={resolution.resource}
-                    context={context}
-                  />
-                );
-              }
-              return (
-                <div key={position} className="section-entry-missing">
-                  <ReferenceValue value={reference} context={context} />
-                </div>
-              );
-            })
-          )}
-          {missing.length > 0 && (
-            <p className="value-note">
-              {missing.length} of this section's {references.length} entries point at resources this
-              bundle does not carry. In a conformant IPS or AU PS every entry has a{' '}
-              <span className="mono">fullUrl</span>, so a reference with no target here is a defect
-              in the payload rather than something a viewer can work around.
-            </p>
-          )}
-        </div>
-      )}
+              })
+            )}
+            {missing.length > 0 && (
+              <p className="value-note">
+                {missing.length} of this section's {references.length} entries point at resources
+                this bundle does not carry. In a conformant IPS or AU PS every entry has a{' '}
+                <span className="mono">fullUrl</span>, so a reference with no target here is a
+                defect in the payload rather than something a viewer can work around.
+              </p>
+            )}
+          </div>
+        )}
 
-      {nested.length > 0 && (
-        <div className="nested-sections">
-          {nested.map((child, position) => (
-            <SectionView
-              key={position}
-              section={asRecord(child) ?? {}}
-              index={index}
-              from={from}
-              auPs={auPs}
-              documentIndex={position}
-            />
-          ))}
-        </div>
-      )}
+        {nested.length > 0 && (
+          <div className="nested-sections">
+            {nested.map((child, position) => (
+              <SectionView
+                key={position}
+                section={asRecord(child) ?? {}}
+                index={index}
+                from={from}
+                auPs={auPs}
+                documentIndex={position}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

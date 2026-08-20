@@ -261,7 +261,6 @@ test.describe('reflow', () => {
     ['a diagnosed link', `#${LOOPBACK_LINK}`],
     ['offline', '#/offline'],
     ['sandbox', '#/sandbox'],
-    ['vectors', '#/vectors'],
     ['learn', '#/learn'],
     ['checks', '#/rules'],
     ['about', '#/about'],
@@ -446,32 +445,48 @@ test.describe('the masthead is the same height on every screen', () => {
   });
 });
 
-test.describe('the vectors screen', () => {
+test.describe('the vectors runner, at the foot of the checks page', () => {
   test('fetches nothing until it is asked to', async ({ page }) => {
-    // The one screen that reaches a third party. Its whole claim is that it does
-    // so only on request, and that claim is worth a test rather than a sentence.
+    // The one thing in the app that reaches a third party. Its whole claim is
+    // that it does so only on request, and that claim is worth a test rather
+    // than a sentence.
     const outbound: string[] = [];
     page.on('request', (request) => {
       if (!request.url().startsWith('http://localhost:4173/')) outbound.push(request.url());
     });
 
-    await page.goto('/#/vectors');
+    await page.goto('/#/rules');
     await expect(page.locator('.vectors')).toBeVisible();
     await expect(page.getByRole('button', { name: /Load and run/ })).toBeVisible();
-    expect(outbound, 'the vectors screen fetched something before being asked').toEqual([]);
+    expect(outbound, 'the vectors runner fetched something before being asked').toEqual([]);
 
     // And it names the host it will reach, before the button rather than after.
     await expect(page.locator('.vectors-run')).toContainText('ktc-spec.github.io');
   });
 
   test('explains all three verdicts, including the one that is not a failure', async ({ page }) => {
-    await page.goto('/#/vectors');
+    await page.goto('/#/rules');
     const legend = page.locator('.vectors-legend');
     await expect(legend).toContainText('Agrees via the profile');
     // The sentence this project exists for. If the legend ever loses it, the
     // middle verdict reads as a fudge rather than as the point.
     await expect(legend).toContainText('conformant SMART Health Link');
     await expect(legend).toContainText('Disagrees');
+  });
+
+  test('keeps the old #/vectors URL working', async ({ page }) => {
+    // Somebody pasted it into a thread at an event; it lands on Checks now.
+    await page.goto('/#/vectors');
+    await expect(page.locator('.rules')).toBeVisible();
+    await expect(page.locator('.vectors')).toBeVisible();
+    // And it is not a tab any more, so the strip is back to seven jobs. Scoped to
+    // the nav and exact, because `getByRole` matches an accessible name by
+    // substring: the sentence above the checks links to "KTC conformance
+    // vectors", which an unscoped, inexact query happily counted as the tab.
+    await expect(
+      page.locator('.masthead-nav').getByRole('link', { name: 'Vectors', exact: true }),
+    ).toHaveCount(0);
+    await expect(page.locator('.masthead-nav').getByRole('link')).toHaveCount(7);
   });
 });
 
@@ -545,6 +560,81 @@ test.describe('the workbench lays out as three panes', () => {
   });
 });
 
+test.describe('every screen has one column', () => {
+  /*
+   * The complaint this guards, in the maintainer's words: "still has the
+   * wordwrap/column length limit issue", with a screenshot of a page whose
+   * heading ran the width of the display and whose paragraphs stopped a third of
+   * the way across.
+   *
+   * Both were "correct" by the previous rule: every line was a comfortable
+   * length. The measure was in `em`, so it resolved against each element's own
+   * size, and a 28px heading capped at 35em came out 1244px wide while the 15px
+   * standfirst under it came out 451px. Nothing on the page agreed where the
+   * column was, and a reader sees that as text that has been cut off long before
+   * they count characters on a line.
+   *
+   * So the check is alignment, not length: every heading and paragraph starting
+   * at the page's own left edge is in the one column, and their right edges have
+   * to agree. `li` is excluded because a list item is often a ROW (a trace step,
+   * a card in a guide) and is legitimately as wide as its container.
+   */
+  const screens: Array<[string, string]> = [
+    ['home', ''],
+    ['a diagnosed link', `#${LOOPBACK_LINK}`],
+    ['offline', '#/offline'],
+    ['sandbox', '#/sandbox'],
+    ['learn', '#/learn'],
+    ['checks', '#/rules'],
+    ['about', '#/about'],
+    ['settings', '#/settings'],
+  ];
+
+  for (const [label, path] of screens) {
+    test(`${label} keeps one right edge`, async ({ page }) => {
+      await page.setViewportSize({ width: 1800, height: 1000 });
+      await page.goto(`/${path}`);
+      await expect(page.locator('main')).not.toBeEmpty();
+      await page.evaluate(() => document.fonts.ready);
+      if (path.startsWith('#shlink')) {
+        await expect(page.locator('.verdict')).toBeVisible({ timeout: 20_000 });
+      }
+
+      const report = await page.evaluate(() => {
+        const blocks = [
+          ...document.querySelectorAll<HTMLElement>('main h1, main h2, main h3, main p, main dd'),
+        ].filter(
+          (el) =>
+            (el.textContent ?? '').trim().length >= 40 && el.getBoundingClientRect().width > 0,
+        );
+        if (blocks.length < 2) return { spread: 0, widest: '', narrowest: '' };
+        const pageLeft = Math.min(...blocks.map((el) => el.getBoundingClientRect().left));
+        const column = blocks.filter(
+          (el) => Math.abs(el.getBoundingClientRect().left - pageLeft) <= 4,
+        );
+        if (column.length < 2) return { spread: 0, widest: '', narrowest: '' };
+        const rights = column.map((el) => Math.round(el.getBoundingClientRect().right));
+        const name = (el: HTMLElement | undefined): string =>
+          el === undefined
+            ? ''
+            : `${el.tagName.toLowerCase()}.${(el.className || '').toString().split(' ')[0]} @${getComputedStyle(el).fontSize}`;
+        return {
+          spread: Math.max(...rights) - Math.min(...rights),
+          widest: name(column[rights.indexOf(Math.max(...rights))]),
+          narrowest: name(column[rights.indexOf(Math.min(...rights))]),
+        };
+      });
+
+      // Not zero: a balanced heading and a list marker land a few pixels apart.
+      // Eighty is well below where a reader starts seeing two columns.
+      expect(
+        report.spread,
+        `${report.widest} is widest, ${report.narrowest} narrowest: state the column in rem, not em`,
+      ).toBeLessThanOrEqual(80);
+    });
+  }
+});
+
 test.describe('no paragraph is cut short inside a wider box', () => {
   /*
    * The defect this guards, in the maintainer's words: "a lot of textboxes look
@@ -596,7 +686,6 @@ test.describe('no paragraph is cut short inside a wider box', () => {
     ['an opened link', `#${WORKING_LINK}`],
     ['offline', '#/offline'],
     ['sandbox', '#/sandbox'],
-    ['vectors', '#/vectors'],
     ['learn', '#/learn'],
     ['checks', '#/rules'],
     ['about', '#/about'],

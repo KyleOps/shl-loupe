@@ -407,8 +407,19 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
 
       {layout === 'wide' ? (
         <div className="workbench-panes">
-          {linkPane}
-          {tracePane}
+          {/*
+            The link and the trace are one column, in a wrapper, rather than two
+            rows of a grid the payload spans.
+            
+            With grid areas, the payload spanning both rows contributed its height
+            to the row sizing, so row one grew to a share of a very tall payload
+            and the trace started halfway down the page with a gap above it. A
+            spanning item cannot do that to a nested flex column.
+          */}
+          <div className="workbench-column">
+            {linkPane}
+            {tracePane}
+          </div>
           {payloadPane}
         </div>
       ) : layout === 'tabs' ? (

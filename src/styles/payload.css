@@ -68,8 +68,8 @@
 .payload-reconciliation {
   margin: 0;
   max-width: var(--measure);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 21px;
   color: var(--fg-muted);
 }
 
@@ -173,12 +173,26 @@
   gap: var(--space-3);
 }
 
+/*
+ * The row of controls above the sections: what order they are in, and whether
+ * they are open.
+ *
+ * `space-between` was right for two items and wrong for four: with the order
+ * toggle and both bulk actions on the row, it spread them across the whole pane
+ * with the last one pinned to the far edge, which reads as three unrelated
+ * controls. Left-aligned with one gap groups them as what they are, and the
+ * sentence stating the current order keeps `margin-right: auto` so it stays
+ * beside the buttons it describes rather than under them.
+ */
 .section-order {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-4);
+}
+
+.section-order > .value-note {
+  margin-right: var(--space-4);
 }
 
 .section-list,
@@ -198,6 +212,52 @@
   background: var(--bg-surface);
   border: var(--hairline-width) solid var(--border-hairline);
   border-radius: var(--radius-pane);
+  min-width: 0;
+}
+
+/*
+ * A collapsed section is a summary row, not a card with a hole in it, so the
+ * padding tightens when it is closed and the gap between the header and a body
+ * that is not there disappears with it.
+ */
+.doc-section:not(.is-open) {
+  gap: 0;
+  padding-block: var(--space-5);
+}
+
+/*
+ * The heading is the toggle: one hit target the width of the row, rather than a
+ * chevron to aim at. The chevron is inside it, and it rotates rather than
+ * swapping glyph, so nothing shifts sideways when a section opens.
+ */
+.doc-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.doc-section-chevron {
+  flex: none;
+  color: var(--fg-muted);
+  transition: transform var(--motion-disclosure) var(--motion-ease);
+}
+
+.doc-section-chevron.is-open {
+  transform: rotate(90deg);
+}
+
+.doc-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
   min-width: 0;
 }
 
@@ -395,8 +455,8 @@
   display: block;
   margin-top: var(--space-2);
   max-width: var(--measure);
-  font-size: 12.5px;
-  line-height: 19px;
+  font-size: 14px;
+  line-height: 21px;
   color: var(--fg-muted);
   overflow-wrap: anywhere;
 }
@@ -448,8 +508,8 @@
 .concept-note {
   flex-basis: 100%;
   max-width: var(--measure);
-  font-size: 12.5px;
-  line-height: 19px;
+  font-size: 14px;
+  line-height: 21px;
   color: var(--fg-muted);
 }
 

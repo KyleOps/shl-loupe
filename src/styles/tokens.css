@@ -112,7 +112,7 @@
   --content-max: 1560px;
 
   /*
-   * 35em, and the unit is the whole point.
+   * 35rem, and the unit is the whole point. Twice.
    *
    * These were 74ch and 62ch, written in the belief that `ch` is a character. It
    * is not: `ch` is the advance of the digit zero, and in this face a zero is
@@ -125,13 +125,25 @@
    *
    * Measured, not assumed: the average advance in Geist over a representative
    * lowercase sample is 0.47em, and it holds within a character across every size
-   * the app uses (12.5px to 16px). So the measure is stated in em, where 35em is
-   * 74 characters at any size. A note set smaller than the base then keeps its
-   * character count instead of inheriting a pixel width chosen for 16px, which is
-   * the trap the container comment below used to have to warn about.
+   * the app uses (12.5px to 16px). 35 times that is 74 characters.
+   *
+   * Then it was `em`, and that was the second half of the same mistake. In `em`
+   * the column resolves against the ELEMENT's size, so a 28px heading capped at
+   * 35em came out 1244px wide while the 15px standfirst under it stopped at
+   * 451px. Every block read at a sane line length and no two blocks agreed where
+   * the column was, which is the "narrow text on a wide page" this file has now
+   * been edited for three times. Character count was never the whole problem:
+   * a column the eye can find is.
+   *
+   * So: `rem`. Root-relative, so every block in a column resolves to the SAME
+   * pixel width whatever size it is set at, and a heading, a paragraph and a note
+   * share one right edge. The cost is that a smaller size runs longer inside that
+   * fixed width (14px comes out at 85 characters), which is why nothing that is a
+   * sentence is set below 14px. The root size carries the large-text preference,
+   * so the column still grows with it.
    */
-  --measure: 35em;
-  --measure-tight: 29em;
+  --measure: 35rem;
+  --measure-tight: 29rem;
 
   /*
    * Container widths, both derived from --measure so the design still holds one
@@ -148,19 +160,19 @@
    * is deliberately wider than a card so a figure reads as an interruption of the
    * column rather than as one more card in it.
    *
-   * Both are font-relative, because --measure is in em: a card that sets a
-   * smaller size for its own text is sized in that size, so the text still ends
-   * at the border. What does NOT work is a card at the base size holding a
-   * smaller paragraph, since the paragraph then fills a box measured for 16px
-   * and runs long. So the main sentence of a card is the card's own size, and
-   * only genuinely secondary text (labels, timings, rule ids) goes smaller.
+   * Both are absolute, because --measure is in rem: one card width, one figure
+   * width, one right edge, whatever size the text inside is set at. A card
+   * holding a smaller paragraph fits more characters on a line rather than
+   * becoming a narrower card, which is the trade this design takes: an edge the
+   * eye can find beats a character count per block. Nothing that is a sentence
+   * goes below 14px, which is where that trade stops being worth it.
    */
   --card-max: calc(var(--measure) + var(--space-6) * 2);
   --figure-max: calc(var(--card-max) + var(--space-12) * 3);
   /* A centred caption under an icon, in an empty state or a camera overlay. A
      short line is right there: the eye is not reading a column, it is reading a
      label, and 74 characters centred looks like a mistake. */
-  --measure-caption: 21em;
+  --measure-caption: 21rem;
   --micro-tracking: 0.06em;
 }
 
@@ -252,12 +264,24 @@ body,
   height: 100%;
 }
 
+/*
+ * The base size is on the ROOT, not on the body.
+ *
+ * Every container width is in rem, and rem is the root's size. With the size on
+ * `body` instead, rem stayed pinned to the browser's 16px default, so the
+ * large-text preference grew the type and left the column exactly where it was:
+ * 19px text in a column measured for 16px, which is the long-line defect one
+ * step down.
+ */
+html {
+  font-size: var(--font-size-base);
+}
+
 body {
   margin: 0;
   background: var(--bg-canvas);
   color: var(--fg-default);
   font-family: var(--font-sans);
-  font-size: var(--font-size-base);
   line-height: 24px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -321,6 +345,23 @@ a {
  */
 .prose > * + * {
   margin-top: var(--space-5);
+}
+
+/*
+ * A heading belongs to the column its prose is in.
+ *
+ * Unbounded headings were the most visible third of the "narrow text on a wide
+ * page" complaint: on the Vectors screen an h2 ran to 1484px while the standfirst
+ * under it stopped at 451px, so nothing on the page agreed where the column was.
+ * A heading is short, so capping it at the measure costs a wrapped line at most
+ * and buys one edge down the whole page.
+ *
+ * `:where()` on purpose: zero specificity, so a screen that genuinely needs a
+ * wider heading (one labelling a figure, say) overrides this by simply saying so,
+ * with no cascade fight and no `!important`.
+ */
+main :where(h1, h2, h3, h4, h5) {
+  max-width: var(--measure);
 }
 
 /* Wide content scrolls inside its own container. The page never scrolls
