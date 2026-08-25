@@ -406,10 +406,22 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
       </div>
 
       {layout === 'wide' ? (
+        /*
+         * Two columns, not three panes. The left one is the link, and it
+         * sticks; the right one is the run, top to bottom, trace then payload.
+         *
+         * The wrappers are load bearing rather than tidiness: the left column
+         * has to be as tall as the row for the pane inside it to have anywhere
+         * to travel, and the right column has to be one flex column so a short
+         * trace cannot leave a gap above a long payload. workbench.css has the
+         * measurements.
+         */
         <div className="workbench-panes">
-          {linkPane}
-          {tracePane}
-          {payloadPane}
+          <div className="pane-column">{linkPane}</div>
+          <div className="pane-column pane-column-run">
+            {tracePane}
+            {payloadPane}
+          </div>
         </div>
       ) : layout === 'tabs' ? (
         <div className="workbench-panes">

@@ -449,7 +449,7 @@ test.describe('the workbench lays out as three panes', () => {
    * what the screen was designed around: two columns wide, one column narrow, and
    * the pane that earns the space getting it.
    */
-  test('puts the link beside the trace, with the payload below both', async ({ page }) => {
+  test('puts the link beside the run, and the run in one column', async ({ page }) => {
     await page.setViewportSize({ width: 1500, height: 1000 });
     await page.goto(`/#${WORKING_LINK}`);
     // The payload pane exists from the first frame (it explains what it is
@@ -466,15 +466,63 @@ test.describe('the workbench lays out as three panes', () => {
       throw new Error('a pane did not render');
     }
 
-    // The link and the trace share the top row: both are about the request.
+    // The link is the rail, and the run is beside it.
     expect(trace.x).toBeGreaterThan(link.x + link.width - 1);
     expect(trace.y).toBeCloseTo(link.y, 0);
 
-    // The document has the next row to itself, and all of it. A page of clinical
-    // content in half a row is the thing this layout exists to stop.
-    expect(payload.y).toBeGreaterThan(link.y + link.height - 1);
-    expect(payload.x).toBeCloseTo(link.x, 0);
-    expect(payload.width).toBeGreaterThan(trace.x + trace.width - link.x - 4);
+    /*
+     * The run reads down ONE column, and this is the assertion that guards the
+     * defect the layout was rebuilt for. The panes used to share a row with the
+     * payload spanning underneath, so the payload could not start until the
+     * taller of the two finished: measured at 1600px, a 2532px link pane beside
+     * a 576px trace put 1956px of nothing between them. Here the payload begins
+     * one grid gap under the trace whatever either of them is doing.
+     */
+    expect(payload.x).toBeCloseTo(trace.x, 0);
+    expect(payload.width).toBeCloseTo(trace.width, 0);
+    const gap = payload.y - (trace.y + trace.height);
+    expect(gap, 'the payload follows the trace').toBeGreaterThanOrEqual(0);
+    expect(gap, 'no void between the trace and the payload').toBeLessThan(40);
+
+    /*
+     * And the rail stays put, which is the other half of what the column is
+     * for: the payload is thousands of pixels tall and every question it raises
+     * is answered by the pane beside it.
+     *
+     * Waiting for the payload to have RENDERED, not just for the run to have
+     * settled, and the difference is what made the first version of this flake.
+     * `data-layout` flips when the run completes, which is before the lazy
+     * renderers have laid out twenty entries. Until they have, the right column
+     * is shorter than the rail, the row is the rail's own height, and a sticky
+     * box with no travel room in its containing block scrolls away like
+     * anything else. It measured -97: the page had scrolled 652 of a document
+     * that was still short, and the pane had gone with it.
+     */
+    await expect(page.locator('.pane-payload .payload-head')).toBeVisible({ timeout: 30_000 });
+    const before = await page.evaluate(
+      () => document.querySelector('.pane-link')!.getBoundingClientRect().top,
+    );
+    expect(before).toBeGreaterThan(0);
+    await page.evaluate(() => {
+      window.scrollTo(0, 1400);
+    });
+    await expect
+      .poll(
+        async () =>
+          Math.round(
+            await page.evaluate(
+              () => document.querySelector('.pane-link')!.getBoundingClientRect().top,
+            ),
+          ),
+        { timeout: 5000 },
+      )
+      // Pinned near the top rather than a token's exact value: the claim is
+      // that it stopped, not that --space-6 is 16px.
+      .toBeLessThanOrEqual(24);
+    const after = await page.evaluate(
+      () => document.querySelector('.pane-link')!.getBoundingClientRect().top,
+    );
+    expect(after, 'the link pane sticks rather than scrolling away').toBeGreaterThanOrEqual(0);
   });
 
   test('gives the trace the wider half while nothing has opened', async ({ page }) => {
