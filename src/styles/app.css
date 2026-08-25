@@ -430,8 +430,36 @@
   container-type: inline-size;
 }
 
+/*
+ * The table is as wide as its content, never as wide as the pane it sits in.
+ *
+ * `width: 100%` was the defect behind the worst of the payload pane. In a
+ * 1468px pane the bundle header drew its `timestamp` row ending at x=640 and
+ * parked the warning triangle that judges it at x=1414: 780px of hairline rule
+ * across nothing, with the fact at one end and its verdict at the other. The
+ * status column is a good gutter at the width the link pane gives it and a
+ * different component entirely at four times that width.
+ *
+ * Shrink-to-fit fixes both without touching the markup. A row of short values
+ * pulls its rules and its gutter in to where the text stops; a row carrying a
+ * URL or a JWE segment still grows to the full container and scrolls inside
+ * `.scroll-x` exactly as before. `max-width` rather than `width` on the value
+ * side of that is what keeps the second case honest.
+ *
+ * `.field-note` already carries `max-width: var(--measure)`, which caps what a
+ * note contributes to auto table layout, so a long note widens the column to a
+ * measure and no further.
+ *
+ * `max-content` rather than `fit-content`, and the difference is not academic:
+ * a table box does not shrink-to-fit under `fit-content` the way a block does.
+ * Measured in Chrome on the bundle header, whose max-content width is 687px:
+ * `auto` gave 1434, `fit-content` gave 1434, `max-content` gave 687. The
+ * `max-width` is what keeps the second case (a URL, a JWE segment) from
+ * pushing the table past its container.
+ */
 table.fields {
-  width: 100%;
+  width: max-content;
+  max-width: 100%;
   border-collapse: collapse;
   font-size: 13px;
 }
