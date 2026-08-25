@@ -59,6 +59,12 @@ import type { ProfileConformance } from '../../core/profiles';
 const PayloadView = lazy(async () => ({
   default: (await import('../../ui/fhir')).PayloadView,
 }));
+/* The same chunk. By the time this can be chosen the renderers have already
+   loaded, because the toggle that chooses it is only offered for a file that
+   opened, and a file that opened has been rendered. */
+const PayloadSource = lazy(async () => ({
+  default: (await import('../../ui/fhir')).PayloadSource,
+}));
 import type { Runner } from '../App';
 import { PasscodePrompt } from '../PasscodePrompt';
 import { navigate, parseHash } from '../router';
@@ -320,6 +326,9 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
   const reset = useSession((state) => state.reset);
   const layout = useLayoutMode();
   const [tab, setTab] = useState<'trace' | 'payload'>('trace');
+  /* Rendered or source, for the whole file. Not per file: somebody who switched
+     to the source to read one file wants the source of the next one too. */
+  const [payloadView, setPayloadView] = useState<'rendered' | 'source'>('rendered');
   const startOver = useStartOver(reset, onRun);
 
   // Move to the payload once, per run, and only when there is one. Doing it on
@@ -347,33 +356,61 @@ export function OpenScreen({ onRun }: { onRun: Runner }): ReactNode {
       <TraceList run={run} />
     </Panel>
   );
+  const opened = file !== undefined && file.content !== undefined;
   const payloadPane = (
     <Panel
       title="Payload"
       className="pane pane-payload"
       actions={
-        files.length > 1 ? (
-          <div className="file-switcher" role="group" aria-label="Files in this manifest">
-            {files.map((entry, index) => {
-              const described = describeFile(entry);
-              return (
-                <Button
-                  key={entry.index}
-                  size="sm"
-                  variant={index === selectedFile ? 'primary' : 'default'}
-                  onClick={() => selectFile(index)}
+        files.length > 1 || opened ? (
+          <>
+            {files.length > 1 && (
+              <div className="file-switcher" role="group" aria-label="Files in this manifest">
+                {files.map((entry, index) => {
+                  const described = describeFile(entry);
+                  return (
+                    <Button
+                      key={entry.index}
+                      size="sm"
+                      variant={index === selectedFile ? 'primary' : 'default'}
+                      onClick={() => selectFile(index)}
+                    >
+                      {described.label}
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
+            {/* The same two words, in the same control, as every resource card
+                below offers for one resource. Until this existed the file was
+                the one thing on the screen with no way to read it whole. */}
+            {opened && (
+              <div className="payload-views" role="group" aria-label="How to view this file">
+                <button
+                  type="button"
+                  className={clsx('view-tab', payloadView === 'rendered' && 'is-current')}
+                  aria-pressed={payloadView === 'rendered'}
+                  onClick={() => setPayloadView('rendered')}
                 >
-                  {described.label}
-                </Button>
-              );
-            })}
-          </div>
+                  Rendered
+                </button>
+                <button
+                  type="button"
+                  className={clsx('view-tab', payloadView === 'source' && 'is-current')}
+                  aria-pressed={payloadView === 'source'}
+                  onClick={() => setPayloadView('source')}
+                >
+                  JSON
+                </button>
+              </div>
+            )}
+          </>
         ) : undefined
       }
     >
       {file !== undefined && file.content !== undefined ? (
         <Suspense fallback={<p className="pane-waiting">Rendering the payload…</p>}>
-          <PayloadView file={file} />
+          {payloadView === 'source' ? <PayloadSource file={file} /> : <PayloadView file={file} />}
         </Suspense>
       ) : (
         <NoPayload run={run} running={running} file={file} onRun={onRun} />

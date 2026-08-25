@@ -148,6 +148,14 @@
   background: var(--bg-hover);
 }
 
+/* An anchor styled as a button is still an anchor, and the global link
+   underline lands on it. This used to be patched at the one site that had a
+   download link (`.attachment-download`), which is the shape of patch the next
+   one forgets: the payload's own download link arrived underlined. */
+a.btn {
+  text-decoration: none;
+}
+
 .btn-sm {
   padding: var(--space-2) var(--space-4);
   font-size: 12px;

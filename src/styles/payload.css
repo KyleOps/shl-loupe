@@ -278,6 +278,7 @@
 }
 
 .doc-section-tabs,
+.payload-views,
 .resource-views {
   display: inline-flex;
   align-self: flex-start;
@@ -769,10 +770,6 @@ button.ref-chip:hover {
   gap: var(--space-4);
 }
 
-.attachment-download {
-  text-decoration: none;
-}
-
 .attachment-warning {
   display: flex;
   align-items: flex-start;
@@ -991,4 +988,41 @@ button.ref-chip:hover {
   .nested-sections {
     padding-left: var(--space-5);
   }
+}
+
+/* --------------------------------------------------------------------------
+   The file, as one thing
+   -------------------------------------------------------------------------- */
+
+/* A note, the two ways out of the page (clipboard, disk), and the text. The
+   head wraps rather than shrinking the buttons, because the buttons are the
+   whole point of the view on a file too long to read on screen. */
+.payload-source {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.payload-source-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.payload-source-note {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.payload-source-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
 }

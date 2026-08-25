@@ -22,7 +22,7 @@
  * Nothing lower imports anything higher, so a new renderer is a leaf change.
  */
 
-export { PayloadView, FhirPayload } from './PayloadView';
+export { PayloadView, PayloadSource, FhirPayload } from './PayloadView';
 export { CompositionView, claimedEntries, type SectionOrder } from './CompositionView';
 export {
   ResourceCard,

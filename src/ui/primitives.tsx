@@ -24,6 +24,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type ButtonHTMLAttributes,
@@ -37,6 +38,7 @@ import {
   CircleSlash,
   Clock,
   Copy,
+  Download,
   Eye,
   EyeOff,
   Info,
@@ -45,6 +47,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { toArrayBuffer } from '../core/bytes';
 import type { Severity, StepStatus } from '../core/trace';
 
 // ---------------------------------------------------------------------------
@@ -367,6 +370,91 @@ export function Secret({
       </button>
       <CopyButton value={value} label="Copy" />
     </span>
+  );
+}
+
+/**
+ * An object URL that is revoked when it stops being used.
+ *
+ * Leaking one is not a rounding error at these sizes: a demo that opens a dozen
+ * documents holds every one of them in memory until the tab closes.
+ *
+ * Created during render rather than in an effect, deliberately. Creating it in
+ * an effect means a first paint with no `src`, then a setState, then a second
+ * paint: a visible flash on every attachment.
+ *
+ * THE REVOKE IS DEFERRED BY A TICK, AND THAT IS THE WHOLE OF THIS HOOK. The
+ * obvious version revokes in the effect's cleanup, and under React's
+ * development double-invoke the cleanup runs immediately after mount: the url
+ * the second effect pass re-registers has already been revoked. It is invisible
+ * on an `<img>`, which decoded the blob before any of this happened, and total
+ * on a download link, which is not clicked until later. Measured on the payload
+ * download: `fetch(href)` from the page threw "Failed to fetch" in development,
+ * and the browser cancelled every download. The attachment link in
+ * DocumentReferenceView had the same defect and nobody had noticed, because a
+ * production build has no double-invoke and that is where anyone would look.
+ *
+ * So the cleanup SCHEDULES a revoke and remembers which url it is for, and the
+ * next effect pass cancels it if it is for the url still in use. A real unmount
+ * has no next pass, so the revoke lands a tick later. A changed url does have
+ * one, and it does not cancel, because the pending revoke belongs to the url
+ * that was replaced.
+ */
+export function useObjectUrl(
+  content: Uint8Array | string | undefined,
+  contentType: string,
+): string | undefined {
+  const url = useMemo(
+    () =>
+      content === undefined
+        ? undefined
+        : URL.createObjectURL(
+            new Blob([typeof content === 'string' ? content : toArrayBuffer(content)], {
+              type: contentType,
+            }),
+          ),
+    [content, contentType],
+  );
+  const pending = useRef<{ url: string; handle: number } | undefined>(undefined);
+  useEffect(() => {
+    if (url === undefined) return;
+    if (pending.current?.url === url) {
+      window.clearTimeout(pending.current.handle);
+      pending.current = undefined;
+    }
+    return () => {
+      pending.current = { url, handle: window.setTimeout(() => URL.revokeObjectURL(url), 0) };
+    };
+  }, [url]);
+  return url;
+}
+
+/**
+ * Hands the viewer a file.
+ *
+ * An anchor rather than a button that calls `click()` on a detached element:
+ * this one is in the DOM, has a real href, and answers a middle click and a
+ * "save link as" the way anything else on the page does. It is styled as a
+ * button because it does what the copy button beside it does.
+ */
+export function DownloadButton({
+  content,
+  filename,
+  contentType = 'text/plain;charset=utf-8',
+  label,
+}: {
+  content: Uint8Array | string | undefined;
+  filename: string;
+  contentType?: string | undefined;
+  label?: string | undefined;
+}): ReactNode {
+  const url = useObjectUrl(content, contentType);
+  if (url === undefined) return null;
+  return (
+    <a className="btn btn-sm" href={url} download={filename}>
+      <Download size={13} aria-hidden />
+      <span>{label ?? `Download ${filename}`}</span>
+    </a>
   );
 }
 
