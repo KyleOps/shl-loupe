@@ -114,13 +114,15 @@
  * promise that SHLoupe makes no request the user did not ask for, while appearing
  * to keep it.
  */
-/* The explanation of one setting, and the main thing in the card. It is set
-   below the base size, so it takes the measure in its own size rather than the
-   card's: at 13.5px the card's width is 93 characters. */
+/* The explanation of one setting, and the main thing in the card. It takes the
+   measure rather than the card's width, which at this size the card would run to
+   93 characters of. 14px rather than 13.5, because `--measure` is root-relative
+   and a sentence set below 14px runs past the end of it: this was the longest
+   line in the app at 88 characters. See the unit argument in tokens.css. */
 .setting-note {
   margin: 0;
   max-width: var(--measure);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 21px;
   color: var(--fg-muted);
 }
