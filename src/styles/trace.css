@@ -829,6 +829,28 @@ ol.trace-children {
   border-top: var(--hairline-width) solid var(--border-hairline);
 }
 
+/*
+ * A citation INSIDE a finding is a section of it, not a card in a card.
+ *
+ * Standalone, on a step that cited something, the bordered box is right: it is
+ * one piece of evidence among several sitting on a --bg-raised panel. Inside a
+ * finding it was a rounded, railed, surfaced box nested in a rounded, railed,
+ * tinted box, the two rails 20px apart, and with the step's own rail outside
+ * them that is three vertical bars marching right across one expanded step.
+ *
+ * It takes the same top hairline as `.finding-audience` above it instead, which
+ * is the separator this component already uses to divide itself, so the quote
+ * reads as the finding's evidence rather than as another object.
+ */
+.finding .citation {
+  padding: var(--space-3) 0 0;
+  background: none;
+  border-left: 0;
+  border-top: var(--hairline-width) solid var(--border-hairline);
+  border-radius: 0;
+  max-width: 100%;
+}
+
 .finding-rule {
   display: flex;
   flex-wrap: wrap;
