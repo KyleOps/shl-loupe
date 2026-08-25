@@ -590,14 +590,26 @@ ol.trace-children {
   min-width: 0;
 }
 
-/* Bare prose on the panel ground, under a wire dump that is wider than any
-   sentence should be. It takes the measure on its own block. */
+/*
+ * Bare prose on the panel ground, under a wire dump that is wider than any
+ * sentence should be. It takes the measure on its own block.
+ *
+ * 14px, not 13. `--measure` is root-relative on purpose, so that a heading, a
+ * paragraph and a note in one column share a right edge whatever size each is
+ * set at (tokens.css has the two wrong answers that preceded it). The stated
+ * cost of that choice is that smaller text runs longer inside the same fixed
+ * width, and the rule it comes with is that nothing which is a SENTENCE is set
+ * below 14px. This was, at 13px, and `pnpm measure` had it as the longest line
+ * in the app: 89 characters, past the 90 where a reader loses the line it is
+ * returning to. At 14px it is 85, which is where every other note in the
+ * evidence area already sits.
+ */
 .wire-note {
   margin: 0;
   max-width: var(--measure);
   color: var(--fg-muted);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 21px;
 }
 
 /* The browser's message, quoted rather than paraphrased, so a participant can

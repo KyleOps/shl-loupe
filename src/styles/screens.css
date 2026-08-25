@@ -1157,9 +1157,12 @@
   color: var(--accent);
 }
 
+/* 14px, not 13.5: these are sentences, and `--measure` is root-relative, so a
+   sentence set below 14px runs past the end of the column it shares with
+   everything else. Measured at 88 and 86 characters before. */
 .segmap-use p {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 21px;
 }
 
