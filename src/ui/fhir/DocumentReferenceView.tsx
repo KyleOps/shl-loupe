@@ -27,12 +27,21 @@
  *    `att-1` invariant, the declared `size`, the SHA-1 `hash`, and a sniff of the
  *    leading bytes against the declared `contentType`.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Download, FileText, Link as LinkIcon, ShieldAlert } from 'lucide-react';
 import { formatBytes, toArrayBuffer, utf8Decode } from '../../core/bytes';
 import { classifyHost, reachIsUnreachableByOthers } from '../../core/diagnose/host';
 import { hashForLink } from '../../app/router';
-import { Button, Callout, Chip, CodeBlock, CopyButton, Disclosure, type Tone } from '../primitives';
+import {
+  Button,
+  Callout,
+  Chip,
+  CodeBlock,
+  CopyButton,
+  Disclosure,
+  useObjectUrl,
+  type Tone,
+} from '../primitives';
 import { DetailTable } from './ResourceCard';
 import { ErrorBoundary } from './ErrorBoundary';
 import {
@@ -152,34 +161,6 @@ export function hexDump(bytes: Uint8Array, limit = 256): string {
   }
   if (bytes.byteLength > end) lines.push(`… ${formatBytes(bytes.byteLength - end)} more`);
   return lines.join('\n');
-}
-
-/**
- * An object URL that is revoked when it stops being used.
- *
- * Leaking one is not a rounding error at these sizes: a demo that opens a dozen
- * documents holds every one of them in memory until the tab closes.
- */
-function useObjectUrl(bytes: Uint8Array | undefined, contentType: string): string | undefined {
-  // Created during render rather than in an effect, deliberately. Creating it in
-  // an effect means a first paint with no src, then a setState, then a second
-  // paint: a visible flash on every attachment. The revoke stays in an effect
-  // keyed on the url, so a changed attachment releases the previous blob and an
-  // unmount releases the last one.
-  const url = useMemo(
-    () =>
-      bytes === undefined
-        ? undefined
-        : URL.createObjectURL(new Blob([toArrayBuffer(bytes)], { type: contentType })),
-    [bytes, contentType],
-  );
-  useEffect(
-    () => () => {
-      if (url !== undefined) URL.revokeObjectURL(url);
-    },
-    [url],
-  );
-  return url;
 }
 
 function fileNameFor(title: string | undefined, contentType: string): string {
@@ -480,11 +461,7 @@ function AttachmentBody({
   const objectUrl = useObjectUrl(bytes, contentType);
   const download =
     objectUrl === undefined ? null : (
-      <a
-        className="btn attachment-download"
-        href={objectUrl}
-        download={fileNameFor(title, contentType)}
-      >
+      <a className="btn" href={objectUrl} download={fileNameFor(title, contentType)}>
         <Download size={13} aria-hidden />
         <span>Download {fileNameFor(title, contentType)}</span>
       </a>

@@ -101,10 +101,31 @@ function ProfileRow({ conformance }: { conformance: ProfileConformance }): React
   return (
     <div className="profile">
       <Disclosure
-        // Open when there is something to answer for, closed when there is not:
-        // the reader came here with a question about a link that failed, and
-        // making them click to find the answer is the incumbent's habit.
-        defaultOpen={conformance.unmet > 0}
+        /*
+         * A profile opens itself when the LINK CLAIMS IT, and on no other
+         * condition.
+         *
+         * This used to open on `unmet > 0`, which sounds like helpfulness and
+         * measured as the opposite. On an ordinary manifest link the profile the
+         * link IS (SMART Health Links, carried by the variant badge above)
+         * rendered as a 40px closed row, and the profile it is NOT opened to
+         * 1569px of quoted SHALLs: 68% of the whole link pane spent arguing a
+         * negative about a specification the sender never claimed. That is this
+         * component's own stated failure mode, reached through the layout rather
+         * than through the wording.
+         *
+         * Nothing is hidden by closing it. The row still carries its verdict
+         * chip and its `4 met, 3 unmet` count, and `profiles-aside` above states
+         * the finding in a sentence. A reader who wants the seven requirements
+         * is one click from them.
+         *
+         * `declared` is the right condition rather than `verdict`, because it is
+         * the only one that means the sender said something. KTC is
+         * `undeclarable` by construction, so it never opens on its own; WHO PHW
+         * declares itself with a `type` member, and a link that claims a profile
+         * has earned the space to be held to it, met or unmet.
+         */
+        defaultOpen={conformance.declared === 'declared'}
         summary={
           <span className="profile-summary">
             <Chip tone={tone}>

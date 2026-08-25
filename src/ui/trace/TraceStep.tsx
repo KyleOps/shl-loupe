@@ -54,6 +54,8 @@ export function TraceStep({
   const bodyId = useId();
   const tone = toneForStatus(step.status);
   const metrics = stepMetrics(step);
+  // Narrowed once, so the track's class and its fill agree by construction.
+  const measured = bar !== undefined && bar.totalPercent > 0 ? bar : undefined;
   const findings = run.findings.filter((finding) => step.findingIds.includes(finding.id));
 
   return (
@@ -74,24 +76,52 @@ export function TraceStep({
             <StatusIcon tone={tone} />
             {number !== undefined && <span className="step-number mono">{number}</span>}
             <span className="step-title">{step.title}</span>
+            {/*
+             * A metric nothing measured is EMPTY, not `--`.
+             *
+             * Most of a trace makes no request: reading a header, decrypting a
+             * file, checking a link against a profile. Those steps rendered
+             * `--  20 ms  --` and a painted, empty bar track, which is four
+             * columns of furniture reserved for HTTP on a row that never spoke
+             * HTTP. `--` also reads aloud as "dash dash" and carried a
+             * `title="HTTP status"` tooltip with no status to explain.
+             *
+             * The spans stay in the DOM and keep `min-width: 5ch`, so the
+             * numbers still line up down the column for the steps that have
+             * them. An empty cell says nothing was measured, which is the
+             * truth, and says it without occupying the eye.
+             */}
             <span className="step-metrics">
-              <span className="metric mono" title="HTTP status">
-                {metrics.status === undefined ? '--' : metrics.status}
+              <span
+                className="metric mono"
+                {...(metrics.status === undefined ? {} : { title: 'HTTP status' })}
+              >
+                {metrics.status}
               </span>
               <span className="metric mono">
-                {step.durationMs === undefined ? '--' : <Duration ms={step.durationMs} />}
+                {step.durationMs === undefined ? null : <Duration ms={step.durationMs} />}
               </span>
-              <span className="metric mono" title="Bytes handled">
-                {metrics.bytes === undefined ? '--' : formatBytes(metrics.bytes)}
+              <span
+                className="metric mono"
+                {...(metrics.bytes === undefined ? {} : { title: 'Bytes handled' })}
+              >
+                {metrics.bytes === undefined ? null : formatBytes(metrics.bytes)}
               </span>
             </span>
             {/* The number beside it carries the same fact, so the bar is decoration
-                for the eye scanning a column and is hidden from assistive tech. */}
-            <span className="step-bar" aria-hidden>
-              {bar !== undefined && bar.totalPercent > 0 && (
-                <span className="step-bar-fill" style={{ width: `${bar.totalPercent}%` }}>
-                  {bar.hasNetwork && bar.waitingPercent > 0 && (
-                    <span className="step-bar-wait" style={{ width: `${bar.waitingPercent}%` }} />
+                for the eye scanning a column and is hidden from assistive tech.
+                The track is painted only when there is a share to paint: an empty
+                pill on a step with no duration reads as 0% of something, when what
+                is true is that nothing was timed. The 84px is still reserved, so
+                the chevrons stay in one line. */}
+            <span className={clsx('step-bar', measured !== undefined && 'is-measured')} aria-hidden>
+              {measured !== undefined && (
+                <span className="step-bar-fill" style={{ width: `${measured.totalPercent}%` }}>
+                  {measured.hasNetwork && measured.waitingPercent > 0 && (
+                    <span
+                      className="step-bar-wait"
+                      style={{ width: `${measured.waitingPercent}%` }}
+                    />
                   )}
                 </span>
               )}

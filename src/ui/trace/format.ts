@@ -253,7 +253,7 @@ export function flattenStepTree(nodes: readonly StepNode[]): StepNode[] {
 }
 
 export interface StepMetrics {
-  /** Present only when a response was recorded. Otherwise the column reads "--". */
+  /** Present only when a response was recorded. Otherwise the column is empty. */
   status?: number;
   /** Bytes the step handled: a response body, or a recorded byte string. */
   bytes?: number;

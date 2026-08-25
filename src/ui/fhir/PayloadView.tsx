@@ -25,7 +25,16 @@ import { FileQuestion, KeyRound, PackageOpen } from 'lucide-react';
 import { formatBytes } from '../../core/bytes';
 import type { OpenedFile } from '../../core/pipeline';
 import { inspectJws, parseHealthCardFile } from '../../core/shc';
-import { Callout, Chip, CodeBlock, Disclosure, EmptyState, Secret } from '../primitives';
+import {
+  Callout,
+  Chip,
+  CodeBlock,
+  CopyButton,
+  Disclosure,
+  DownloadButton,
+  EmptyState,
+  Secret,
+} from '../primitives';
 import { ShcVerification } from '../shc';
 import {
   buildBundleIndex,
@@ -72,6 +81,92 @@ export function PayloadView({ file }: { file: OpenedFile }): ReactNode {
         <UnrecognisedPayload file={file} />
       )}
     </ErrorBoundary>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// The file itself
+// ---------------------------------------------------------------------------
+
+/**
+ * How much of the file goes in the block. The whole thing always goes to the
+ * clipboard and to the download.
+ */
+const SOURCE_LIMIT = 200_000;
+
+/**
+ * The whole file, as one thing.
+ *
+ * Every resource card offers `Rendered | Fields | JSON`, and until this existed
+ * the FILE offered none of the three: a reader could see the JSON of each entry
+ * one card at a time and never the bundle they came in. The two payload kinds
+ * that are not FHIR both printed their own source (`ApiAccessPayload`,
+ * `UnrecognisedPayload`), so the one kind people actually debug was the one
+ * kind with no way to read it whole.
+ *
+ * WHAT IS ON SCREEN IS INDENTED. WHAT LEAVES IS THE FILE. The first version
+ * showed `plaintext` verbatim, on the theory that a debugger wants the bytes,
+ * and the theory met a real server: 3,012 characters on ONE line, in a block
+ * that scrolls sideways, which is not something anybody can read. Producers
+ * minify. So the block is `JSON.stringify(content, null, 2)`, which is the
+ * question a reader is actually asking, and the copy button and the download
+ * hand over `plaintext` exactly as it arrived, which is the question the other
+ * kind of reader is asking. The note says which is which rather than leaving
+ * somebody to discover it from a diff.
+ *
+ * The shape of the original is stated even though it is not shown, because "it
+ * arrived as one line" is most of what the verbatim view was for.
+ *
+ * Nothing here is redacted. The key is a secret and is masked wherever it
+ * appears; the file is what the reader came for, they are holding the link that
+ * opens it, and it was decrypted in this tab.
+ */
+export function PayloadSource({ file }: { file: OpenedFile }): ReactNode {
+  // Typed as returning `string`, and it returns undefined for a bare undefined
+  // input. This view is only offered for a file that opened, which is the same
+  // condition as `content !== undefined`, so the lib's unsoundness cannot be
+  // reached from here.
+  const indented = JSON.stringify(file.content, null, 2);
+  const verbatim = file.plaintext;
+  // One line, or close to it. `\n` rather than a line count, so a file that
+  // ends with a newline is not called two lines.
+  const arrivedFlat = verbatim !== undefined && !verbatim.trim().includes('\n');
+  const exported = verbatim ?? indented;
+  const clipped = indented.length > SOURCE_LIMIT;
+  const filename = `shl-file-${String(file.index + 1)}.json`;
+
+  return (
+    <div className="payload-source">
+      <div className="payload-source-head">
+        <p className="payload-source-note">
+          {verbatim === undefined
+            ? 'Printed from the parsed object, because the original text of this file was not kept.'
+            : arrivedFlat
+              ? `This file arrived minified, as one line of ${verbatim.length.toLocaleString('en-AU')} characters. Below is the same JSON indented; copy and download give you the file as it arrived.`
+              : 'Below is this file indented. Copy and download give you the file exactly as it arrived, with the producer’s own key order, whitespace and escaping left alone.'}
+          {file.bytes === undefined ? '' : ` ${formatBytes(file.bytes)} on the wire.`}
+        </p>
+        <div className="payload-source-actions">
+          <CopyButton value={exported} label="Copy the file" />
+          <DownloadButton
+            content={exported}
+            filename={filename}
+            contentType="application/json;charset=utf-8"
+            label="Download"
+          />
+        </div>
+      </div>
+      {clipped && (
+        <p className="payload-source-note">
+          Showing the first {SOURCE_LIMIT.toLocaleString('en-AU')} characters of{' '}
+          {indented.length.toLocaleString('en-AU')}. A block this long is slower to lay out than the
+          file is to read, so the rest is one copy or one download away rather than in the page.
+        </p>
+      )}
+      <CodeBlock language="json" maxHeight={720} copy={false}>
+        {clipped ? indented.slice(0, SOURCE_LIMIT) : indented}
+      </CodeBlock>
+    </div>
   );
 }
 

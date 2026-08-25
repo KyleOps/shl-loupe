@@ -64,48 +64,68 @@
 }
 
 /*
- * Wide: the link and the trace share the top row, the payload has the second row
- * to itself.
+ * Wide: the link is a reference rail on the left, and the run reads top to
+ * bottom on the right.
  *
- * What the link and the trace have in common is that they are both about the
- * REQUEST: what was in the payload, and what happened when it was fetched. They
- * are read together, they are similar heights, and they are both narrow enough
- * for half a row. The document is a different kind of thing and takes the full
- * width, which is what a page of clinical content wants.
+ * The previous shape was `'link trace' / 'payload payload'`, two panes sharing
+ * a row and the document spanning underneath, and it produced the defect that
+ * replaced it. Measured on an ordinary manifest link at 1600px: the link pane
+ * was 2532px tall and the trace beside it 576px, so 1956px of the right-hand
+ * column was empty before the payload started. Any two panes of unequal height
+ * do this, and they are always of unequal height, because one of them is a
+ * decoded payload and the other is however many steps the run took.
  *
- * There was a version where the payload spanned both rows of a two-column grid,
- * and it had a defect worth remembering: a spanning item contributes its height
- * to the rows it spans, so row one grew to a share of a payload thousands of
- * pixels tall and the trace started halfway down the page. Nothing spans rows
- * here, so that cannot happen.
+ * So the panes are no longer peers in a row. The right-hand column carries the
+ * RUN, trace then payload, in the order they happened, and it is one flex
+ * column rather than two grid areas: nothing can be left empty by a neighbour
+ * that finished early. The left-hand column carries the LINK, and it sticks.
  *
- * `align-items: start` keeps each pane its own height instead of stretching the
- * shorter one, which is what draws a tall empty box beside a short trace.
+ * Sticky is the part that pays for itself. The payload is thousands of pixels
+ * tall and every question a reader asks of it ("which key was this? what did
+ * the manifest say the file was?") is answered by the pane that used to scroll
+ * away 4000px ago. `.page-rail` and `.segmap-pane` already do this, for the
+ * same reason, and this is the third.
+ *
+ * The two column wrappers exist so the LEFT COLUMN can be full height while
+ * the pane inside it is not. A sticky box travels within its containing block,
+ * so the pane has to sit in something as tall as the row; stretching the pane
+ * itself would draw a 4000px bordered card, which is the empty box this change
+ * is removing. `align-items: stretch` overrides the grid's own `start` for
+ * that reason and no other.
+ *
+ * The ratio: 1 to 1.5 puts the rail at 587px at the shell's 1500px cap, which
+ * is one --card-max, and hands the rest to the document. There is no longer a
+ * `data-layout` override here. That rule existed to trade width between the
+ * trace and the payload while they were competing for one row; they now share
+ * a column, so there is nothing left to trade. `data-layout` is still on the
+ * element and still means what it meant: OpenScreen reads it to decide the
+ * opening tab in tabs mode, and the browser tests assert it.
  */
 .workbench[data-mode='wide'] .workbench-panes {
-  grid-template-areas:
-    'link trace'
-    'payload payload';
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  align-items: stretch;
 }
 
+.pane-column {
+  min-width: 0;
+}
+
+.pane-column-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/*
+ * The rail. `max-height` and its own scrollbar are what make a pane taller than
+ * the viewport reachable: a sticky box with no bound pins its top and puts its
+ * bottom permanently out of reach, which is worse than not sticking at all.
+ */
 .workbench[data-mode='wide'] .pane-link {
-  grid-area: link;
-}
-
-.workbench[data-mode='wide'] .pane-trace {
-  grid-area: trace;
-}
-
-.workbench[data-mode='wide'] .pane-payload {
-  grid-area: payload;
-}
-
-/* Nothing opened, so the trace is the hero: it takes more of the top row, and
-   the payload pane below it is a short explanation of what is missing rather
-   than a document. */
-.workbench[data-mode='wide'][data-layout='trace-first'] .workbench-panes {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr);
+  position: sticky;
+  top: var(--space-6);
+  max-height: calc(100vh - var(--space-6) * 2);
+  overflow-y: auto;
 }
 
 /* Tabs and stack are both one column; what differs is whether the trace and the
