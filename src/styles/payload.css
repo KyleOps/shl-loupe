@@ -710,9 +710,34 @@ button.ref-chip:hover {
   font-size: 13.5px;
 }
 
+/*
+ * The question is the label and the answer is the content, so the weight goes
+ * on the answer. It used to go on the question, which put the strongest type on
+ * the screen against the one thing on the row nobody needs to read twice, and
+ * left "Mrs" as the quietest.
+ *
+ * --fg-muted rather than --fg-subtle: a resource card is --bg-raised, where
+ * subtle is 3.52:1. See the ratio table in tokens.css.
+ */
 .qr-question {
   display: block;
-  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+/* A section of the form. The only louder thing in the list, now that the
+   questions are labels. */
+.qr-question.is-group {
+  color: var(--fg-default);
+  font-weight: 600;
+}
+
+/* On the question's line, told apart by being mono and small rather than by
+   taking a line of its own. */
+.qr-linkid {
+  margin-left: var(--space-4);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--fg-muted);
 }
 
 .qr-answer {
@@ -720,6 +745,8 @@ button.ref-chip:hover {
   margin-top: var(--space-2);
   padding-left: var(--space-4);
   border-left: var(--hairline-width) solid var(--border-hairline);
+  color: var(--fg-default);
+  font-weight: 500;
 }
 
 /* --------------------------------------------------------------------------

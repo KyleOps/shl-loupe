@@ -27,6 +27,7 @@
  *     the reader learns "revise", which tells them nothing.
  */
 import type { ReactNode } from 'react';
+import { clsx } from 'clsx';
 import { Chip, Disclosure } from '../../primitives';
 import { DetailTable, ResourceCard, type RendererProps } from '../ResourceCard';
 import {
@@ -762,14 +763,30 @@ function QuestionnaireItems({
           ...arrField(record, 'item'),
           ...answers.flatMap((answer) => arrField(answer, 'item')),
         ];
+        const text = strField(record, 'text');
+        const linkId = strField(record, 'linkId');
+        // An item that answers nothing and carries other items is a SECTION of
+        // the form, and with the questions themselves now muted it is the one
+        // thing on the list that should be louder than they are. FHIR does not
+        // say so in the response: `Questionnaire.item.type` is `group`, and the
+        // Questionnaire is exactly what a payload does not carry, so the shape
+        // of the response is the only evidence there is.
+        const isGroup = answers.length === 0 && nested.length > 0;
         return (
           <li key={position}>
-            <span className="qr-question">
-              {strField(record, 'text') ?? strField(record, 'linkId') ?? `item ${position + 1}`}
+            {/* The question is the LABEL and the answer is the content, so the
+                linkId shares the label's line rather than taking one of its own.
+                It used to be a `.value-note`, which is `display: block` at 14px,
+                so every answered question was a three-line stack (question,
+                linkId, answer) with the answer the least prominent line of the
+                three. On a forty-question form that is eighty lines of machine
+                detail around forty answers. */}
+            <span className={clsx('qr-question', isGroup && 'is-group')}>
+              {text ?? linkId ?? `item ${position + 1}`}
+              {text !== undefined && linkId !== undefined && (
+                <span className="qr-linkid mono">{linkId}</span>
+              )}
             </span>
-            {strField(record, 'text') !== undefined && strField(record, 'linkId') !== undefined && (
-              <span className="value-note mono">{strField(record, 'linkId') as string}</span>
-            )}
             {answers.length === 0 && nested.length === 0 && (
               <span className="qr-answer">
                 <Absent>Not answered</Absent>
@@ -777,7 +794,12 @@ function QuestionnaireItems({
             )}
             {answers.map((answer, answerPosition) => (
               <span key={answerPosition} className="qr-answer">
-                <ChoiceValue node={asRecord(answer) ?? {}} base="value" context={context} />
+                <ChoiceValue
+                  node={asRecord(answer) ?? {}}
+                  base="value"
+                  context={context}
+                  suffix={false}
+                />
               </span>
             ))}
             {nested.length > 0 && (

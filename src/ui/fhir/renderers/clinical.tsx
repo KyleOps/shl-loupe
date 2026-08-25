@@ -69,15 +69,25 @@ import {
  *
  * The suffix matters in a debugger: `valueQuantity` and `valueString` are
  * different facts, and "5.9" with no unit is a different claim from "5.9 mmol/L".
+ *
+ * `suffix={false}` is for the one caller where that argument does not hold. Every
+ * other call site is a `DetailTable` row whose key is the element name, so
+ * `onset` in the key and `onsetDateTime` beside the value is a fact the row does
+ * not otherwise carry. A `QuestionnaireResponse` answer has a QUESTION for its
+ * key, and the same `valueString` printed after forty answers to forty questions
+ * is not a fact, it is a texture. The element name is still one click away in
+ * this card's own Fields and JSON views, which is what those views are for.
  */
 export function ChoiceValue({
   node,
   base,
   context,
+  suffix: showSuffix = true,
 }: {
   node: FhirNode;
   base: string;
   context: RenderContext;
+  suffix?: boolean | undefined;
 }): ReactNode {
   const chosen = pickChoice(node, base);
   if (chosen === undefined) {
@@ -126,10 +136,12 @@ export function ChoiceValue({
   return (
     <span className="choice-value">
       {rendered}
-      <span className="value-note mono">
-        {base}
-        {suffix}
-      </span>
+      {showSuffix && (
+        <span className="value-note mono">
+          {base}
+          {suffix}
+        </span>
+      )}
     </span>
   );
 }
