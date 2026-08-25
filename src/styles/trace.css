@@ -405,6 +405,11 @@ ol.trace-children {
   font-size: 12px;
 }
 
+/* The 84px is reserved whether or not there is a share to draw, so the chevron
+   after it stays in one vertical line down the list. The TRACK is painted only
+   on a step that was timed: a full-length empty pill on a step with no duration
+   reads as nought per cent of something, when what is true is that nothing was
+   measured. */
 .step-bar {
   position: relative;
   flex: none;
@@ -412,8 +417,11 @@ ol.trace-children {
   width: 84px;
   height: 6px;
   border-radius: var(--radius-pill);
-  background: var(--bg-raised);
   overflow: hidden;
+}
+
+.step-bar.is-measured {
+  background: var(--bg-raised);
 }
 
 .step-bar-fill {
