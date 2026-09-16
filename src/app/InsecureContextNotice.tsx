@@ -9,17 +9,22 @@
  *   http://127.0.0.1:4173      secureContext=true   crypto.subtle=true
  *   http://192.168.50.70:4173  secureContext=false  crypto.subtle=false
  *
- * That is the exact shape of the likely accident. The deployment is reached by
- * `kubectl port-forward`, which is `http://localhost:PORT` and perfectly fine.
- * Then somebody at the same table wants a look, the port-forward is rebound to
- * `0.0.0.0`, the LAN address is read out, and on that colleague's laptop nothing
- * can be decrypted at all. Without this notice they would meet a stack of
- * baffling failures in the one part of the app that is beyond reproach.
+ * That is the exact shape of the likely accident. Somebody runs the container on
+ * their laptop, where `http://localhost:8080` is perfectly fine. Then somebody at
+ * the same table wants a look, the port is republished on `0.0.0.0`, the LAN
+ * address is read out, and on that colleague's laptop nothing can be decrypted at
+ * all. Without this notice they would meet a stack of baffling failures in the
+ * one part of the app that is beyond reproach.
  *
- * So it is a blocking banner rather than a footnote, and it names the fix.
+ * So it is a blocking banner rather than a footnote, and it names the fix. The
+ * fix it names is the hosted copy rather than a command, because an `https`
+ * address works on every device in the room, including the phone the person is
+ * more likely to be holding.
  */
 import { ShieldAlert } from 'lucide-react';
-import { CodeBlock } from '../ui/primitives';
+
+/** The hosted copy, which is https and therefore a secure context anywhere. */
+const HOSTED_URL = 'https://kyleops.github.io/shl-loupe/';
 
 export interface SecureContextState {
   secure: boolean;
@@ -87,15 +92,21 @@ export function InsecureContextNotice({ state }: { state: SecureContextState }):
       </p>
 
       <p>
-        If somebody shared this address with you, do not browse to it. Run the port-forward on your
-        own machine instead, which puts the same page on <code>localhost</code> and works fully:
+        If somebody shared this address with you, do not browse to it. Open the hosted copy instead,
+        which is served over <code>https</code> and so works fully on any machine:
       </p>
 
-      <CodeBlock language="bash" maxHeight={120}>
-        {
-          'kubectl -n shl-loupe port-forward svc/shl-loupe 8080:80\n# then open http://localhost:8080'
-        }
-      </CodeBlock>
+      <p className="insecure-notice-link">
+        <a href={HOSTED_URL} target="_blank" rel="noreferrer noopener">
+          {HOSTED_URL}
+        </a>
+      </p>
+
+      <p>
+        If this network cannot reach that address, run your own copy on{' '}
+        <code>http://localhost</code>, which a browser also treats as a secure context. Building and
+        running the container is in <code>deploy/README.md</code>.
+      </p>
 
       <p className="insecure-notice-tail">
         Everything that needs no decryption still works from here: the payload checks, the URL

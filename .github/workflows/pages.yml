@@ -1,0 +1,96 @@
+# Publish the static bundle to GitHub Pages.
+#
+# The bundle is what the repo already builds for the container image: no backend,
+# no secret, no per-host configuration. `base: './'` in vite.config.ts is what
+# lets the same dist/ serve from the /shl-loupe/ prefix a project Pages site is
+# mounted under, and the hash router means there are no path routes to fall back
+# for, so Pages needs no 404.html and no rewrite rules.
+#
+# Why this deploys on CI finishing rather than on the push itself: a Pages URL is
+# a public address people are given at an event, so the bundle behind it should
+# never be one that failed its own gates. `workflow_run` waits for CI's verdict
+# on the same commit, and the `if` below is the whole gate. GitHub only fires
+# workflow_run for a workflow on the default branch, which is where ci.yml's
+# push trigger runs, so main is exactly the set of commits that can reach here.
+#
+# Action versions checked with `gh api repos/OWNER/REPO/releases/latest` rather
+# than from memory:
+#   actions/checkout               v7.0.1
+#   pnpm/action-setup              v6.1.0
+#   actions/setup-node             v7.0.0
+#   actions/configure-pages        v6.0.0
+#   actions/upload-pages-artifact  v5.0.0
+#   actions/deploy-pages           v5.0.1
+name: Pages
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# id-token: write is not optional and not a mistake: deploy-pages exchanges an
+# OIDC token for the deployment credential, so the workflow holds no secret.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and never cancel one in flight: the cancelled run
+# would leave the site mid-publish, and the answer it was producing is the live
+# site rather than a check result nobody will read.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the bundle
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # A workflow_run run checks out the default branch by default, not the
+      # commit that was tested, so the SHA is named explicitly. On a manual
+      # dispatch there is no workflow_run and github.sha is the ref chosen in
+      # the UI.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # This is not a second gate. CI has already run typecheck, lint and test
+      # on this exact SHA; what this step produces is the artefact itself.
+      - name: Build
+        run: pnpm run build
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
