@@ -3,6 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The container deployment sends Referrer-Policy as a header; a static host
+         such as GitHub Pages sends no headers at all, so the policy is stated
+         here too. SHLoupe fetches addresses that arrive inside somebody else's
+         link, and the address of the page doing the asking is not theirs to
+         collect. -->
+    <meta name="referrer" content="no-referrer" />
     <title>SHLoupe: SMART Health Link viewer and debugger</title>
     <meta
       name="description"

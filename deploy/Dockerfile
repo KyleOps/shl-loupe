@@ -7,12 +7,13 @@
 # Build from the repo ROOT (the build context needs package.json, src/ and
 # index.html), never from deploy/:
 #
-#   docker buildx build --platform linux/amd64 --provenance=false --sbom=false \
-#     -f deploy/Dockerfile -t <registry>/sparked/shl-loupe:<tag> --push .
+#   docker build -f deploy/Dockerfile -t shl-loupe .
+#   docker run --rm -p 8080:8080 shl-loupe
 #
-# --platform linux/amd64 is not optional. Every non-tainted Karpenter NodePool on
-# the sparkey cluster pins kubernetes.io/arch=amd64, and a plain build on an
-# Apple Silicon Mac produces arm64 only, which lands as "exec format error".
+# Add --platform linux/amd64 only when the machine that will RUN the image is
+# amd64 and you are building on Apple Silicon: a plain build there produces
+# arm64 only, which lands on the other machine as "exec format error". Building
+# for the host you are on is the common case and needs no flag.
 # See deploy/README.md.
 
 # Base images are pinned to a tag AND its multi-arch index digest, so a rebuild
@@ -76,16 +77,17 @@ FROM ${NGINX_IMAGE}
 # layer here (verified against docker-nginx-unprivileged stable/alpine-slim
 # Dockerfile lines 15 to 138): ARG UID=101 with `USER $UID`, the stock server
 # block rewritten to `listen 8080`, the pid file moved to /tmp/nginx.pid, and
-# every *_temp_path redirected under /tmp. So readOnlyRootFilesystem: true needs
-# nothing but an emptyDir on /tmp, and no capability is added back: 8080 is
-# unprivileged, so NET_BIND_SERVICE is not required.
+# every *_temp_path redirected under /tmp. So the image runs read-only apart from
+# a writable /tmp, and no capability is added back: 8080 is unprivileged, so
+# NET_BIND_SERVICE is not required.
 #
 # -alpine-slim rather than -alpine: same nginx build flags (gzip_static is in
 # pkg-oss's BASE_CONFIGURE_ARGS) without njs, geoip, image-filter, curl or
-# ca-certificates. The cost is that `kubectl exec ... curl` is unavailable for
-# in-pod probing, which the port-forward makes unnecessary anyway.
+# ca-certificates. The cost is that `docker exec ... curl` is unavailable for
+# probing from inside the container, which is no loss for an image whose only
+# job is to serve files to a browser on the same machine.
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /src/dist/ /usr/share/nginx/html/
 
-# Declarative only; the pod's containerPort is what the Service targets.
+# Declarative only; `docker run -p` is what actually publishes the port.
 EXPOSE 8080

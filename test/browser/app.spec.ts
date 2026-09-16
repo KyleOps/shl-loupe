@@ -325,9 +325,9 @@ test.describe('the privacy promise', () => {
 test.describe('the deployment failure most likely to happen at an event', () => {
   test('says so when served from somewhere it cannot decrypt', async ({ page }) => {
     /*
-     * SHLoupe is reached by `kubectl port-forward`, which is http://localhost and
-     * fine. Then somebody at the same table wants a look, the forward is rebound
-     * to 0.0.0.0, the LAN address is read out, and on that laptop `crypto.subtle`
+     * Somebody runs the container, which is http://localhost and fine. Then
+     * somebody at the same table wants a look, the port is republished on
+     * 0.0.0.0, the LAN address is read out, and on that laptop `crypto.subtle`
      * is undefined, so every file fails at the last step for a reason that has
      * nothing to do with the link. Measured in this browser:
      *
@@ -346,7 +346,9 @@ test.describe('the deployment failure most likely to happen at an event', () => 
     const notice = page.locator('.insecure-notice');
     await expect(notice).toBeVisible();
     await expect(notice).toContainText('cannot decrypt anything');
-    await expect(notice).toContainText('port-forward');
+    // The fix it offers has to be an https address, because that is the only one
+    // that is a secure context on somebody else's machine.
+    await expect(notice.locator('a[href^="https://"]')).toBeVisible();
     // It has to say what still works, or it reads as "the tool is broken".
     await expect(notice).toContainText('still works');
   });

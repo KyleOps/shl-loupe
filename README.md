@@ -5,6 +5,14 @@ browser tab. No backend, no upload, no account. You paste a link and it shows yo
 every step it takes, what each step observed, and who has to act when a step
 fails.
 
+It is live at **<https://kyleops.github.io/shl-loupe/>**, rebuilt from `main` by
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) once CI has passed on
+the commit. That address being `https` is the point of it: `crypto.subtle` and
+`getUserMedia` are both gated on a secure context, so a room full of people can open
+the tool on their own phones and decrypt and scan, which no `http://<LAN-IP>` address
+can offer. The container image in [`deploy/README.md`](deploy/README.md) is the
+answer for a network that cannot reach this address.
+
 ## The problem it exists to solve
 
 A real link, sent in good faith at a testing event:
@@ -92,9 +100,10 @@ pnpm build          # typecheck then a static bundle in dist/
 ```
 
 `dist/` is self-contained and path-independent (`base: './'`), so it serves from any
-prefix or opens from `file://`. Deployment, including the container image and the
-port-forward the tool is used through at an event, is in
-[`deploy/README.md`](deploy/README.md).
+prefix or opens from `file://`. That is what lets one bundle be both the GitHub Pages
+site, mounted under `/shl-loupe/`, and the container image. Both are in
+[`deploy/README.md`](deploy/README.md), along with why `http://localhost` is a
+secure context and a LAN address is not.
 
 ## Architecture
 
@@ -186,7 +195,11 @@ design constraint rather than a policy page.
   wifi is itself the thing under investigation.
 - **A payload cannot beacon.** The Content-Security-Policy deliberately omits
   `https:` from `img-src`, so a remote `Attachment.url` in somebody's bundle cannot
-  phone home just by being rendered.
+  phone home just by being rendered. The container sends that policy as a header;
+  GitHub Pages cannot send headers at all, so builds carry the same policy in a
+  `<meta>` element written by `vite.config.ts`. One exception survives nowhere on
+  Pages: `frame-ancestors` is ignored in a meta element, so the hosted site can be
+  framed by another page.
 - **Only preferences persist.** `localStorage` holds the theme, the recipient string
   and the probe toggles. No link, key, passcode or payload is ever written to it, and
   anything exported goes through the redactor first, so a copied command carries
